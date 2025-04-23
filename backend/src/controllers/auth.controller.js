@@ -37,7 +37,9 @@ export const register = async (req, res) => {
       maxAge: 60 * 60 * 24 * 7 * 1000,
     });
 
-    res.status(201, { message: "User registered successfully", user });
+    return res
+      .status(201)
+      .json({ message: "User registered successfully", user });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "User Registeration Failed" });
@@ -74,26 +76,28 @@ export const login = async (req, res) => {
       secure: process.env.NODE_ENV !== "development",
       maxAge: 60 * 60 * 24 * 7 * 1000,
     });
+
+    return res.status(200).json({ message: "Login successful", user });
   } catch (error) {
     return res.status(500).json({ message: "Login Failed" });
   }
 };
 
 export const logout = async (req, res) => {
- try {
-   res.cookie("jwt", "", {
-     httpOnly: true,
-     sameSite: "strict",
-     secure: process.env.NODE_ENV !== "development",
-     maxAge: 0,
-   });
-   res.status(200).json({ message: "Logout successful" });
- } catch (error) {
-  console.error(error)
- }
+  try {
+    res.cookie("jwt", "", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV !== "development",
+      maxAge: 0,
+    });
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 export const me = async (req, res) => {
-  const {user} = req;
-  return user
+  const { user } = req;
+  return user;
 };
