@@ -18,5 +18,5 @@ app.get("/", (req, res) => {
 app.use("/api/v1/auth", authRoutes);
 
 app.listen(process.env.PORT, () => {
-  console.log("Server is running on port 8080");
+  console.log("Server is running on port ", process.env.PORT);
 });
