@@ -69,9 +69,16 @@ export const createProblem = async (req, res) => {
           userId: req.user.id,
         },
       });
-      return res.status(201).json(newProblem);
+      return res.status(201).json({
+        message: "Problem created successfully",
+        data: newProblem,
+        success: true,
+      });
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Error While Creating Problem" });
+  }
 };
 
 export const getAllProblems = async (req, res) => {};
