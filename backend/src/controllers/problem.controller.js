@@ -10,12 +10,12 @@ export const createProblem = async (req, res) => {
   const {
     title,
     description,
-    difficutly,
+    difficulty,
     tags,
     examples,
     constraints,
-    testcases,
-    codeSnippets,
+    testCases,
+    codeSnippet,
     referenceSolution,
   } = req.body;
 
@@ -36,11 +36,11 @@ export const createProblem = async (req, res) => {
           .status(400)
           .json({ error: `Language ${language} is not supported` });
       }
-      const submissions = testcases.map(({ input, output }) => ({
+      const submissions = testCases.map(({ input, output }) => ({
         source_code: solutionCode,
         language_id: lanugageId,
         stdin: input,
-        expected_outpust: output,
+        expected_output: output,
       }));
       const submissionResults = await submitBatch(submissions);
 
@@ -59,12 +59,12 @@ export const createProblem = async (req, res) => {
         data: {
           title,
           description,
-          difficutly,
+          difficulty,
           tags,
           examples,
           constraints,
-          testcases,
-          codeSnippets,
+          testCases,
+          codeSnippet,
           referenceSolution,
           userId: req.user.id,
         },
