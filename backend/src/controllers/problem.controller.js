@@ -194,7 +194,10 @@ export const deleteProblem = async (req, res) => {
       success: true,
       message: "Problem deleted successfully",
     });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Error While Deleting Problem" });
+  }
 };
 
 export const getAllSolvedProblemsByUser = async (req, res) => {};
