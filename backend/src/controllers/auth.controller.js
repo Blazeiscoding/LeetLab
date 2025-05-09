@@ -98,6 +98,15 @@ export const logout = async (req, res) => {
 };
 
 export const me = async (req, res) => {
-  const { user } = req;
-  return user;
+  try {
+    const user = await db.user.findUnique({
+      where: {
+        id: req.user.id,
+      },
+    });
+    return res.status(200).json({ message: "User fetched successfully", user });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Error While Fetching User" });
+  }
 };
