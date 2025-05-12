@@ -6,22 +6,22 @@ LeetLab is a full-stack coding practice platform that allows users to solve prog
 
 ## ✨ Features
 
-* 🔐 User Authentication & Authorization (JWT)
-* 🧠 Problem Set Interface
-* 🔊 Code Editor with Syntax Highlighting
-* ⚙️ Judge0 API Integration for Code Execution
-* 📈 Submission History & Tracking
-* 🗃️ PostgreSQL Database Integration
+- 🔐 User Authentication & Authorization (JWT)
+- 🧠 Problem Set Interface
+- 🔊 Code Editor with Syntax Highlighting
+- ⚙️ Judge0 API Integration for Code Execution
+- 📈 Submission History & Tracking
+- 🗃️ PostgreSQL Database Integration
 
 ---
 
 ## 💦 Tech Stack
 
-* **Frontend:** React, TailwindCSS
-* **Backend:** Node.js, Express.js
-* **Database:** PostgreSQL
-* **Code Execution:** Judge0 API
-* **Containerization:** Docker (optional for DB setup)
+- **Frontend:** React, TailwindCSS
+- **Backend:** Node.js, Express.js
+- **Database:** PostgreSQL
+- **Code Execution:** Judge0 API
+- **Containerization:** Docker (optional for DB setup)
 
 ---
 
@@ -29,10 +29,10 @@ LeetLab is a full-stack coding practice platform that allows users to solve prog
 
 ### Prerequisites
 
-* Node.js
-* npm or yarn
-* PostgreSQL (or use Docker)
-* Judge0 API instance (public or self-hosted)
+- Node.js
+- npm or yarn
+- PostgreSQL (or use Docker)
+- Judge0 API instance (public or self-hosted)
 
 ---
 
@@ -81,11 +81,11 @@ npm run dev
 
 ## 🌐 Usage
 
-* Open your browser and visit: [http://localhost:3000](http://localhost:8080)
-* Sign up or log in
-* Choose a problem to solve
-* Write code in the editor and click `Run`
-* View output, fix errors, and resubmit
+- Open your browser and visit: [http://localhost:3000](http://localhost:8080)
+- Sign up or log in
+- Choose a problem to solve
+- Write code in the editor and click `Run`
+- View output, fix errors, and resubmit
 
 ---
 
@@ -99,14 +99,11 @@ LeetLab/
 └── README.md       → This file
 ```
 
----
+## 🧪 Postman API Collection
 
-## 🧑‍💻 Contributing
+You can test the API using the Postman collection:
 
-Contributions, issues, and feature requests are welcome!
-Please open a pull request or create an issue to get started.
-
----
+📥 [Download Postman Collection](./postman/LeetLab.postman_collection.json)
 
 ## 📄 License
 
@@ -116,6 +113,6 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## 🙌 Acknowledgments
 
-* [Judge0](https://judge0.com/)
-* [PostgreSQL](https://www.postgresql.org/)
-* [React](https://reactjs.org/)
+- [Judge0](https://judge0.com/)
+- [PostgreSQL](https://www.postgresql.org/)
+- [React](https://reactjs.org/)

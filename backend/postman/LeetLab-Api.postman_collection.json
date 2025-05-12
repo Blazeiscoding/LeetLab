@@ -1,0 +1,513 @@
+{
+	"info": {
+		"_postman_id": "c25575a9-505c-4345-9f3a-b340d0c8814e",
+		"name": "LeetLab-Api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "37109237"
+	},
+	"item": [
+		{
+			"name": "User-API",
+			"item": [
+				{
+					"name": "Create User",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\":\"nikhil@gmail.com\",\r\n    \"name\":\"nikhil\",\r\n    \"password\":\"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/auth/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"nikhil@gmail.com\",\r\n    \"password\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/auth/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/auth/me",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LogOut User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/auth/logout",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Problems",
+			"item": [
+				{
+					"name": "Create-Problem",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\":\"Add Two Numbers\",\r\n    \"description\":\"Given 2 numbers add them up\",\r\n    \"difficulty\":\"EASY\",\r\n    \"tags\":[\"maths\",\"operators\",\"numbers\"],\r\n    \"examples\":{\r\n        \"PYTHON\": {\r\n            \"input\": \"3 7\",\r\n            \"output\": \"10\",\r\n            \"explanation\": \"Adding 3 and 7 gives 10.\"\r\n        },\r\n        \"JAVASCRIPT\": {\r\n            \"input\": \"-5 12\",\r\n            \"output\": \"7\",\r\n            \"explanation\": \"Adding -5 and 12 gives 7.\"\r\n        }\r\n    },\r\n    \"constraints\": \"-10^9 ≤ a, b ≤ 10^9\",\r\n    \"testCases\": [\r\n        {\r\n            \"input\": \"100 200\",\r\n            \"output\": \"300\"\r\n        },\r\n        {\r\n            \"input\": \"-500 -600\",\r\n            \"output\": \"-1100\"\r\n        },\r\n        {\r\n            \"input\": \"0 0\",\r\n            \"output\": \"0\"\r\n        }\r\n    ],\r\n    \"codeSnippet\": {\r\n    \"JAVASCRIPT\": \"const fs = require('fs');\\n\\nfunction addTwoNumbers(a, b) {\\n    // Write your code here\\n    // Return the sum of a and b\\n    return a + b;\\n}\\n\\n// Reading input from stdin (using fs to read all input)\\nconst input = fs.readFileSync(0, 'utf-8').trim();\\nconst [a, b] = input.split(' ').map(Number);\\n\\nconsole.log(addTwoNumbers(a, b));\",\r\n    \"PYTHON\": \"def add_two_numbers(a, b):\\n    # Write your code here\\n    # Return the sum of a and b\\n    return a + b\\n\\nimport sys\\ninput_line = sys.stdin.read()\\na, b = map(int, input_line.split())\\nprint(add_two_numbers(a, b))\",\r\n    \"JAVA\": \"import java.util.Scanner;\\n\\npublic class Main {\\n    public static int addTwoNumbers(int a, int b) {\\n        // Write your code here\\n        // Return the sum of a and b\\n        return a + b;\\n    }\\n\\n    public static void main(String[] args) {\\n        Scanner sc = new Scanner(System.in);\\n        int a = sc.nextInt();\\n        int b = sc.nextInt();\\n        System.out.println(addTwoNumbers(a, b));\\n    }\\n}\"\r\n  },\r\n  \"referenceSolution\": {\r\n    \"JAVASCRIPT\": \"const fs = require('fs');\\n\\n// Reading input from stdin (using fs to read all input)\\nconst input = fs.readFileSync(0, 'utf-8').trim();\\nconst [a, b] = input.split(' ').map(Number);\\n\\nconsole.log(a + b);\",\r\n    \"PYTHON\": \"import sys\\ninput_line = sys.stdin.read()\\na, b = map(int, input_line.split())\\nprint(a + b)\",\r\n    \"JAVA\": \"import java.util.Scanner;\\n\\npublic class Main {\\n    public static void main(String[] args) {\\n        Scanner sc = new Scanner(System.in);\\n        int a = sc.nextInt();\\n        int b = sc.nextInt();\\n        System.out.println(a + b);\\n    }\\n}\"\r\n  },\r\n  \"hints\":\"\"\r\n    \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/problems/create-problem",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"problems",
+								"create-problem"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Problems",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/problems/get-all-problems",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"problems",
+								"get-all-problems"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Problem By id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/problems/get-problem/cma517nk10001eh2sj2udaptv",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"problems",
+								"get-problem",
+								"cma517nk10001eh2sj2udaptv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Problem",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\":\"Adding two numbers\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/problems/update-problem/cma3m4nhv0005ehz4mslqefqs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"problems",
+								"update-problem",
+								"cma3m4nhv0005ehz4mslqefqs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Problem",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/problems/delete-problem/cma3m4nhv0005ehz4mslqefqs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"problems",
+								"delete-problem",
+								"cma3m4nhv0005ehz4mslqefqs"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "execute-code",
+			"item": [
+				{
+					"name": "Execute-code",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"source_code\":\"const fs = require('fs');\\n\\n// Reading input from stdin (using fs to read all input)\\nconst input = fs.readFileSync(0, 'utf-8').trim();\\nconst [a, b] = input.split(' ').map(Number);\\n\\nconsole.log(a + b);\",\r\n    \"language_id\":63,\r\n    \"stdin\":[\"100 200\", \"-500 -600\", \"0 0\"],\r\n    \"expected_outputs\":[\"300\",\"-1100\",\"0\"],\r\n    \"problem_id\":\"cma517nk10001eh2sj2udaptv\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/execute-code",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"execute-code"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Submission",
+			"item": [
+				{
+					"name": "Get All Submission",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/submission/get-all-submission",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"submission",
+								"get-all-submission"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Submission for Problem",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/submission/get-submission/cma517nk10001eh2sj2udaptv",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"submission",
+								"get-submission",
+								"cma517nk10001eh2sj2udaptv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Submission Count",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/submission/get-submissions-count/cma517nk10001eh2sj2udaptv",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"submission",
+								"get-submissions-count",
+								"cma517nk10001eh2sj2udaptv"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Playlist",
+			"item": [
+				{
+					"name": "Create-playlist",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\":\"Another test playlist\",\r\n    \"description\":\"Test playlist\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/playlist/create-playlist",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"playlist",
+								"create-playlist"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Playlist details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/playlist/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"playlist",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get PlayList By Id",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Add Problem to Playlist",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"problemIds\":[\"cma517nk10001eh2sj2udaptv\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/playlist/8f91e7f8-274f-499f-ae1d-04ca6087ab7e/add-problem",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"playlist",
+								"8f91e7f8-274f-499f-ae1d-04ca6087ab7e",
+								"add-problem"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Playlist by id",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Problem From Playlist",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"problemIds\":[\"cma517nk10001eh2sj2udaptv\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/playlist/a87b3fa3-dff0-4a21-b61c-bd792612dc15/remove-problem/cma517nk10001eh2sj2udaptv",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"playlist",
+								"a87b3fa3-dff0-4a21-b61c-bd792612dc15",
+								"remove-problem",
+								"cma517nk10001eh2sj2udaptv"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
