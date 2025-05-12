@@ -1,17 +1,22 @@
-import { db } from "../libs/db";
+import { db } from "../libs/db.js";
 
 export const createPlaylist = async (req, res) => {
   try {
     const { name, description } = req.body;
-    const existingPlaylist = await db.playlist.findUnique({
+
+    const userId = req.user.id;
+    const playlistExists = await db.playlist.findFirst({
       where: {
         name,
+        userId,
       },
     });
-    if (existingPlaylist) {
-      return res.status(400).json({ message: "Playlist already exists" });
+    if (playlistExists) {
+      return res.status(400).json({
+        success: false,
+        message: "Playlist with this name already exists",
+      });
     }
-    const userId = req.user.id;
     const playlist = await db.playlist.create({
       data: {
         name,
