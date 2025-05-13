@@ -48,7 +48,7 @@ cd LeetLab
 2. **Start PostgreSQL (with Docker or manually)**
 
 ```bash
-docker run --name leetlab-db -e POSTGRES_USER=leetlab -e POSTGRES_PASSWORD=leetlab123 -e POSTGRES_DB=leetlabdb -p 5432:5432 -d postgres
+docker run --name my-postgres -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypassword -p 5432:5432 -d postgres
 ```
 
 3. **Configure Environment Variables**
