@@ -5,8 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Code, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { loginSchema } from "../util/zodSchema";
 import AuthImagePattern from "../components/AuthImagePattern";
+import { useAuthStore } from "../store/useAuthStore";
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const { login, isLoggingIn } = useAuthStore();
   const {
     register,
     handleSubmit,
@@ -15,8 +17,12 @@ const LoginPage = () => {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    try {
+      await login(data);
+    } catch (error) {
+      console.error("Error in login", error);
+    }
   };
 
   return (
@@ -96,7 +102,7 @@ const LoginPage = () => {
               )}
             </div>
             Submit Button
-            {/* <button
+            <button
               type="submit"
               className="btn btn-primary w-full"
              disabled={isSigninUp}
@@ -109,7 +115,7 @@ const LoginPage = () => {
               ) : (
                 "Login"
               )}
-            </button> */}
+            </button>
           </form>
 
           {/* Footer */}

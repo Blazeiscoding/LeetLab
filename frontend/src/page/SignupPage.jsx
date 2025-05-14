@@ -5,8 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Code, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { signUpSchema } from "../util/zodSchema";
 import AuthImagePattern from "../components/AuthImagePattern";
+import { useAuthStore } from "../store/useAuthStore";
 const SignupPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+
+  const { signup, isSigninUp } = useAuthStore();
+
   const {
     register,
     handleSubmit,
@@ -15,8 +19,13 @@ const SignupPage = () => {
     resolver: zodResolver(signUpSchema),
   });
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    try {
+      await signup(data);
+      console.log("signup data", data);
+    } catch (error) {
+      console.log("Error in signup", error);
+    }
   };
 
   return (
@@ -120,12 +129,12 @@ const SignupPage = () => {
               )}
             </div>
             Submit Button
-            {/* <button
+            <button
               type="submit"
               className="btn btn-primary w-full"
-             disabled={isSigninUp}
+              disabled={isSigninUp}
             >
-               {isSigninUp ? (
+              {isSigninUp ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
                   Loading...
@@ -133,7 +142,7 @@ const SignupPage = () => {
               ) : (
                 "Sign in"
               )}
-            </button> */}
+            </button>
           </form>
 
           {/* Footer */}
