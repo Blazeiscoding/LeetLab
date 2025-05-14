@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Code, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { signUpSchema } from "../util/zodSchema";
-import CodeBackground from "../components/AuthImagePattern";
+import AuthImagePattern from "../components/AuthImagePattern";
 const SignupPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const {
@@ -149,7 +149,7 @@ const SignupPage = () => {
       </div>
 
       {/* Right Side - Image/Pattern */}
-      <CodeBackground
+      <AuthImagePattern
         title={"Welcome to our platform!"}
         subtitle={
           "Sign up to access our platform and start using our services."
