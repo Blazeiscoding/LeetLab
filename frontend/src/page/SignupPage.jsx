@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
-import {zodResolver} from "@hookform/resolvers/zod"
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Code, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { signUpSchema } from "../util/zodSchema";
+import CodeBackground from "../components/AuthImagePattern";
 const SignupPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const {
@@ -19,8 +20,8 @@ const SignupPage = () => {
   };
 
   return (
-    <div className='h-screen grid lg:grid-cols-2'>
-        <div className="flex flex-col justify-center items-center p-6 sm:p-12">
+    <div className="h-screen grid lg:grid-cols-2">
+      <div className="flex flex-col justify-center items-center p-6 sm:p-12">
         <div className="w-full max-w-md space-y-8">
           {/* Logo */}
           <div className="text-center mb-8">
@@ -35,7 +36,6 @@ const SignupPage = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            
             {/* name */}
             <div className="form-control">
               <label className="label">
@@ -55,10 +55,11 @@ const SignupPage = () => {
                 />
               </div>
               {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
-              )}              
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
-
             {/* Email */}
             <div className="form-control">
               <label className="label">
@@ -78,10 +79,11 @@ const SignupPage = () => {
                 />
               </div>
               {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.email.message}
+                </p>
               )}
             </div>
-
             {/* Password */}
             <div className="form-control">
               <label className="label">
@@ -112,12 +114,13 @@ const SignupPage = () => {
                 </button>
               </div>
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.password.message}
+                </p>
               )}
             </div>
-
-            {/* Submit Button */}
-            <button
+            Submit Button
+            {/* <button
               type="submit"
               className="btn btn-primary w-full"
              disabled={isSigninUp}
@@ -130,7 +133,7 @@ const SignupPage = () => {
               ) : (
                 "Sign in"
               )}
-            </button>
+            </button> */}
           </form>
 
           {/* Footer */}
@@ -145,15 +148,15 @@ const SignupPage = () => {
         </div>
       </div>
 
-       {/* Right Side - Image/Pattern */}
-      <AuthImagePattern
+      {/* Right Side - Image/Pattern */}
+      <code
         title={"Welcome to our platform!"}
         subtitle={
           "Sign up to access our platform and start using our services."
         }
       />
     </div>
-  )
+  );
 };
 
 export default SignupPage;
