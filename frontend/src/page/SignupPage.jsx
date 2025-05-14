@@ -149,7 +149,7 @@ const SignupPage = () => {
       </div>
 
       {/* Right Side - Image/Pattern */}
-      <code
+      <CodeBackground
         title={"Welcome to our platform!"}
         subtitle={
           "Sign up to access our platform and start using our services."
