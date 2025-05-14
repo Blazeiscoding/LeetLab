@@ -105,9 +105,9 @@ const LoginPage = () => {
             <button
               type="submit"
               className="btn btn-primary w-full"
-             disabled={isSigninUp}
+              disabled={isLoggingIn}
             >
-               {isSigninUp ? (
+              {isLoggingIn ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
                   Loading...
@@ -141,4 +141,4 @@ const LoginPage = () => {
   );
 };
 
-export default SignupPage;
+export default LoginPage;
