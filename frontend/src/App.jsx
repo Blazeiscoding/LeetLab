@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import HomePage from "./page/HomePage";
@@ -8,6 +8,7 @@ import { useAuthStore } from "./store/useAuthStore";
 import { Loader } from "lucide-react";
 import AddProblem from "./page/AddProblem";
 import AdminRoute from "./components/AdminRoute";
+import Layout from "./layout/Layout";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
@@ -26,6 +27,13 @@ const App = () => {
     <div className="flex flex-col items-center justify-start">
       <Toaster />
       <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route
+            index
+            element={authUser ? <HomePage /> : <Navigate to={"/login"} />}
+          />
+        </Route>
+
         <Route
           path="/"
           element={authUser ? <HomePage /> : <Navigate to="/login" />}

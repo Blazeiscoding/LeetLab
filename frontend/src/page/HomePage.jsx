@@ -14,13 +14,13 @@ const HomePage = () => {
         problems
       </p>
 
-      {
+      {/* {
         problems.length > 0 ? <ProblemTable problems={problems}/> : (
             <p className="mt-10 text-center text-lg font-semibold text-gray-500 dark:text-gray-400 z-10 border border-primary px-4 py-2 rounded-md border-dashed">
           No problems found
         </p>
         )
-      }
+      } */}
     </div>
   );
 };
