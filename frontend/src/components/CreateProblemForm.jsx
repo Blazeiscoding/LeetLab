@@ -18,7 +18,7 @@ import toast from "react-hot-toast";
 import { Navigate, useNavigate } from "react-router-dom";
 import { problemSchema } from "../util/zodSchema";
 
-const sampledpData = {
+const sampledData = {
   title: "Climbing Stairs",
   category: "dp", // Dynamic Programming
   description:
@@ -469,7 +469,13 @@ const CreateProblemForm = () => {
   const [sampleType, setSampleType] = useState("DP");
 
   const navigation = useNavigate();
-  const {register,control,handleSubmit,reset} = useForm({
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
     resolver: zodResolver(problemSchema),
     defaultValues: {
       testcases: [{ input: "", output: "" }],
@@ -518,9 +524,10 @@ const CreateProblemForm = () => {
   };
 
   const loadSampleData = () => {
-    const samplepData = sampleType === "DP" ? samplepData : sampleStringProblem;
-    replaceTag(samplepData.tags.map((tag) => tag));
-    replaceTestCase(sampledpData.testcases.map((testCase) => testCase));
+    const sampleData = sampleType === "DP" ? sampledData : sampleStringProblem;
+    replaceTag(sampleData.tags.map((tag) => tag));
+    replaceTestCase(sampleData.testcases.map((testCase) => testCase));
+    reset(sampleData);
   };
 
   return (

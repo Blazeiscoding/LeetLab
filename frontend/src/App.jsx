@@ -32,12 +32,15 @@ const App = () => {
             index
             element={authUser ? <HomePage /> : <Navigate to={"/login"} />}
           />
+          {/* Add the missing route for AddProblem inside Layout */}
+          <Route element={<AdminRoute />}>
+            <Route 
+              path="/add-problem" 
+              element={<AddProblem />} 
+            />
+          </Route>
         </Route>
 
-        <Route
-          path="/"
-          element={authUser ? <HomePage /> : <Navigate to="/login" />}
-        />
         <Route
           path="/login"
           element={!authUser ? <LoginPage /> : <Navigate to="/" />}
@@ -46,9 +49,6 @@ const App = () => {
           path="/signup"
           element={!authUser ? <SignupPage /> : <Navigate to="/" />}
         />
-        <Route element={<AdminRoute />}>
-          <Route element={authUser ? <AddProblem /> : <Navigate to="/" />} />
-        </Route>
       </Routes>
     </div>
   );
