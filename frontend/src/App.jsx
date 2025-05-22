@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import HomePage from "./page/HomePage";
 import LoginPage from "./page/LoginPage";
@@ -15,6 +15,7 @@ const App = () => {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+  const location = useLocation();
 
   if (isCheckingAuth && !authUser) {
     return (
@@ -34,16 +35,19 @@ const App = () => {
           />
           {/* Add the missing route for AddProblem inside Layout */}
           <Route element={<AdminRoute />}>
-            <Route 
-              path="/add-problem" 
-              element={<AddProblem />} 
-            />
+            <Route path="/add-problem" element={<AddProblem />} />
           </Route>
         </Route>
 
         <Route
           path="/login"
-          element={!authUser ? <LoginPage /> : <Navigate to="/" />}
+          element={
+            !authUser ? (
+              <LoginPage />
+            ) : (
+              <Navigate to={location.state?.from?.pathname || "/"} replace />
+            )
+          }
         />
         <Route
           path="/signup"
