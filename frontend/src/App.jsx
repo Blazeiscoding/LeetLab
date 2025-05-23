@@ -45,52 +45,50 @@ function App() {
   }
 
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          {/* Public Routes */}
-          <Route
-            path="/login"
-            element={!authUser ? <LoginPage /> : <Navigate to="/" />}
-          />
-          <Route
-            path="/signup"
-            element={!authUser ? <SignupPage /> : <Navigate to="/" />}
-          />
+    <div className="App">
+      <Routes>
+        {/* Public Routes */}
+        <Route
+          path="/login"
+          element={!authUser ? <LoginPage /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/signup"
+          element={!authUser ? <SignupPage /> : <Navigate to="/" />}
+        />
 
-          {/* Protected Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<Layout />}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/problems" element={<ProblemsPage />} />
-              <Route path="/problems/:id" element={<ProblemDetailPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/playlists" element={<PlaylistsPage />} />
-              <Route path="/playlists/:id" element={<PlaylistDetailPage />} />
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/problems" element={<ProblemsPage />} />
+            <Route path="/problems/:id" element={<ProblemDetailPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/playlists" element={<PlaylistsPage />} />
+            <Route path="/playlists/:id" element={<PlaylistDetailPage />} />
 
-              {/* Admin Routes */}
-              <Route element={<AdminRoute />}>
-                <Route path="/add-problem" element={<AddProblem />} />
-              </Route>
+            {/* Admin Routes */}
+            <Route element={<AdminRoute />}>
+              <Route path="/add-problem" element={<AddProblem />} />
             </Route>
           </Route>
+        </Route>
 
-          {/* Catch all route */}
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+        {/* Catch all route */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
 
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 3000,
-            style: {
-              background: "var(--fallback-b1,oklch(var(--b1)))",
-              color: "var(--fallback-bc,oklch(var(--bc)))",
-            },
-          }}
-        />
-      </div>
-    </Router>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "var(--fallback-b1,oklch(var(--b1)))",
+            color: "var(--fallback-bc,oklch(var(--bc)))",
+          },
+        }}
+      />
+    </div>
   );
 }
 

@@ -30,7 +30,7 @@ const sampledData = {
     "To reach the nth step, you can either come from the (n-1)th step or the (n-2)th step.",
   editorial:
     "This is a classic dynamic programming problem. The number of ways to reach the nth step is the sum of the number of ways to reach the (n-1)th step and the (n-2)th step, forming a Fibonacci-like sequence.",
-  testcases: [
+  testCases: [
     {
       input: "2",
       output: "2",
@@ -277,7 +277,7 @@ const sampleStringProblem = {
     "Consider using two pointers, one from the start and one from the end, moving towards the center.",
   editorial:
     "We can use two pointers approach to check if the string is a palindrome. One pointer starts from the beginning and the other from the end, moving towards each other.",
-  testcases: [
+  testCases: [
     {
       input: "A man, a plan, a canal: Panama",
       output: "true",
@@ -478,7 +478,7 @@ const CreateProblemForm = () => {
   } = useForm({
     resolver: zodResolver(problemSchema),
     defaultValues: {
-      testcases: [{ input: "", output: "" }],
+      testCases: [{ input: "", output: "" }],
       tags: [""],
       examples: {
         JAVASCRIPT: { input: "", output: "", explanation: "" },
@@ -505,7 +505,7 @@ const CreateProblemForm = () => {
     replace: replaceTestCase,
   } = useFieldArray({
     control,
-    name: "testcases",
+    name: "testCases",
   });
 
   const {
@@ -520,6 +520,16 @@ const CreateProblemForm = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const onSubmit = async (data) => {
+    console.log("Form submitted with data:", data); // Debug log
+
+    // Check if form validation passed
+    const formErrors = Object.keys(errors);
+    if (formErrors.length > 0) {
+      console.log("Form has validation errors:", errors);
+      toast.error("Please fix validation errors before submitting");
+      return;
+    }
+
     setIsLoading(true);
     try {
       // Transform data to match backend API
@@ -535,14 +545,19 @@ const CreateProblemForm = () => {
         referenceSolution: data.referenceSolutions,
       };
 
+      console.log("Sending problem data to API:", problemData); // Debug log
+
       const response = await axiosInstance.post(
         "/problems/create-problem",
         problemData
       );
+
+      console.log("API response:", response); // Debug log
       toast.success("Problem created successfully!");
       navigation("/");
     } catch (error) {
       console.error("Error creating problem:", error);
+      console.error("Error response:", error.response); // More detailed error logging
       toast.error(error.response?.data?.error || "Failed to create problem");
     } finally {
       setIsLoading(false);
@@ -552,7 +567,7 @@ const CreateProblemForm = () => {
   const loadSampleData = () => {
     const sampleData = sampleType === "DP" ? sampledData : sampleStringProblem;
     replaceTag(sampleData.tags.map((tag) => tag));
-    replaceTestCase(sampleData.testcases.map((testCase) => testCase));
+    replaceTestCase(sampleData.testCases.map((testCase) => testCase));
     reset(sampleData);
   };
 
@@ -751,13 +766,13 @@ const CreateProblemForm = () => {
                           </label>
                           <textarea
                             className="textarea textarea-bordered min-h-24 w-full p-3 resize-y"
-                            {...register(`testcases.${index}.input`)}
+                            {...register(`testCases.${index}.input`)}
                             placeholder="Enter test case input"
                           />
-                          {errors.testcases?.[index]?.input && (
+                          {errors.testCases?.[index]?.input && (
                             <label className="label">
                               <span className="label-text-alt text-error">
-                                {errors.testcases[index].input.message}
+                                {errors.testCases[index].input.message}
                               </span>
                             </label>
                           )}
@@ -770,13 +785,13 @@ const CreateProblemForm = () => {
                           </label>
                           <textarea
                             className="textarea textarea-bordered min-h-24 w-full p-3 resize-y"
-                            {...register(`testcases.${index}.output`)}
+                            {...register(`testCases.${index}.output`)}
                             placeholder="Enter expected output"
                           />
-                          {errors.testcases?.[index]?.output && (
+                          {errors.testCases?.[index]?.output && (
                             <label className="label">
                               <span className="label-text-alt text-error">
-                                {errors.testcases[index].output.message}
+                                {errors.testCases[index].output.message}
                               </span>
                             </label>
                           )}
@@ -786,10 +801,10 @@ const CreateProblemForm = () => {
                   </div>
                 ))}
               </div>
-              {errors.testcases && !Array.isArray(errors.testcases) && (
+              {errors.testCases && !Array.isArray(errors.testCases) && (
                 <div className="mt-2">
                   <span className="text-error text-sm">
-                    {errors.testcases.message}
+                    {errors.testCases.message}
                   </span>
                 </div>
               )}

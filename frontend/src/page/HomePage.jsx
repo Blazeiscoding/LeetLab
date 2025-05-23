@@ -11,7 +11,7 @@ const HomePage = () => {
     totalProblems: 0,
     solvedProblems: 0,
     recentSubmissions: [],
-    problemsByDifficulty: { EASY: 0, MEDIUM: 0, HARD: 0 }
+    problemsByDifficulty: { EASY: 0, MEDIUM: 0, HARD: 0 },
   });
   const [loading, setLoading] = useState(true);
 
@@ -23,24 +23,50 @@ const HomePage = () => {
     try {
       const [problemsRes, solvedRes, submissionsRes] = await Promise.all([
         axiosInstance.get("/problems/get-all-problems"),
-        axiosInstance.get("/problems/get-solved-problems").catch(() => ({ data: { data: [] } })),
-        axiosInstance.get("/submission/get-all-submission").catch(() => ({ data: { data: [] } }))
+        axiosInstance
+          .get("/problems/get-solved-problems")
+          .catch(() => ({ data: { data: [] } })),
+        axiosInstance
+          .get("/submission/get-all-submission")
+          .catch(() => ({ data: { data: [] } })),
       ]);
 
       const allProblems = problemsRes.data.data || [];
       const solvedProblems = solvedRes.data.data || [];
       const submissions = submissionsRes.data.data || [];
 
-      const problemsByDifficulty = allProblems.reduce((acc, problem) => {
-        acc[problem.difficulty] = (acc[problem.difficulty] || 0) + 1;
+      // Create a map of problem IDs to problem details
+      const problemMap = allProblems.reduce((acc, problem) => {
+        const problemId = problem._id || problem.id;
+        acc[problemId] = {
+          title: problem.title || problem.name || `Problem #${problemId}`,
+          difficulty: problem.difficulty,
+        };
         return acc;
-      }, { EASY: 0, MEDIUM: 0, HARD: 0 });
+      }, {});
+
+      // Add problem names to submissions
+      const submissionsWithNames = submissions.map((submission) => ({
+        ...submission,
+        problemTitle:
+          problemMap[submission.problemId]?.title ||
+          `Problem #${submission.problemId}`,
+        problemDifficulty: problemMap[submission.problemId]?.difficulty,
+      }));
+
+      const problemsByDifficulty = allProblems.reduce(
+        (acc, problem) => {
+          acc[problem.difficulty] = (acc[problem.difficulty] || 0) + 1;
+          return acc;
+        },
+        { EASY: 0, MEDIUM: 0, HARD: 0 }
+      );
 
       setStats({
         totalProblems: allProblems.length,
         solvedProblems: solvedProblems.length,
-        recentSubmissions: submissions.slice(0, 5),
-        problemsByDifficulty
+        recentSubmissions: submissionsWithNames.slice(0, 5),
+        problemsByDifficulty,
       });
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -51,10 +77,14 @@ const HomePage = () => {
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
-      case "EASY": return "text-green-500";
-      case "MEDIUM": return "text-yellow-500";
-      case "HARD": return "text-red-500";
-      default: return "text-gray-500";
+      case "EASY":
+        return "text-green-500";
+      case "MEDIUM":
+        return "text-yellow-500";
+      case "HARD":
+        return "text-red-500";
+      default:
+        return "text-gray-500";
     }
   };
 
@@ -77,8 +107,9 @@ const HomePage = () => {
               Welcome to <span className="text-primary">LeetLab</span>
             </h1>
             <p className="py-6 text-lg z-10 relative">
-              A Platform Inspired by LeetCode which helps you to prepare for coding
-              interviews and improve your coding skills by solving coding problems
+              A Platform Inspired by LeetCode which helps you to prepare for
+              coding interviews and improve your coding skills by solving coding
+              problems
             </p>
             <div className="flex gap-4 justify-center z-10 relative">
               <Link to="/problems" className="btn btn-primary btn-lg gap-2">
@@ -111,7 +142,9 @@ const HomePage = () => {
               <Trophy className="w-8 h-8" />
             </div>
             <div className="stat-title">Solved</div>
-            <div className="stat-value text-success">{stats.solvedProblems}</div>
+            <div className="stat-value text-success">
+              {stats.solvedProblems}
+            </div>
             <div className="stat-desc">Problems completed</div>
           </div>
 
@@ -121,9 +154,10 @@ const HomePage = () => {
             </div>
             <div className="stat-title">Success Rate</div>
             <div className="stat-value text-info">
-              {stats.totalProblems > 0 
+              {stats.totalProblems > 0
                 ? Math.round((stats.solvedProblems / stats.totalProblems) * 100)
-                : 0}%
+                : 0}
+              %
             </div>
             <div className="stat-desc">Overall progress</div>
           </div>
@@ -133,7 +167,9 @@ const HomePage = () => {
               <TrendingUp className="w-8 h-8" />
             </div>
             <div className="stat-title">Submissions</div>
-            <div className="stat-value text-secondary">{stats.recentSubmissions.length}</div>
+            <div className="stat-value text-secondary">
+              {stats.recentSubmissions.length}
+            </div>
             <div className="stat-desc">Recent attempts</div>
           </div>
         </div>
@@ -147,21 +183,31 @@ const HomePage = () => {
                 Problems by Difficulty
               </h2>
               <div className="space-y-4">
-                {Object.entries(stats.problemsByDifficulty).map(([difficulty, count]) => (
-                  <div key={difficulty} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${
-                        difficulty === "EASY" ? "bg-green-500" :
-                        difficulty === "MEDIUM" ? "bg-yellow-500" : "bg-red-500"
-                      }`}></div>
-                      <span className="font-medium">{difficulty}</span>
+                {Object.entries(stats.problemsByDifficulty).map(
+                  ([difficulty, count]) => (
+                    <div
+                      key={difficulty}
+                      className="flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-3 h-3 rounded-full ${
+                            difficulty === "EASY"
+                              ? "bg-green-500"
+                              : difficulty === "MEDIUM"
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
+                          }`}
+                        ></div>
+                        <span className="font-medium">{difficulty}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-lg">{count}</span>
+                        <span className="text-sm text-gray-500">problems</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-lg">{count}</span>
-                      <span className="text-sm text-gray-500">problems</span>
-                    </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
               <div className="card-actions justify-end mt-4">
                 <Link to="/problems" className="btn btn-primary btn-sm">
@@ -189,17 +235,40 @@ const HomePage = () => {
               ) : (
                 <div className="space-y-3">
                   {stats.recentSubmissions.map((submission, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
-                      <div>
-                        <p className="font-medium">Problem #{submission.problemId}</p>
-                        <p className="text-sm text-gray-500">{submission.language}</p>
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-base-200 rounded-lg"
+                    >
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">
+                          {submission.problemTitle}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-gray-500">
+                            {submission.language}
+                          </span>
+                          {submission.problemDifficulty && (
+                            <>
+                              <span className="text-xs text-gray-400">•</span>
+                              <span
+                                className={`text-xs font-medium ${getDifficultyColor(
+                                  submission.problemDifficulty
+                                )}`}
+                              >
+                                {submission.problemDifficulty}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <div className={`badge ${
-                          submission.status === "Accepted" 
-                            ? "badge-success" 
-                            : "badge-error"
-                        }`}>
+                      <div className="text-right ml-2">
+                        <div
+                          className={`badge badge-sm ${
+                            submission.status === "Accepted"
+                              ? "badge-success"
+                              : "badge-error"
+                          }`}
+                        >
                           {submission.status}
                         </div>
                         <p className="text-xs text-gray-500 mt-1">
@@ -223,7 +292,10 @@ const HomePage = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Link to="/problems" className="card bg-gradient-to-br from-primary/10 to-primary/5 shadow-xl hover:shadow-2xl transition-shadow">
+          <Link
+            to="/problems"
+            className="card bg-gradient-to-br from-primary/10 to-primary/5 shadow-xl hover:shadow-2xl transition-shadow"
+          >
             <div className="card-body text-center">
               <Code className="w-12 h-12 mx-auto text-primary mb-4" />
               <h2 className="card-title justify-center">Browse Problems</h2>
@@ -231,7 +303,10 @@ const HomePage = () => {
             </div>
           </Link>
 
-          <Link to="/playlists" className="card bg-gradient-to-br from-secondary/10 to-secondary/5 shadow-xl hover:shadow-2xl transition-shadow">
+          <Link
+            to="/playlists"
+            className="card bg-gradient-to-br from-secondary/10 to-secondary/5 shadow-xl hover:shadow-2xl transition-shadow"
+          >
             <div className="card-body text-center">
               <BookOpen className="w-12 h-12 mx-auto text-secondary mb-4" />
               <h2 className="card-title justify-center">My Playlists</h2>
@@ -239,7 +314,10 @@ const HomePage = () => {
             </div>
           </Link>
 
-          <Link to="/profile" className="card bg-gradient-to-br from-accent/10 to-accent/5 shadow-xl hover:shadow-2xl transition-shadow">
+          <Link
+            to="/profile"
+            className="card bg-gradient-to-br from-accent/10 to-accent/5 shadow-xl hover:shadow-2xl transition-shadow"
+          >
             <div className="card-body text-center">
               <Trophy className="w-12 h-12 mx-auto text-accent mb-4" />
               <h2 className="card-title justify-center">My Progress</h2>
