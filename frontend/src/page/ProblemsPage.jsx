@@ -4,7 +4,7 @@ import { Search, CheckCircle, Clock, Zap } from "lucide-react";
 import { axiosInstance } from "../util/axios";
 import toast from "react-hot-toast";
 
-const ProblemsPage = () => {
+export const ProblemsPage = () => {
   const [problems, setProblems] = useState([]);
   const [filteredProblems, setFilteredProblems] = useState([]);
   const [loading, setLoading] = useState(true);
