@@ -55,19 +55,22 @@ export const login = async (req, res) => {
       },
     });
     if (!user) {
-      return res.status(401, { message: "User not found" });
+      return res.status(401).json({ message: "User not found" });
     }
 
-    const isMatched = bcrypt.compare(password, user.password);
+    const isMatched = await bcrypt.compare(password, user.password); // Add await here
     if (!isMatched) {
-      return res.status(401, { message: "Invalid credentials" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const token = jwt.sign(
       {
         id: user.id,
       },
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d", // Add expiration
+      }
     );
 
     res.cookie("jwt", token, {

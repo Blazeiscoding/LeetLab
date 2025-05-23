@@ -128,7 +128,7 @@ const SignupPage = () => {
                 </p>
               )}
             </div>
-            Submit Button
+
             <button
               type="submit"
               className="btn btn-primary w-full"
@@ -140,7 +140,7 @@ const SignupPage = () => {
                   Loading...
                 </>
               ) : (
-                "Sign in"
+                "Sign Up"
               )}
             </button>
           </form>

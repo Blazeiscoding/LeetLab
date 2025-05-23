@@ -520,7 +520,33 @@ const CreateProblemForm = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const onSubmit = async (data) => {
-    console.log(data);
+    setIsLoading(true);
+    try {
+      // Transform data to match backend API
+      const problemData = {
+        title: data.title,
+        description: data.description,
+        difficulty: data.difficulty,
+        tags: data.tags.filter((tag) => tag.trim() !== ""),
+        examples: data.examples,
+        constraints: data.constraints,
+        testCases: data.testCases || data.testcases, // Handle both naming conventions
+        codeSnippet: data.codeSnippets,
+        referenceSolution: data.referenceSolutions,
+      };
+
+      const response = await axiosInstance.post(
+        "/problems/create-problem",
+        problemData
+      );
+      toast.success("Problem created successfully!");
+      navigation("/");
+    } catch (error) {
+      console.error("Error creating problem:", error);
+      toast.error(error.response?.data?.error || "Failed to create problem");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const loadSampleData = () => {

@@ -44,12 +44,12 @@ export const problemSchema = z.object({
       explanation: z.string().optional(),
     }),
   }),
-  codeSnippet: z.object({
+  codeSnippets: z.object({
     JAVASCRIPT: z.string().min(1, "JavaScript code snippet is required"),
     PYTHON: z.string().min(1, "Python code snippet is required"),
-    JAVA: z.string().min(1, "Java solution is required"),
+    JAVA: z.string().min(1, "Java code snippet is required"),
   }),
-  referenceSolution: z.object({
+  referenceSolutions: z.object({
     JAVASCRIPT: z.string().min(1, "JavaScript solution is required"),
     PYTHON: z.string().min(1, "Python solution is required"),
     JAVA: z.string().min(1, "Java solution is required"),
