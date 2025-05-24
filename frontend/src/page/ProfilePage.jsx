@@ -23,12 +23,44 @@ const ProfilePage = () => {
   const [submissions, setSubmissions] = useState([]);
   const [solvedProblems, setSolvedProblems] = useState([]);
   const [problems, setProblems] = useState([]);
+  const [problemTitles, setProblemTitles] = useState({}); // Cache for individual problem titles
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
     fetchUserData();
   }, []);
+
+  const fetchIndividualProblemTitles = async (submissionsData) => {
+    const uniqueProblemIds = [...new Set(submissionsData.map(s => s.problemId))];
+    const titles = {};
+    
+    // Try different endpoints for individual problems
+    const endpoints = [
+      (id) => `/problems/${id}`,
+      (id) => `/problem/${id}`,
+      (id) => `/problems/get-problem/${id}`,
+      (id) => `/get-problem/${id}`
+    ];
+
+    for (const problemId of uniqueProblemIds) {
+      for (const endpointFn of endpoints) {
+        try {
+          const response = await axiosInstance.get(endpointFn(problemId));
+          const problemData = response.data?.data || response.data;
+          if (problemData && problemData.title) {
+            titles[problemId] = problemData.title;
+            break; // Successfully got the title, move to next problem
+          }
+        } catch (error) {
+          // Continue to next endpoint
+          continue;
+        }
+      }
+    }
+    
+    setProblemTitles(titles);
+  };
 
   const fetchUserData = async () => {
     try {
@@ -54,20 +86,46 @@ const ProfilePage = () => {
       
       // Try different possible endpoints for problems
       promises.push(
-        axiosInstance.get("/problems")
+        axiosInstance.get("/problems/get-all-problems")
+          .catch(() => axiosInstance.get("/problems"))
           .catch(() => axiosInstance.get("/problem"))
+          .catch(() => axiosInstance.get("/problems/all"))
+          .catch(() => axiosInstance.get("/admin/problems"))
           .catch(() => axiosInstance.get("/api/problems"))
+          .catch(() => axiosInstance.get("/get-problems"))
+          .catch(() => axiosInstance.get("/getAllProblems"))
           .catch(err => {
-            console.warn("Problems endpoint failed:", err);
+            console.warn("All problems endpoints failed:", err);
             return { data: { data: [] } };
           })
       );
 
       const [submissionsRes, solvedRes, problemsRes] = await Promise.all(promises);
 
-      setSubmissions(submissionsRes.data?.data || submissionsRes.data || []);
-      setSolvedProblems(solvedRes.data?.data || solvedRes.data || []);
-      setProblems(problemsRes.data?.data || problemsRes.data || []);
+      const submissionsData = submissionsRes.data?.data || submissionsRes.data || [];
+      const solvedData = solvedRes.data?.data || solvedRes.data || [];
+      const problemsData = problemsRes.data?.data || problemsRes.data || [];
+
+      setSubmissions(submissionsData);
+      setSolvedProblems(solvedData);
+      setProblems(problemsData);
+
+      // Debug logging to help identify the issue
+      console.log("Submissions:", submissionsData);
+      console.log("Problems:", problemsData);
+      if (submissionsData.length > 0) {
+        console.log("Sample submission problem ID:", submissionsData[0].problemId);
+        console.log("Sample submission problem ID type:", typeof submissionsData[0].problemId);
+      }
+      if (problemsData.length > 0) {
+        console.log("Sample problem ID:", problemsData[0].id || problemsData[0]._id);
+        console.log("Sample problem ID type:", typeof (problemsData[0].id || problemsData[0]._id));
+      }
+
+      // If problems data is empty but we have submissions, try to fetch individual problem titles
+      if (problemsData.length === 0 && submissionsData.length > 0) {
+        await fetchIndividualProblemTitles(submissionsData);
+      }
 
     } catch (error) {
       console.error("Error fetching profile data:", error);
@@ -81,7 +139,53 @@ const ProfilePage = () => {
   };
 
   const getProblemTitle = (problemId) => {
-    const problem = problems.find(p => p.id === problemId || p._id === problemId);
+    if (!problemId) {
+      return "Unknown Problem";
+    }
+
+    // First, check if we have the title in our cache
+    if (problemTitles[problemId]) {
+      return problemTitles[problemId];
+    }
+
+    // If we don't have problems data, use fallback
+    if (problems.length === 0) {
+      return `Problem #${problemId}`;
+    }
+
+    // Try different matching strategies
+    let problem = null;
+
+    // Strategy 1: Direct ID match
+    problem = problems.find(p => p.id === problemId || p._id === problemId);
+    
+    // Strategy 2: String/Number conversion match
+    if (!problem) {
+      problem = problems.find(p => 
+        String(p.id) === String(problemId) || 
+        String(p._id) === String(problemId)
+      );
+    }
+
+    // Strategy 3: Number conversion match
+    if (!problem) {
+      const numericId = parseInt(problemId);
+      if (!isNaN(numericId)) {
+        problem = problems.find(p => 
+          parseInt(p.id) === numericId || 
+          parseInt(p._id) === numericId
+        );
+      }
+    }
+
+    // Strategy 4: Check if problemId is actually the title itself
+    if (!problem) {
+      problem = problems.find(p => 
+        p.title === problemId || 
+        p.title?.toLowerCase() === String(problemId).toLowerCase()
+      );
+    }
+
     return problem ? problem.title : `Problem #${problemId}`;
   };
 
