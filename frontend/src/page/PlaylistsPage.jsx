@@ -195,13 +195,6 @@ const PlaylistsPage = () => {
                     <BookOpen className="w-4 h-4" />
                     View Details
                   </Link>
-                  <Link
-                    to={`/playlists/${playlist.id}/practice`}
-                    className="btn btn-primary btn-sm gap-2"
-                  >
-                    <Play className="w-4 h-4" />
-                    Start Practice
-                  </Link>
                 </div>
               </div>
             </div>
