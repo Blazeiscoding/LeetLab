@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
 import { db } from "../libs/db.js";
+
+// Middleware to authenticate user
 export const authMiddleware = async (req, res, next) => {
   try {
     const token = req.cookies.jwt;
@@ -8,7 +10,6 @@ export const authMiddleware = async (req, res, next) => {
     }
 
     let decoded;
-
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (error) {
@@ -31,30 +32,23 @@ export const authMiddleware = async (req, res, next) => {
       return res.status(401).json({ message: "User Not Found" });
     }
 
-    req.user = user;
+    req.user = user; // Attach full user object including role
     next();
   } catch (error) {
-    console.error(error);
+    console.error("Error in authMiddleware:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-export const checkAdmin = async (req, res , next) => {
+// Middleware to check if user is admin
+export const checkAdmin = (req, res, next) => {
   try {
-    const userId = req.user.id;
-    const user = await db.user.findUnique({
-      where: {
-        id: userId,
-      },
-      select: {
-        role: true,
-      },
-    });
-
-    if (!user || user.role !== "ADMIN") {
-      return res.status(403).json({ message: "Access Denied -Admins Only" });
+    if (req.user?.role !== "ADMIN") {
+      return res.status(403).json({ message: "Access Denied - Admins Only" });
     }
     next();
   } catch (error) {
-    console.error("Error in checkAdmin middleware",error);
+    console.error("Error in checkAdmin middleware:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
