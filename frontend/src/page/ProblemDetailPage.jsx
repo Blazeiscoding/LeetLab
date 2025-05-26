@@ -92,9 +92,11 @@ const ProblemDetailPage = () => {
       const response = await axiosInstance.post("/execute-code", payload);
 
       // Format the response to match your frontend expectations
+      const submissionData = response.data.submission;
       const formattedResults = {
-        status: response.data.submission.status,
-        testCases: response.data.submission.testCases || [],
+        status: submissionData.status,
+        testCases: submissionData.testCases || [],
+        error: null,
       };
 
       setTestResults(formattedResults);
@@ -111,8 +113,24 @@ const ProblemDetailPage = () => {
         toast.error(`${passedCount}/${totalCount} test cases passed`);
       }
     } catch (error) {
-      toast.error("Error running code");
       console.error("Error running code:", error);
+
+      // Set error results for display in output tab
+      const errorResults = {
+        status: "Error",
+        testCases: [],
+        error: {
+          message:
+            error.response?.data?.error ||
+            error.message ||
+            "Unknown error occurred",
+          details: error.response?.data?.message || "Failed to execute code",
+        },
+      };
+
+      setTestResults(errorResults);
+      setActiveTab("output");
+      toast.error("Error running code");
     } finally {
       setIsRunning(false);
     }
@@ -141,9 +159,11 @@ const ProblemDetailPage = () => {
       const response = await axiosInstance.post("/execute-code", payload);
 
       // Format the response to match your frontend expectations
+      const submissionData = response.data.submission;
       const formattedResults = {
-        status: response.data.submission.status,
-        testCases: response.data.submission.testCases || [],
+        status: submissionData.status,
+        testCases: submissionData.testCases || [],
+        error: null,
       };
 
       setTestResults(formattedResults);
@@ -159,8 +179,24 @@ const ProblemDetailPage = () => {
         toast.error(`${passedCount}/${totalCount} test cases passed`);
       }
     } catch (error) {
-      toast.error("Error submitting code");
       console.error("Error submitting code:", error);
+
+      // Set error results for display in output tab
+      const errorResults = {
+        status: "Error",
+        testCases: [],
+        error: {
+          message:
+            error.response?.data?.error ||
+            error.message ||
+            "Unknown error occurred",
+          details: error.response?.data?.message || "Failed to submit code",
+        },
+      };
+
+      setTestResults(errorResults);
+      setActiveTab("output");
+      toast.error("Error submitting code");
     } finally {
       setIsSubmitting(false);
     }
@@ -346,35 +382,55 @@ const ProblemDetailPage = () => {
                 <h3 className="text-lg font-semibold">Test Results</h3>
                 {testResults ? (
                   <div className="space-y-4">
-                    {/* Overall Status */}
-                    <div
-                      className={`alert ${
-                        testResults.status === "Accepted"
-                          ? "alert-success"
-                          : "alert-error"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {testResults.status === "Accepted" ? (
-                          <CheckCircle className="w-5 h-5" />
-                        ) : (
+                    {/* Show error if there's a general error */}
+                    {testResults.error && (
+                      <div className="alert alert-error">
+                        <div className="flex items-center gap-2">
                           <XCircle className="w-5 h-5" />
-                        )}
-                        <span className="font-medium">
-                          {testResults.status}
-                        </span>
-                        {testResults.testCases && (
-                          <span className="ml-2">
-                            (
-                            {
-                              testResults.testCases.filter((tc) => tc.passed)
-                                .length
-                            }
-                            /{testResults.testCases.length} passed)
-                          </span>
-                        )}
+                          <div>
+                            <div className="font-medium">
+                              {testResults.error.message}
+                            </div>
+                            <div className="text-sm opacity-75">
+                              {testResults.error.details}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* Overall Status - only show if we have test cases */}
+                    {testResults.testCases &&
+                      testResults.testCases.length > 0 && (
+                        <div
+                          className={`alert ${
+                            testResults.status === "Accepted"
+                              ? "alert-success"
+                              : testResults.status === "Error"
+                              ? "alert-error"
+                              : "alert-warning"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            {testResults.status === "Accepted" ? (
+                              <CheckCircle className="w-5 h-5" />
+                            ) : (
+                              <XCircle className="w-5 h-5" />
+                            )}
+                            <span className="font-medium">
+                              {testResults.status}
+                            </span>
+                            <span className="ml-2">
+                              (
+                              {
+                                testResults.testCases.filter((tc) => tc.passed)
+                                  .length
+                              }
+                              /{testResults.testCases.length} passed)
+                            </span>
+                          </div>
+                        </div>
+                      )}
 
                     {/* Individual Test Cases */}
                     {testResults.testCases?.map((testCase, index) => (
@@ -399,40 +455,63 @@ const ProblemDetailPage = () => {
                             <div>
                               <strong>Status:</strong> {testCase.status}
                             </div>
-                            {testCase.stdout && (
+
+                            {/* Show compilation error first if it exists */}
+                            {testCase.compileOutput && (
                               <div>
-                                <strong>Output:</strong>
-                                <pre className="bg-base-200 p-2 rounded mt-1">
-                                  {testCase.stdout}
+                                <strong>Compilation Error:</strong>
+                                <pre className="bg-red-100 text-red-800 p-2 rounded mt-1 overflow-x-auto">
+                                  {testCase.compileOutput}
                                 </pre>
                               </div>
                             )}
-                            {testCase.expected && (
-                              <div>
-                                <strong>Expected:</strong>
-                                <pre className="bg-base-200 p-2 rounded mt-1">
-                                  {testCase.expected}
-                                </pre>
-                              </div>
-                            )}
+
+                            {/* Show runtime error if it exists */}
                             {testCase.stderr && (
                               <div>
-                                <strong>Error:</strong>
-                                <pre className="bg-red-100 text-red-800 p-2 rounded mt-1">
+                                <strong>Runtime Error:</strong>
+                                <pre className="bg-red-100 text-red-800 p-2 rounded mt-1 overflow-x-auto">
                                   {testCase.stderr}
                                 </pre>
                               </div>
                             )}
-                            {testCase.time && (
-                              <div>
-                                <strong>Time:</strong> {testCase.time}
-                              </div>
+
+                            {/* Only show output comparison if there's no compilation error */}
+                            {!testCase.compileOutput && (
+                              <>
+                                {testCase.stdout !== undefined && (
+                                  <div>
+                                    <strong>Your Output:</strong>
+                                    <pre className="bg-base-200 p-2 rounded mt-1 overflow-x-auto">
+                                      {testCase.stdout || "(empty)"}
+                                    </pre>
+                                  </div>
+                                )}
+
+                                {testCase.expected !== undefined && (
+                                  <div>
+                                    <strong>Expected Output:</strong>
+                                    <pre className="bg-base-200 p-2 rounded mt-1 overflow-x-auto">
+                                      {testCase.expected || "(empty)"}
+                                    </pre>
+                                  </div>
+                                )}
+                              </>
                             )}
-                            {testCase.memory && (
-                              <div>
-                                <strong>Memory:</strong> {testCase.memory}
-                              </div>
-                            )}
+
+                            {/* Performance metrics */}
+                            <div className="flex gap-4 pt-2">
+                              {testCase.time && (
+                                <div className="text-xs">
+                                  <strong>Time:</strong> {testCase.time}
+                                </div>
+                              )}
+                              {testCase.memory && (
+                                <div className="text-xs">
+                                  <strong>Memory:</strong> {testCase.memory}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>

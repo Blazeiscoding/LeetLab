@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/useAuthStore";
@@ -29,14 +30,16 @@ import AddProblem from "./page/AddProblem";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 
-function App() {
+function AppContent() {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
+  const location = useLocation();
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
-  if (isCheckingAuth) {
+  // Only show loading screen if we're checking auth AND we don't have user data yet
+  if (isCheckingAuth && authUser === null) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader className="size-10 animate-spin" />
@@ -50,11 +53,23 @@ function App() {
         {/* Public Routes */}
         <Route
           path="/login"
-          element={!authUser ? <LoginPage /> : <Navigate to="/" />}
+          element={
+            !authUser ? (
+              <LoginPage />
+            ) : (
+              <Navigate to={location.state?.from || "/"} replace />
+            )
+          }
         />
         <Route
           path="/signup"
-          element={!authUser ? <SignupPage /> : <Navigate to="/" />}
+          element={
+            !authUser ? (
+              <SignupPage />
+            ) : (
+              <Navigate to={location.state?.from || "/"} replace />
+            )
+          }
         />
 
         {/* Protected Routes */}
@@ -75,7 +90,7 @@ function App() {
         </Route>
 
         {/* Catch all route */}
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
       <Toaster
@@ -90,6 +105,10 @@ function App() {
       />
     </div>
   );
+}
+
+function App() {
+  return <AppContent />;
 }
 
 export default App;
