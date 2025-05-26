@@ -86,16 +86,16 @@ const ProblemDetailPage = () => {
         language_id: languageMap[selectedLanguage].id,
         stdin: inputs,
         expected_outputs: outputs,
-        problem_id: id,
       };
 
-      const response = await axiosInstance.post("/execute-code", payload);
+      // Use the new /run endpoint for running code without creating submission
+      const response = await axiosInstance.post("/execute-code/run", payload);
 
-      // Format the response to match your frontend expectations
-      const submissionData = response.data.submission;
+      // Format the response
+      const results = response.data.results;
       const formattedResults = {
-        status: submissionData.status,
-        testCases: submissionData.testCases || [],
+        status: results.status,
+        testCases: results.testCases || [],
         error: null,
       };
 
@@ -156,7 +156,11 @@ const ProblemDetailPage = () => {
         problem_id: id,
       };
 
-      const response = await axiosInstance.post("/execute-code", payload);
+      // Use the new /submit endpoint for submitting code with submission record
+      const response = await axiosInstance.post(
+        "/execute-code/submit",
+        payload
+      );
 
       // Format the response to match your frontend expectations
       const submissionData = response.data.submission;
