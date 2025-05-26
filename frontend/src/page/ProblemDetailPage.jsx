@@ -22,6 +22,8 @@ const ProblemDetailPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [testResults, setTestResults] = useState(null);
   const [activeTab, setActiveTab] = useState("description");
+  const [hints, setHints] = useState([]);
+  const [loadingHints, setLoadingHints] = useState(false);
 
   const languageMap = {
     JAVASCRIPT: { id: 63, name: "JavaScript", extension: "js" },
@@ -51,6 +53,22 @@ const ProblemDetailPage = () => {
     }
   };
 
+  const fetchHints = async () => {
+    if (hints.length > 0) return; // Don't fetch if already loaded
+
+    setLoadingHints(true);
+    try {
+      const response = await axiosInstance.get(`/problems/${id}/hints`);
+      setHints(response.data.data || []);
+    } catch (error) {
+      console.error("Error fetching hints:", error);
+      // Don't show error toast for hints as it's optional
+      setHints([]);
+    } finally {
+      setLoadingHints(false);
+    }
+  };
+
   const runCode = async () => {
     if (!code.trim()) {
       toast.error("Please write some code first");
@@ -60,13 +78,15 @@ const ProblemDetailPage = () => {
     setIsRunning(true);
     try {
       const testCases = problem.testCases || [];
-      const sampleTestCase = testCases[0]; // Run with first test case
+      // Changed: Run against ALL test cases instead of just the first one
+      const inputs = testCases.map((tc) => tc.input);
+      const outputs = testCases.map((tc) => tc.output);
 
       const payload = {
         source_code: code,
         language_id: languageMap[selectedLanguage].id,
-        stdin: [sampleTestCase.input],
-        expected_outputs: [sampleTestCase.output],
+        stdin: inputs,
+        expected_outputs: outputs,
         problem_id: id,
       };
 
@@ -74,10 +94,16 @@ const ProblemDetailPage = () => {
       setTestResults(response.data.submission);
       setActiveTab("output");
 
+      // Updated success/error messages for multiple test cases
+      const passedCount =
+        response.data.submission.testCases?.filter((tc) => tc.passed).length ||
+        0;
+      const totalCount = response.data.submission.testCases?.length || 0;
+
       if (response.data.submission.status === "Accepted") {
-        toast.success("Test case passed!");
+        toast.success(`All ${totalCount} test cases passed!`);
       } else {
-        toast.error("Test case failed");
+        toast.error(`${passedCount}/${totalCount} test cases passed`);
       }
     } catch (error) {
       toast.error("Error running code");
@@ -114,7 +140,11 @@ const ProblemDetailPage = () => {
       if (response.data.submission.status === "Accepted") {
         toast.success("All test cases passed! Problem solved!");
       } else {
-        toast.error("Some test cases failed");
+        const passedCount =
+          response.data.submission.testCases?.filter((tc) => tc.passed)
+            .length || 0;
+        const totalCount = response.data.submission.testCases?.length || 0;
+        toast.error(`${passedCount}/${totalCount} test cases passed`);
       }
     } catch (error) {
       toast.error("Error submitting code");
@@ -200,6 +230,15 @@ const ProblemDetailPage = () => {
               Description
             </button>
             <button
+              className={`tab ${activeTab === "hints" ? "tab-active" : ""}`}
+              onClick={() => {
+                setActiveTab("hints");
+                fetchHints();
+              }}
+            >
+              Hints
+            </button>
+            <button
               className={`tab ${activeTab === "output" ? "tab-active" : ""}`}
               onClick={() => setActiveTab("output")}
             >
@@ -216,9 +255,9 @@ const ProblemDetailPage = () => {
                   <h3 className="text-lg font-semibold mb-2">
                     Problem Statement
                   </h3>
-                  <p className="text-gray-700 whitespace-pre-wrap">
+                  <div className="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
                     {problem.description}
-                  </p>
+                  </div>
                 </div>
 
                 {/* Examples */}
@@ -232,16 +271,24 @@ const ProblemDetailPage = () => {
                       >
                         <h4 className="font-medium mb-2">{lang}</h4>
                         <div className="space-y-2">
-                          <div>
-                            <strong>Input:</strong> {example.input}
+                          <div className="text-sm">
+                            <strong>Input:</strong>
+                            <code className="ml-2 bg-base-300 px-2 py-1 rounded font-mono text-sm">
+                              {example.input}
+                            </code>
                           </div>
-                          <div>
-                            <strong>Output:</strong> {example.output}
+                          <div className="text-sm">
+                            <strong>Output:</strong>
+                            <code className="ml-2 bg-base-300 px-2 py-1 rounded font-mono text-sm">
+                              {example.output}
+                            </code>
                           </div>
                           {example.explanation && (
-                            <div>
-                              <strong>Explanation:</strong>{" "}
-                              {example.explanation}
+                            <div className="text-sm">
+                              <strong>Explanation:</strong>
+                              <span className="ml-2 text-gray-600">
+                                {example.explanation}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -254,9 +301,54 @@ const ProblemDetailPage = () => {
                 {problem.constraints && (
                   <div>
                     <h3 className="text-lg font-semibold mb-2">Constraints</h3>
-                    <p className="text-gray-700 font-mono text-sm bg-base-200 p-3 rounded">
+                    <div className="text-gray-700 font-mono text-sm bg-base-200 p-3 rounded leading-relaxed">
                       {problem.constraints}
-                    </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : activeTab === "hints" ? (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Hints</h3>
+                {loadingHints ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="loading loading-spinner loading-md"></div>
+                  </div>
+                ) : hints.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="text-gray-500">
+                      <svg
+                        className="w-12 h-12 mx-auto mb-2 opacity-50"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                        />
+                      </svg>
+                      <p>No hints available for this problem</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {hints.map((hint, index) => (
+                      <div key={index} className="card bg-base-200 shadow">
+                        <div className="card-body p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="badge badge-primary badge-sm shrink-0">
+                              {index + 1}
+                            </div>
+                            <div className="text-gray-700 leading-relaxed">
+                              {hint.content || hint.text || hint}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -265,6 +357,7 @@ const ProblemDetailPage = () => {
                 <h3 className="text-lg font-semibold">Test Results</h3>
                 {testResults ? (
                   <div className="space-y-4">
+                    {/* Overall Status */}
                     <div
                       className={`alert ${
                         testResults.status === "Accepted"
@@ -281,9 +374,20 @@ const ProblemDetailPage = () => {
                         <span className="font-medium">
                           {testResults.status}
                         </span>
+                        {testResults.testCases && (
+                          <span className="ml-2">
+                            (
+                            {
+                              testResults.testCases.filter((tc) => tc.passed)
+                                .length
+                            }
+                            /{testResults.testCases.length} passed)
+                          </span>
+                        )}
                       </div>
                     </div>
 
+                    {/* Individual Test Cases */}
                     {testResults.testCases?.map((testCase, index) => (
                       <div key={index} className="card bg-base-100 shadow">
                         <div className="card-body p-4">
