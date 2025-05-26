@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 export const ProblemsPage = () => {
   const [problems, setProblems] = useState([]);
   const [filteredProblems, setFilteredProblems] = useState([]);
+  const [solvedProblems, setSolvedProblems] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState("ALL");
@@ -14,11 +15,12 @@ export const ProblemsPage = () => {
 
   useEffect(() => {
     fetchProblems();
+    fetchSolvedProblems();
   }, []);
 
   useEffect(() => {
     filterProblems();
-  }, [problems, searchTerm, difficultyFilter, statusFilter]);
+  }, [problems, searchTerm, difficultyFilter, statusFilter, solvedProblems]);
 
   const fetchProblems = async () => {
     try {
@@ -29,6 +31,17 @@ export const ProblemsPage = () => {
       console.error("Error fetching problems:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSolvedProblems = async () => {
+    try {
+      const response = await axiosInstance.get("/problems/get-solved-problems");
+      const solved = new Set(response.data.data.map((problem) => problem.id));
+      setSolvedProblems(solved);
+    } catch (error) {
+      console.error("Error fetching solved problems:", error);
+      // Don't show error toast as this is optional
     }
   };
 
@@ -52,6 +65,17 @@ export const ProblemsPage = () => {
       filtered = filtered.filter(
         (problem) => problem.difficulty === difficultyFilter
       );
+    }
+
+    // Status filter
+    if (statusFilter !== "ALL") {
+      if (statusFilter === "SOLVED") {
+        filtered = filtered.filter((problem) => solvedProblems.has(problem.id));
+      } else if (statusFilter === "UNSOLVED") {
+        filtered = filtered.filter(
+          (problem) => !solvedProblems.has(problem.id)
+        );
+      }
     }
 
     setFilteredProblems(filtered);
@@ -81,6 +105,13 @@ export const ProblemsPage = () => {
       default:
         return null;
     }
+  };
+
+  const getStatusBadge = (problemId) => {
+    if (solvedProblems.has(problemId)) {
+      return <div className="badge badge-success">Solved</div>;
+    }
+    return <div className="badge badge-ghost">Not Attempted</div>;
   };
 
   if (loading) {
@@ -118,7 +149,7 @@ export const ProblemsPage = () => {
               </div>
             </div>
 
-            {/* Difficulty Filter */}
+            {/* Filters */}
             <div className="flex gap-2">
               <select
                 className="select select-bordered"
@@ -129,6 +160,16 @@ export const ProblemsPage = () => {
                 <option value="EASY">Easy</option>
                 <option value="MEDIUM">Medium</option>
                 <option value="HARD">Hard</option>
+              </select>
+
+              <select
+                className="select select-bordered"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="ALL">All Status</option>
+                <option value="SOLVED">Solved</option>
+                <option value="UNSOLVED">Unsolved</option>
               </select>
             </div>
           </div>
@@ -204,7 +245,7 @@ export const ProblemsPage = () => {
                         </div>
                       </td>
                       <td className="text-center">
-                        <div className="badge badge-ghost">Not Attempted</div>
+                        {getStatusBadge(problem.id)}
                       </td>
                     </tr>
                   ))
@@ -216,10 +257,14 @@ export const ProblemsPage = () => {
       </div>
 
       {/* Stats */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="stat bg-base-100 rounded-box shadow">
           <div className="stat-title">Total Problems</div>
           <div className="stat-value text-primary">{problems.length}</div>
+        </div>
+        <div className="stat bg-base-100 rounded-box shadow">
+          <div className="stat-title">Solved</div>
+          <div className="stat-value text-success">{solvedProblems.size}</div>
         </div>
         <div className="stat bg-base-100 rounded-box shadow">
           <div className="stat-title">Easy</div>
