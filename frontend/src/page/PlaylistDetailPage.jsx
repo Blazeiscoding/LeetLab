@@ -47,11 +47,11 @@ const PlaylistDetailPage = () => {
   const fetchAvailableProblems = async () => {
     setFetchingProblems(true);
     try {
-      const response = await axiosInstance.get("/get-all-problems");
+      const response = await axiosInstance.get("/problems/get-all-problems");
       const allProblems = response.data.data || [];
 
-      // Filter out problems that are already in the playlist
-      const playlistProblemIds = playlist?.problems?.map((p) => p.id) || [];
+      const playlistProblemIds =
+        playlist?.problems?.map((p) => p.problem.id) || [];
       const available = allProblems.filter(
         (problem) => !playlistProblemIds.includes(problem.id)
       );
@@ -86,7 +86,8 @@ const PlaylistDetailPage = () => {
 
     setAddingProblems(true);
     try {
-      await axiosInstance.post(`/playlist/${id}/add-problems`, {
+      // Fixed: Use the correct endpoint from backend routes
+      await axiosInstance.post(`/playlist/${id}/add-problem`, {
         problemIds: selectedProblems,
       });
 
@@ -95,7 +96,7 @@ const PlaylistDetailPage = () => {
       setSelectedProblems([]);
       fetchPlaylistDetails(); // Refresh playlist data
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to add problems");
+      toast.error(error.response?.data?.error || "Failed to add problems");
     } finally {
       setAddingProblems(false);
     }
@@ -110,7 +111,10 @@ const PlaylistDetailPage = () => {
       return;
 
     try {
-      await axiosInstance.delete(`/playlist/${id}/problems/${problemId}`);
+      // Fixed: Use the correct endpoint from backend routes
+      await axiosInstance.delete(`/playlist/${id}/remove-problem`, {
+        data: { problemIds: [problemId] },
+      });
       toast.success("Problem removed from playlist");
       fetchPlaylistDetails(); // Refresh playlist data
     } catch (error) {
@@ -121,8 +125,11 @@ const PlaylistDetailPage = () => {
   const getProgressPercentage = () => {
     if (!playlist?.problems || playlist.problems.length === 0) return 0;
 
+    // Fixed: Check solvedBy array from the nested problem structure
     const solvedCount = playlist.problems.filter(
-      (problem) => problem.solved || problem.status === "solved"
+      (problemInPlaylist) =>
+        problemInPlaylist.problem?.solvedBy &&
+        problemInPlaylist.problem.solvedBy.length > 0
     ).length;
 
     return Math.round((solvedCount / playlist.problems.length) * 100);
@@ -195,8 +202,9 @@ const PlaylistDetailPage = () => {
           </div>
           <div className="stat-title">Solved</div>
           <div className="stat-value text-success">
-            {playlist.problems?.filter((p) => p.solved || p.status === "solved")
-              .length || 0}
+            {playlist.problems?.filter(
+              (p) => p.problem?.solvedBy && p.problem.solvedBy.length > 0
+            ).length || 0}
           </div>
         </div>
 
@@ -265,69 +273,71 @@ const PlaylistDetailPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {playlist.problems.map((problem) => (
-                    <tr key={problem.id}>
-                      <td>
-                        <div className="font-medium">{problem.title}</div>
-                        {problem.tags && (
-                          <div className="flex gap-1 mt-1">
-                            {problem.tags.slice(0, 3).map((tag, index) => (
-                              <span
-                                key={index}
-                                className="badge badge-outline badge-xs"
-                              >
-                                {tag}
-                              </span>
-                            ))}
+                  {playlist.problems.map((problemInPlaylist) => {
+                    const problem = problemInPlaylist.problem;
+                    const isSolved =
+                      problem?.solvedBy && problem.solvedBy.length > 0;
+
+                    return (
+                      <tr key={problemInPlaylist.id}>
+                        <td>
+                          <div className="font-medium">{problem.title}</div>
+                          {problem.tags && (
+                            <div className="flex gap-1 mt-1">
+                              {problem.tags.slice(0, 3).map((tag, index) => (
+                                <span
+                                  key={index}
+                                  className="badge badge-outline badge-xs"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              problem.difficulty === "Easy"
+                                ? "badge-success"
+                                : problem.difficulty === "Medium"
+                                ? "badge-warning"
+                                : "badge-error"
+                            }`}
+                          >
+                            {problem.difficulty}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              isSolved ? "badge-success" : "badge-ghost"
+                            }`}
+                          >
+                            {isSolved ? "Solved" : "Not Solved"}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="flex gap-2">
+                            <Link
+                              to={`/problems/${problem.id}`}
+                              className="btn btn-ghost btn-xs"
+                            >
+                              View
+                            </Link>
+                            <button
+                              className="btn btn-ghost btn-xs text-error"
+                              onClick={() =>
+                                removeProblemFromPlaylist(problem.id)
+                              }
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
                           </div>
-                        )}
-                      </td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            problem.difficulty === "Easy"
-                              ? "badge-success"
-                              : problem.difficulty === "Medium"
-                              ? "badge-warning"
-                              : "badge-error"
-                          }`}
-                        >
-                          {problem.difficulty}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            problem.solved || problem.status === "solved"
-                              ? "badge-success"
-                              : "badge-ghost"
-                          }`}
-                        >
-                          {problem.solved || problem.status === "solved"
-                            ? "Solved"
-                            : "Not Solved"}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="flex gap-2">
-                          <Link
-                            to={`/problems/${problem.id}`}
-                            className="btn btn-ghost btn-xs"
-                          >
-                            View
-                          </Link>
-                          <button
-                            className="btn btn-ghost btn-xs text-error"
-                            onClick={() =>
-                              removeProblemFromPlaylist(problem.id)
-                            }
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

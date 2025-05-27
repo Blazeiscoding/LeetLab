@@ -1,147 +1,225 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import {
-  ArrowLeft,
-  Plus,
-  Search,
-  Trash2,
   Play,
-  BookOpen,
-  Target,
-  Clock,
+  Send,
+  RotateCcw,
   CheckCircle,
+  XCircle,
+  Clock,
 } from "lucide-react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import Editor from "@monaco-editor/react";
 import { axiosInstance } from "../util/axios";
 import toast from "react-hot-toast";
 
-const PlaylistDetailPage = () => {
+const ProblemDetailPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
-
-  const [playlist, setPlaylist] = useState(null);
+  const [problem, setProblem] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showAddProblemModal, setShowAddProblemModal] = useState(false);
-  const [availableProblems, setAvailableProblems] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedProblems, setSelectedProblems] = useState([]);
-  const [addingProblems, setAddingProblems] = useState(false);
-  const [fetchingProblems, setFetchingProblems] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("JAVASCRIPT");
+  const [code, setCode] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [testResults, setTestResults] = useState(null);
+  const [activeTab, setActiveTab] = useState("description");
+  const [hints, setHints] = useState([]);
+  const [loadingHints, setLoadingHints] = useState(false);
+
+  const languageMap = {
+    JAVASCRIPT: { id: 63, name: "JavaScript", extension: "js" },
+    PYTHON: { id: 71, name: "Python", extension: "py" },
+    JAVA: { id: 62, name: "Java", extension: "java" },
+  };
 
   useEffect(() => {
-    fetchPlaylistDetails();
+    fetchProblem();
   }, [id]);
 
-  const fetchPlaylistDetails = async () => {
+  useEffect(() => {
+    if (problem && problem.codeSnippet) {
+      setCode(problem.codeSnippet[selectedLanguage] || "");
+    }
+  }, [selectedLanguage, problem]);
+
+  const fetchProblem = async () => {
     try {
-      const response = await axiosInstance.get(`/playlist/${id}`);
-      setPlaylist(response.data.data);
+      const response = await axiosInstance.get(`/problems/get-problem/${id}`);
+      setProblem(response.data.data);
     } catch (error) {
-      toast.error("Failed to fetch playlist details");
-      console.error("Error fetching playlist:", error);
-      navigate("/playlists");
+      toast.error("Failed to fetch problem");
+      console.error("Error fetching problem:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchAvailableProblems = async () => {
-    setFetchingProblems(true);
+  const fetchHints = async () => {
+    if (hints.length > 0) return; // Don't fetch if already loaded
+
+    setLoadingHints(true);
     try {
-      // Fixed: Use the correct endpoint from problem routes
-      const response = await axiosInstance.get("/problems/get-all-problems");
-      const allProblems = response.data.data || [];
-
-      // Filter out problems that are already in the playlist
-      const playlistProblemIds =
-        playlist?.problems?.map((p) => p.problem.id) || [];
-      const available = allProblems.filter(
-        (problem) => !playlistProblemIds.includes(problem.id)
-      );
-
-      setAvailableProblems(available);
+      // Note: This endpoint doesn't exist in your backend, you may need to add it
+      // For now, we'll show a placeholder
+      setHints([]);
     } catch (error) {
-      toast.error("Failed to fetch available problems");
-      console.error("Error fetching problems:", error);
+      console.error("Error fetching hints:", error);
+      setHints([]);
     } finally {
-      setFetchingProblems(false);
+      setLoadingHints(false);
     }
   };
 
-  const handleAddProblemsClick = () => {
-    setShowAddProblemModal(true);
-    fetchAvailableProblems();
-  };
-
-  const toggleProblemSelection = (problemId) => {
-    setSelectedProblems((prev) =>
-      prev.includes(problemId)
-        ? prev.filter((id) => id !== problemId)
-        : [...prev, problemId]
-    );
-  };
-
-  const addProblemsToPlaylist = async () => {
-    if (selectedProblems.length === 0) {
-      toast.error("Please select at least one problem");
+  const runCode = async () => {
+    if (!code.trim()) {
+      toast.error("Please write some code first");
       return;
     }
 
-    setAddingProblems(true);
+    setIsRunning(true);
     try {
-      // Fixed: Use the correct endpoint from backend routes
-      await axiosInstance.post(`/playlist/${id}/add-problem`, {
-        problemIds: selectedProblems,
-      });
+      const testCases = problem.testCases || [];
+      const inputs = testCases.map((tc) => tc.input);
+      const outputs = testCases.map((tc) => tc.output);
 
-      toast.success(`Added ${selectedProblems.length} problem(s) to playlist`);
-      setShowAddProblemModal(false);
-      setSelectedProblems([]);
-      fetchPlaylistDetails(); // Refresh playlist data
+      const payload = {
+        source_code: code,
+        language_id: languageMap[selectedLanguage].id,
+        stdin: inputs,
+        expected_outputs: outputs,
+        problem_id: id,
+      };
+
+      const response = await axiosInstance.post("/execute-code", payload);
+
+      // Format the response to match your frontend expectations
+      const submissionData = response.data.submission;
+      const formattedResults = {
+        status: submissionData.status,
+        testCases: submissionData.testCases || [],
+        error: null,
+      };
+
+      setTestResults(formattedResults);
+      setActiveTab("output");
+
+      const passedCount = formattedResults.testCases.filter(
+        (tc) => tc.passed
+      ).length;
+      const totalCount = formattedResults.testCases.length;
+
+      if (formattedResults.status === "Accepted") {
+        toast.success(`All ${totalCount} test cases passed!`);
+      } else {
+        toast.error(`${passedCount}/${totalCount} test cases passed`);
+      }
     } catch (error) {
-      toast.error(error.response?.data?.error || "Failed to add problems");
+      console.error("Error running code:", error);
+
+      // Set error results for display in output tab
+      const errorResults = {
+        status: "Error",
+        testCases: [],
+        error: {
+          message:
+            error.response?.data?.error ||
+            error.message ||
+            "Unknown error occurred",
+          details: error.response?.data?.message || "Failed to execute code",
+        },
+      };
+
+      setTestResults(errorResults);
+      setActiveTab("output");
+      toast.error("Error running code");
     } finally {
-      setAddingProblems(false);
+      setIsRunning(false);
     }
   };
 
-  const removeProblemFromPlaylist = async (problemId) => {
-    if (
-      !confirm(
-        "Are you sure you want to remove this problem from the playlist?"
-      )
-    )
+  const submitCode = async () => {
+    if (!code.trim()) {
+      toast.error("Please write some code first");
       return;
+    }
 
+    setIsSubmitting(true);
     try {
-      // Fixed: Use the correct endpoint from backend routes
-      await axiosInstance.delete(`/playlist/${id}/remove-problem`, {
-        data: { problemIds: [problemId] },
-      });
-      toast.success("Problem removed from playlist");
-      fetchPlaylistDetails(); // Refresh playlist data
+      const testCases = problem.testCases || [];
+      const inputs = testCases.map((tc) => tc.input);
+      const outputs = testCases.map((tc) => tc.output);
+
+      const payload = {
+        source_code: code,
+        language_id: languageMap[selectedLanguage].id,
+        stdin: inputs,
+        expected_outputs: outputs,
+        problem_id: id,
+      };
+
+      const response = await axiosInstance.post("/execute-code", payload);
+
+      // Format the response to match your frontend expectations
+      const submissionData = response.data.submission;
+      const formattedResults = {
+        status: submissionData.status,
+        testCases: submissionData.testCases || [],
+        error: null,
+      };
+
+      setTestResults(formattedResults);
+      setActiveTab("output");
+
+      if (formattedResults.status === "Accepted") {
+        toast.success("All test cases passed! Problem solved!");
+      } else {
+        const passedCount = formattedResults.testCases.filter(
+          (tc) => tc.passed
+        ).length;
+        const totalCount = formattedResults.testCases.length;
+        toast.error(`${passedCount}/${totalCount} test cases passed`);
+      }
     } catch (error) {
-      toast.error("Failed to remove problem");
+      console.error("Error submitting code:", error);
+
+      // Set error results for display in output tab
+      const errorResults = {
+        status: "Error",
+        testCases: [],
+        error: {
+          message:
+            error.response?.data?.error ||
+            error.message ||
+            "Unknown error occurred",
+          details: error.response?.data?.message || "Failed to submit code",
+        },
+      };
+
+      setTestResults(errorResults);
+      setActiveTab("output");
+      toast.error("Error submitting code");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const getProgressPercentage = () => {
-    if (!playlist?.problems || playlist.problems.length === 0) return 0;
-
-    // Fixed: Check solvedBy array from the nested problem structure
-    const solvedCount = playlist.problems.filter(
-      (problemInPlaylist) =>
-        problemInPlaylist.problem?.solvedBy &&
-        problemInPlaylist.problem.solvedBy.length > 0
-    ).length;
-
-    return Math.round((solvedCount / playlist.problems.length) * 100);
+  const resetCode = () => {
+    if (problem && problem.codeSnippet) {
+      setCode(problem.codeSnippet[selectedLanguage] || "");
+    }
   };
 
-  const filteredProblems = availableProblems.filter(
-    (problem) =>
-      problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      problem.difficulty?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty) {
+      case "EASY":
+        return "badge-success";
+      case "MEDIUM":
+        return "badge-warning";
+      case "HARD":
+        return "badge-error";
+      default:
+        return "badge-ghost";
+    }
+  };
 
   if (loading) {
     return (
@@ -151,315 +229,386 @@ const PlaylistDetailPage = () => {
     );
   }
 
-  if (!playlist) {
+  if (!problem) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Playlist not found</h2>
-          <Link to="/playlists" className="btn btn-primary">
-            Back to Playlists
-          </Link>
+          <h2 className="text-2xl font-bold mb-2">Problem not found</h2>
+          <p className="text-gray-600">
+            The problem you're looking for doesn't exist.
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="h-screen flex flex-col">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <Link to="/playlists" className="btn btn-ghost btn-circle">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold">{playlist.name}</h1>
-          {playlist.description && (
-            <p className="text-gray-600 mt-1">{playlist.description}</p>
-          )}
-        </div>
-        <button
-          className="btn btn-primary gap-2"
-          onClick={handleAddProblemsClick}
-        >
-          <Plus className="w-4 h-4" />
-          Add Problems
-        </button>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="stat bg-base-100 rounded-box shadow">
-          <div className="stat-figure text-primary">
-            <BookOpen className="w-8 h-8" />
-          </div>
-          <div className="stat-title">Total Problems</div>
-          <div className="stat-value text-primary">
-            {playlist.problems?.length || 0}
-          </div>
-        </div>
-
-        <div className="stat bg-base-100 rounded-box shadow">
-          <div className="stat-figure text-success">
-            <CheckCircle className="w-8 h-8" />
-          </div>
-          <div className="stat-title">Solved</div>
-          <div className="stat-value text-success">
-            {playlist.problems?.filter(
-              (p) => p.problem?.solvedBy && p.problem.solvedBy.length > 0
-            ).length || 0}
-          </div>
-        </div>
-
-        <div className="stat bg-base-100 rounded-box shadow">
-          <div className="stat-figure text-info">
-            <Target className="w-8 h-8" />
-          </div>
-          <div className="stat-title">Progress</div>
-          <div className="stat-value text-info">{getProgressPercentage()}%</div>
-        </div>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="mb-8">
-        <div className="flex justify-between text-sm mb-2">
-          <span className="font-medium">Overall Progress</span>
-          <span>{getProgressPercentage()}% Complete</span>
-        </div>
-        <progress
-          className="progress progress-primary w-full h-3"
-          value={getProgressPercentage()}
-          max="100"
-        />
-      </div>
-
-      {/* Problems List */}
-      <div className="card bg-base-100 shadow-xl">
-        <div className="card-body">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="card-title">Problems</h2>
-            {playlist.problems && playlist.problems.length > 0 && (
-              <Link
-                to={`/playlists/${playlist.id}/practice`}
-                className="btn btn-primary btn-sm gap-2"
-              >
-                <Play className="w-4 h-4" />
-                Start Practice
-              </Link>
-            )}
-          </div>
-
-          {!playlist.problems || playlist.problems.length === 0 ? (
-            <div className="text-center py-12">
-              <BookOpen className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-xl font-bold mb-2">No problems yet</h3>
-              <p className="text-gray-600 mb-4">
-                Add some problems to start practicing
-              </p>
-              <button
-                className="btn btn-primary gap-2"
-                onClick={handleAddProblemsClick}
-              >
-                <Plus className="w-4 h-4" />
-                Add Problems
-              </button>
+      <div className="bg-base-100 border-b p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold">{problem.title}</h1>
+            <div className={`badge ${getDifficultyColor(problem.difficulty)}`}>
+              {problem.difficulty}
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="table table-zebra">
-                <thead>
-                  <tr>
-                    <th>Problem</th>
-                    <th>Difficulty</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {playlist.problems.map((problemInPlaylist) => {
-                    const problem = problemInPlaylist.problem;
-                    const isSolved =
-                      problem?.solvedBy && problem.solvedBy.length > 0;
+          </div>
+          <div className="flex items-center gap-2">
+            {problem.tags?.map((tag, index) => (
+              <span key={index} className="badge badge-outline badge-sm">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
 
-                    return (
-                      <tr key={problemInPlaylist.id}>
-                        <td>
-                          <div className="font-medium">{problem.title}</div>
-                          {problem.tags && (
-                            <div className="flex gap-1 mt-1">
-                              {problem.tags.slice(0, 3).map((tag, index) => (
-                                <span
-                                  key={index}
-                                  className="badge badge-outline badge-xs"
-                                >
-                                  {tag}
-                                </span>
-                              ))}
+      {/* Main Content */}
+      <div className="flex-1 flex">
+        {/* Left Panel - Problem Description */}
+        <div className="w-1/2 border-r flex flex-col">
+          {/* Tabs */}
+          <div className="tabs tabs-bordered px-4 pt-4">
+            <button
+              className={`tab ${
+                activeTab === "description" ? "tab-active" : ""
+              }`}
+              onClick={() => setActiveTab("description")}
+            >
+              Description
+            </button>
+            <button
+              className={`tab ${activeTab === "hints" ? "tab-active" : ""}`}
+              onClick={() => {
+                setActiveTab("hints");
+                fetchHints();
+              }}
+            >
+              Hints
+            </button>
+            <button
+              className={`tab ${activeTab === "output" ? "tab-active" : ""}`}
+              onClick={() => setActiveTab("output")}
+            >
+              Output
+            </button>
+          </div>
+
+          {/* Tab Content */}
+          <div className="flex-1 overflow-y-auto p-4">
+            {activeTab === "description" ? (
+              <div className="space-y-6">
+                {/* Problem Description */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    Problem Statement
+                  </h3>
+                  <div className="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
+                    {problem.description}
+                  </div>
+                </div>
+
+                {/* Examples */}
+                {problem.examples && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Examples</h3>
+                    {Object.entries(problem.examples).map(([lang, example]) => (
+                      <div
+                        key={lang}
+                        className="mb-4 p-4 bg-base-200 rounded-lg"
+                      >
+                        <h4 className="font-medium mb-2">{lang}</h4>
+                        <div className="space-y-2">
+                          <div className="text-sm">
+                            <strong>Input:</strong>
+                            <code className="ml-2 bg-base-300 px-2 py-1 rounded font-mono text-sm">
+                              {example.input}
+                            </code>
+                          </div>
+                          <div className="text-sm">
+                            <strong>Output:</strong>
+                            <code className="ml-2 bg-base-300 px-2 py-1 rounded font-mono text-sm">
+                              {example.output}
+                            </code>
+                          </div>
+                          {example.explanation && (
+                            <div className="text-sm">
+                              <strong>Explanation:</strong>
+                              <span className="ml-2 text-gray-600">
+                                {example.explanation}
+                              </span>
                             </div>
                           )}
-                        </td>
-                        <td>
-                          <span
-                            className={`badge ${
-                              problem.difficulty === "Easy"
-                                ? "badge-success"
-                                : problem.difficulty === "Medium"
-                                ? "badge-warning"
-                                : "badge-error"
-                            }`}
-                          >
-                            {problem.difficulty}
-                          </span>
-                        </td>
-                        <td>
-                          <span
-                            className={`badge ${
-                              isSolved ? "badge-success" : "badge-ghost"
-                            }`}
-                          >
-                            {isSolved ? "Solved" : "Not Solved"}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="flex gap-2">
-                            <Link
-                              to={`/problems/${problem.id}`}
-                              className="btn btn-ghost btn-xs"
-                            >
-                              View
-                            </Link>
-                            <button
-                              className="btn btn-ghost btn-xs text-error"
-                              onClick={() =>
-                                removeProblemFromPlaylist(problem.id)
-                              }
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Add Problems Modal */}
-      {showAddProblemModal && (
-        <div className="modal modal-open">
-          <div className="modal-box max-w-4xl">
-            <h3 className="font-bold text-lg mb-4">Add Problems to Playlist</h3>
-
-            {/* Search */}
-            <div className="form-control mb-4">
-              <div className="input-group">
-                <span>
-                  <Search className="w-4 h-4" />
-                </span>
-                <input
-                  type="text"
-                  placeholder="Search problems..."
-                  className="input input-bordered flex-1"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Problems List */}
-            <div className="max-h-96 overflow-y-auto mb-4">
-              {fetchingProblems ? (
-                <div className="flex justify-center py-8">
-                  <span className="loading loading-spinner loading-md"></span>
-                </div>
-              ) : filteredProblems.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  {searchTerm
-                    ? "No problems found matching your search"
-                    : "No problems available to add"}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {filteredProblems.map((problem) => (
-                    <label
-                      key={problem.id}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-base-200 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        className="checkbox checkbox-primary"
-                        checked={selectedProblems.includes(problem.id)}
-                        onChange={() => toggleProblemSelection(problem.id)}
-                      />
-                      <div className="flex-1">
-                        <div className="font-medium">{problem.title}</div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span
-                            className={`badge badge-xs ${
-                              problem.difficulty === "Easy"
-                                ? "badge-success"
-                                : problem.difficulty === "Medium"
-                                ? "badge-warning"
-                                : "badge-error"
-                            }`}
-                          >
-                            {problem.difficulty}
-                          </span>
-                          {problem.tags &&
-                            problem.tags.slice(0, 2).map((tag, index) => (
-                              <span
-                                key={index}
-                                className="badge badge-outline badge-xs"
-                              >
-                                {tag}
-                              </span>
-                            ))}
                         </div>
                       </div>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
+                    ))}
+                  </div>
+                )}
 
-            {/* Selected count */}
-            {selectedProblems.length > 0 && (
-              <div className="alert alert-info mb-4">
-                <span>{selectedProblems.length} problem(s) selected</span>
+                {/* Constraints */}
+                {problem.constraints && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Constraints</h3>
+                    <div className="text-gray-700 font-mono text-sm bg-base-200 p-3 rounded leading-relaxed">
+                      {problem.constraints}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : activeTab === "hints" ? (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Hints</h3>
+                <div className="text-center py-8">
+                  <div className="text-gray-500">
+                    <svg
+                      className="w-12 h-12 mx-auto mb-2 opacity-50"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                      />
+                    </svg>
+                    <p>No hints available for this problem</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Test Results</h3>
+                {testResults ? (
+                  <div className="space-y-4">
+                    {/* Show error if there's a general error */}
+                    {testResults.error && (
+                      <div className="alert alert-error">
+                        <div className="flex items-center gap-2">
+                          <XCircle className="w-5 h-5" />
+                          <div>
+                            <div className="font-medium">
+                              {testResults.error.message}
+                            </div>
+                            <div className="text-sm opacity-75">
+                              {testResults.error.details}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Overall Status - only show if we have test cases */}
+                    {testResults.testCases &&
+                      testResults.testCases.length > 0 && (
+                        <div
+                          className={`alert ${
+                            testResults.status === "Accepted"
+                              ? "alert-success"
+                              : testResults.status === "Error"
+                              ? "alert-error"
+                              : "alert-warning"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            {testResults.status === "Accepted" ? (
+                              <CheckCircle className="w-5 h-5" />
+                            ) : (
+                              <XCircle className="w-5 h-5" />
+                            )}
+                            <span className="font-medium">
+                              {testResults.status}
+                            </span>
+                            <span className="ml-2">
+                              (
+                              {
+                                testResults.testCases.filter((tc) => tc.passed)
+                                  .length
+                              }
+                              /{testResults.testCases.length} passed)
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Individual Test Cases */}
+                    {testResults.testCases?.map((testCase, index) => (
+                      <div key={index} className="card bg-base-100 shadow">
+                        <div className="card-body p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium">
+                              Test Case {testCase.testCase || index + 1}
+                            </h4>
+                            <div
+                              className={`badge ${
+                                testCase.passed
+                                  ? "badge-success"
+                                  : "badge-error"
+                              }`}
+                            >
+                              {testCase.passed ? "PASS" : "FAIL"}
+                            </div>
+                          </div>
+
+                          <div className="space-y-2 text-sm">
+                            <div>
+                              <strong>Status:</strong> {testCase.status}
+                            </div>
+
+                            {/* Show compilation error first if it exists */}
+                            {testCase.compileOutput && (
+                              <div>
+                                <strong>Compilation Error:</strong>
+                                <pre className="bg-red-100 text-red-800 p-2 rounded mt-1 overflow-x-auto">
+                                  {testCase.compileOutput}
+                                </pre>
+                              </div>
+                            )}
+
+                            {/* Show runtime error if it exists */}
+                            {testCase.stderr && (
+                              <div>
+                                <strong>Runtime Error:</strong>
+                                <pre className="bg-red-100 text-red-800 p-2 rounded mt-1 overflow-x-auto">
+                                  {testCase.stderr}
+                                </pre>
+                              </div>
+                            )}
+
+                            {/* Only show output comparison if there's no compilation error */}
+                            {!testCase.compileOutput && (
+                              <>
+                                {testCase.stdout !== undefined && (
+                                  <div>
+                                    <strong>Your Output:</strong>
+                                    <pre className="bg-base-200 p-2 rounded mt-1 overflow-x-auto">
+                                      {testCase.stdout || "(empty)"}
+                                    </pre>
+                                  </div>
+                                )}
+
+                                {testCase.expected !== undefined && (
+                                  <div>
+                                    <strong>Expected Output:</strong>
+                                    <pre className="bg-base-200 p-2 rounded mt-1 overflow-x-auto">
+                                      {testCase.expected || "(empty)"}
+                                    </pre>
+                                  </div>
+                                )}
+                              </>
+                            )}
+
+                            {/* Performance metrics */}
+                            <div className="flex gap-4 pt-2">
+                              {testCase.time && (
+                                <div className="text-xs">
+                                  <strong>Time:</strong> {testCase.time}
+                                </div>
+                              )}
+                              {testCase.memory && (
+                                <div className="text-xs">
+                                  <strong>Memory:</strong> {testCase.memory}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500">
+                    <Clock className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>Run or submit your code to see results</p>
+                  </div>
+                )}
               </div>
             )}
+          </div>
+        </div>
 
-            <div className="modal-action">
-              <button
-                className="btn btn-ghost"
-                onClick={() => {
-                  setShowAddProblemModal(false);
-                  setSelectedProblems([]);
-                  setSearchTerm("");
-                }}
+        {/* Right Panel - Code Editor */}
+        <div className="w-1/2 flex flex-col">
+          {/* Editor Header */}
+          <div className="bg-base-100 border-b p-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <select
+                className="select select-bordered select-sm"
+                value={selectedLanguage}
+                onChange={(e) => setSelectedLanguage(e.target.value)}
               >
-                Cancel
+                {Object.entries(languageMap).map(([key, lang]) => (
+                  <option key={key} value={key}>
+                    {lang.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={resetCode}
+                title="Reset to template"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                className="btn btn-outline btn-sm"
+                onClick={runCode}
+                disabled={isRunning}
+              >
+                {isRunning ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <Play className="w-4 h-4" />
+                )}
+                Run
               </button>
               <button
-                className="btn btn-primary"
-                onClick={addProblemsToPlaylist}
-                disabled={addingProblems || selectedProblems.length === 0}
+                className="btn btn-primary btn-sm"
+                onClick={submitCode}
+                disabled={isSubmitting}
               >
-                {addingProblems ? (
-                  <span className="loading loading-spinner loading-sm"></span>
+                {isSubmitting ? (
+                  <span className="loading loading-spinner loading-xs"></span>
                 ) : (
-                  `Add ${selectedProblems.length} Problem(s)`
+                  <Send className="w-4 h-4" />
                 )}
+                Submit
               </button>
             </div>
           </div>
+
+          {/* Code Editor */}
+          <div className="flex-1">
+            <Editor
+              height="100%"
+              language={
+                selectedLanguage.toLowerCase() === "javascript"
+                  ? "javascript"
+                  : selectedLanguage.toLowerCase()
+              }
+              theme="vs-dark"
+              value={code}
+              onChange={(value) => setCode(value || "")}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                lineNumbers: "on",
+                roundedSelection: false,
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                wordWrap: "on",
+                tabSize: 2,
+              }}
+            />
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
 
-export default PlaylistDetailPage;
+export default ProblemDetailPage;
