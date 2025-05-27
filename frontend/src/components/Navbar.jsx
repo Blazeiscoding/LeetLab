@@ -51,12 +51,12 @@ const Navbar = () => {
             <img
               src="/CodingShastra.svg"
               className="h-8 w-8 md:h-10 md:w-10 bg-gradient-to-br from-primary/30 to-primary/10 border border-primary/20 px-2 py-2 rounded-xl transition-all duration-300 group-hover:rotate-12 group-hover:bg-primary/40"
-              alt="LeetLab"
+              alt="CodingShastra"
             />
             <div className="absolute inset-0 bg-primary/20 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
           </div>
           <span className="text-lg md:text-2xl font-bold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent hidden sm:block group-hover:from-primary group-hover:to-primary-light transition-all duration-300">
-            LeetLab
+            CodingShastra
           </span>
         </Link>
 
