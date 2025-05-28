@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Trash2, AlertTriangle, Search, Filter, X } from "lucide-react";
+import { axiosInstance } from "../util/axios.js";
 
 const DeleteProblem = () => {
   const [problems, setProblems] = useState([]);
@@ -11,22 +12,22 @@ const DeleteProblem = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [problemToDelete, setProblemToDelete] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Fetch all problems
   const fetchProblems = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/v1/problems/get-all-problems", {
-        credentials: "include",
-      });
-      const data = await response.json();
+      setErrorMessage("");
+      const response = await axiosInstance.get("/problems/get-all-problems");
 
-      if (data.success) {
-        setProblems(data.data);
-        setFilteredProblems(data.data);
+      if (response.data.success) {
+        setProblems(response.data.data);
+        setFilteredProblems(response.data.data);
       }
     } catch (error) {
       console.error("Error fetching problems:", error);
+      setErrorMessage("Failed to fetch problems. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -63,26 +64,28 @@ const DeleteProblem = () => {
   const handleDeleteProblem = async (problemId) => {
     try {
       setDeleteLoading(problemId);
-      const response = await fetch(
-        `/api/v1/problems/delete-problem/${problemId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
+      setErrorMessage("");
+
+      const response = await axiosInstance.delete(
+        `/problems/delete-problem/${problemId}`
       );
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (response.data.success) {
         setProblems(problems.filter((p) => p.id !== problemId));
         setSuccessMessage("Problem deleted successfully!");
         setTimeout(() => setSuccessMessage(""), 3000);
       } else {
-        alert("Failed to delete problem");
+        setErrorMessage("Failed to delete problem");
       }
     } catch (error) {
       console.error("Error deleting problem:", error);
-      alert("Error deleting problem");
+      if (error.response?.status === 403) {
+        setErrorMessage("You don't have permission to delete problems");
+      } else if (error.response?.status === 404) {
+        setErrorMessage("Problem not found");
+      } else {
+        setErrorMessage("Error deleting problem. Please try again.");
+      }
     } finally {
       setDeleteLoading(null);
       setShowDeleteModal(false);
@@ -141,6 +144,13 @@ const DeleteProblem = () => {
         {successMessage && (
           <div className="mb-6 p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-center">
             {successMessage}
+          </div>
+        )}
+
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-center">
+            {errorMessage}
           </div>
         )}
 
@@ -227,6 +237,9 @@ const DeleteProblem = () => {
                     )}
                   </div>
                 )}
+
+                {/* Problem ID for debugging */}
+                <p className="text-xs text-gray-500 mb-4">ID: {problem.id}</p>
 
                 {/* Delete Button */}
                 <button

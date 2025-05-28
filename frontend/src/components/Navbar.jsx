@@ -8,6 +8,7 @@ import {
   Trophy,
   Menu,
   X,
+  Trash2,
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Link, useLocation } from "react-router-dom";
@@ -125,15 +126,26 @@ const Navbar = () => {
                 </Link>
               </li>
               {authUser?.role === "ADMIN" && (
-                <li>
-                  <Link
-                    to="/add-problem"
-                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/20 hover:text-primary text-base font-semibold transition-all duration-300 group"
-                  >
-                    <Code className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                    Add Problem
-                  </Link>
-                </li>
+                <>
+                  <li>
+                    <Link
+                      to="/add-problem"
+                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/20 hover:text-primary text-base font-semibold transition-all duration-300 group"
+                    >
+                      <Code className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                      Add Problem
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/delete-problem"
+                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/20 hover:text-red-400 text-base font-semibold transition-all duration-300 group"
+                    >
+                      <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                      Delete Problem
+                    </Link>
+                  </li>
+                </>
               )}
               <li className="pt-2 border-t border-gray-200/10">
                 <LogoutButton className="flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/20 hover:text-red-400 text-base font-semibold transition-all duration-300 group w-full text-left">
@@ -183,6 +195,33 @@ const Navbar = () => {
                   {label}
                 </Link>
               ))}
+
+              {/* Admin options in mobile menu */}
+              {authUser?.role === "ADMIN" && (
+                <>
+                  <div className="border-t border-gray-200/10 pt-2 mt-2">
+                    <p className="text-xs text-gray-400 px-4 py-2">
+                      Admin Panel
+                    </p>
+                  </div>
+                  <Link
+                    to="/add-problem"
+                    onClick={closeMobileMenu}
+                    className="flex items-center gap-3 p-4 rounded-xl font-semibold transition-all duration-300 text-gray-300 hover:text-white hover:bg-white/10 border border-transparent"
+                  >
+                    <Code className="w-5 h-5" />
+                    Add Problem
+                  </Link>
+                  <Link
+                    to="/delete-problem"
+                    onClick={closeMobileMenu}
+                    className="flex items-center gap-3 p-4 rounded-xl font-semibold transition-all duration-300 text-gray-300 hover:text-red-400 hover:bg-red-500/10 border border-transparent"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                    Delete Problem
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </>
