@@ -89,13 +89,14 @@ const ProblemDetailPage = () => {
         problem_id: id,
       };
 
-      const response = await axiosInstance.post("/execute-code", payload);
+      // Fixed: Use correct endpoint for running code
+      const response = await axiosInstance.post("/execute-code/run", payload);
 
-      // Format the response to match your frontend expectations
-      const submissionData = response.data.submission;
+      // Fixed: Handle the correct response structure from runCode endpoint
+      const responseData = response.data.results;
       const formattedResults = {
-        status: submissionData.status,
-        testCases: submissionData.testCases || [],
+        status: responseData.status,
+        testCases: responseData.testCases || [],
         error: null,
       };
 
@@ -156,9 +157,13 @@ const ProblemDetailPage = () => {
         problem_id: id,
       };
 
-      const response = await axiosInstance.post("/execute-code", payload);
+      // Fixed: Use correct endpoint for submitting code
+      const response = await axiosInstance.post(
+        "/execute-code/submit",
+        payload
+      );
 
-      // Format the response to match your frontend expectations
+      // Fixed: Handle the correct response structure from executeCode endpoint
       const submissionData = response.data.submission;
       const formattedResults = {
         status: submissionData.status,

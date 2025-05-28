@@ -20,61 +20,66 @@ export const createProblem = async (req, res) => {
   } = req.body;
 
   // going to check user role once again
-
   if (req.user.role !== "ADMIN") {
     return res
       .status(403)
       .json({ message: "You are not allowed to create a problem" });
   }
-  // Loop through each reference solution for different languages
 
   try {
+    // First validate all reference solutions before creating the problem
     for (const [language, solutionCode] of Object.entries(referenceSolution)) {
-      const lanugageId = getJudge0LanguageId(language);
-      if (!lanugageId) {
+      const languageId = getJudge0LanguageId(language);
+      if (!languageId) {
         return res
           .status(400)
           .json({ error: `Language ${language} is not supported` });
       }
+
       const submissions = testCases.map(({ input, output }) => ({
         source_code: solutionCode,
-        language_id: lanugageId,
+        language_id: languageId,
         stdin: input,
         expected_output: output,
       }));
+
       const submissionResults = await submitBatch(submissions);
-
       const tokens = submissionResults.map((res) => res.token);
-
       const results = await pollBatchResults(tokens);
 
       for (let i = 0; i < results.length; i++) {
         const result = results[i];
         if (result.status.id !== 3) {
-          return res.status(400).json({ error: `Testcase ${i} failed` });
+          return res.status(400).json({
+            error: `Reference solution for ${language} failed on test case ${
+              i + 1
+            }`,
+          });
         }
       }
-
-      const newProblem = await db.problem.create({
-        data: {
-          title,
-          description,
-          difficulty,
-          tags,
-          examples,
-          constraints,
-          testCases,
-          codeSnippet,
-          referenceSolution,
-          userId: req.user.id,
-        },
-      });
-      return res.status(201).json({
-        message: "Problem created successfully",
-        data: newProblem,
-        success: true,
-      });
     }
+
+    // All validations passed, now create the problem
+    const newProblem = await db.problem.create({
+      data: {
+        title,
+        description,
+        difficulty,
+        tags,
+        examples,
+        constraints,
+        testCases,
+        codeSnippet,
+        referenceSolution,
+        userId: req.user.id,
+      },
+    });
+
+    return res.status(201).json({
+      message: "Problem created successfully",
+      data: newProblem,
+      success: true,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Error While Creating Problem" });
