@@ -26,6 +26,7 @@ import PlaylistsPage from "./page/PlaylistsPage";
 import PlaylistDetailPage from "./page/PlaylistDetailPage";
 import AddProblem from "./page/AddProblem";
 import DeleteProblem from "./page/DeleteProblem";
+import UpdateProblem from "./page/UpdateProblem";
 
 // Components
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -86,6 +87,7 @@ function AppContent() {
             {/* Admin Routes */}
             <Route element={<AdminRoute />}>
               <Route path="/add-problem" element={<AddProblem />} />
+              <Route path="/update-problem" element={<UpdateProblem />} />
               <Route path="/delete-problem" element={<DeleteProblem />} />
             </Route>
           </Route>

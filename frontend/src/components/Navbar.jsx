@@ -9,6 +9,7 @@ import {
   Menu,
   X,
   Trash2,
+  Edit,
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Link, useLocation } from "react-router-dom";
@@ -138,6 +139,15 @@ const Navbar = () => {
                   </li>
                   <li>
                     <Link
+                      to="/update-problem"
+                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/20 hover:text-primary text-base font-semibold transition-all duration-300 group"
+                    >
+                      <Edit className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                      Update Problem
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
                       to="/delete-problem"
                       className="flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/20 hover:text-red-400 text-base font-semibold transition-all duration-300 group"
                     >
@@ -211,6 +221,14 @@ const Navbar = () => {
                   >
                     <Code className="w-5 h-5" />
                     Add Problem
+                  </Link>
+                  <Link
+                    to="/update-problem"
+                    onClick={closeMobileMenu}
+                    className="flex items-center gap-3 p-4 rounded-xl font-semibold transition-all duration-300 text-gray-300 hover:text-white hover:bg-white/10 border border-transparent"
+                  >
+                    <Edit className="w-5 h-5" />
+                    Update Problem
                   </Link>
                   <Link
                     to="/delete-problem"
