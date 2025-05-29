@@ -70,18 +70,31 @@ const UpdateProblem = () => {
 
   const handleUpdateProblem = async () => {
     try {
-      setUpdating(problemToUpdate._id);
+      // Ensure problemToUpdate and its _id are available
+      if (!problemToUpdate || !problemToUpdate._id) {
+        toast.error(
+          "No problem selected or problem ID is missing. Please close and retry."
+        );
+        return; // Exit if crucial data is missing
+      }
+      setUpdating(problemToUpdate._id); // Disable button and show spinner
 
       // Validate form data
       const result = problemSchema.safeParse(updateForm);
       if (!result.success) {
         const fieldErrors = {};
         result.error.errors.forEach((error) => {
+          // For nested errors (like in testCases), path.join('.') is good.
+          // For top-level array errors, Zod might put it on the field name itself.
           fieldErrors[error.path.join(".")] = error.message;
         });
         setErrors(fieldErrors);
+        toast.error("Please correct the errors highlighted in the form."); // General validation error toast
+        setUpdating(null); // Re-enable button
         return;
       }
+
+      setErrors({}); // Clear any previous errors if validation passes
 
       const response = await axiosInstance.put(
         `/problems/update-problem/${problemToUpdate._id}`,
@@ -92,18 +105,36 @@ const UpdateProblem = () => {
         toast.success("Problem updated successfully!");
         fetchProblems(); // Refresh the list
         closeUpdateModal();
+      } else {
+        // Handle cases where the API request was successful (e.g., status 200)
+        // but the backend indicates a business logic failure.
+        toast.error(
+          response.data.message || "Failed to update problem. Please try again."
+        );
       }
     } catch (error) {
-      console.error("Error updating problem:", error);
-      if (error.response?.status === 403) {
-        toast.error("You don't have permission to update problems");
-      } else if (error.response?.status === 404) {
-        toast.error("Problem not found");
+      console.error("Error updating problem:", error); // Log the full error for debugging
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        const status = error.response.status;
+        const message = error.response.data?.message || "An error occurred.";
+        if (status === 403) {
+          toast.error("You don't have permission to update problems.");
+        } else if (status === 404) {
+          toast.error("Problem not found on the server.");
+        } else {
+          toast.error(`Server error: ${message} (Status ${status})`);
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        toast.error("No response from server. Check your network connection.");
       } else {
-        toast.error("Error updating problem. Please try again.");
+        // Something happened in setting up the request that triggered an Error
+        toast.error("Error setting up update request. Please try again.");
       }
     } finally {
-      setUpdating(null);
+      setUpdating(null); // Always re-enable the button in the end
     }
   };
 
@@ -117,7 +148,10 @@ const UpdateProblem = () => {
       constraints: problem.constraints || "",
       hints: problem.hints || "",
       editorial: problem.editorial || "",
-      testCases: problem.testCases || [{ input: "", output: "" }],
+      testCases:
+        problem.testCases?.length > 0
+          ? problem.testCases
+          : [{ input: "", output: "" }],
       examples: problem.examples || {
         JAVASCRIPT: { input: "", output: "", explanation: "" },
         PYTHON: { input: "", output: "", explanation: "" },
@@ -151,7 +185,6 @@ const UpdateProblem = () => {
       [field]: value,
     }));
 
-    // Clear error for this field
     if (errors[field]) {
       setErrors((prev) => ({
         ...prev,
@@ -326,7 +359,9 @@ const UpdateProblem = () => {
       {/* Update Modal */}
       {showUpdateModal && problemToUpdate && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-base-100/95 backdrop-blur-xl border border-gray-200/20 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+          <div className="bg-base-100/95 backdrop-blur-xl border border-gray-200/20 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            {" "}
+            {/* MODIFIED: Added flex flex-col */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200/20">
               <h2 className="text-2xl font-bold text-white">Update Problem</h2>
               <button
@@ -336,8 +371,9 @@ const UpdateProblem = () => {
                 <X className="w-6 h-6" />
               </button>
             </div>
-
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+            <div className="p-6 overflow-y-auto flex-grow">
+              {" "}
+              {/* MODIFIED: Removed max-h-[calc(90vh-120px)], added flex-grow */}
               <div className="space-y-6">
                 {/* Basic Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -488,15 +524,26 @@ const UpdateProblem = () => {
                   >
                     + Add Test Case
                   </button>
-                  {errors.testCases && (
+                  {errors["testCases"] && ( // Adjusted to handle potential Zod path for array errors
                     <p className="text-red-400 text-sm mt-1">
-                      {errors.testCases}
+                      {typeof errors["testCases"] === "string"
+                        ? errors["testCases"]
+                        : "Error in test cases."}
+                    </p>
+                  )}
+                  {errors["testCases.input"] && ( // Example for specific field in test cases if needed
+                    <p className="text-red-400 text-sm mt-1">
+                      Input in test cases cannot be empty.
+                    </p>
+                  )}
+                  {errors["testCases.output"] && (
+                    <p className="text-red-400 text-sm mt-1">
+                      Output in test cases cannot be empty.
                     </p>
                   )}
                 </div>
               </div>
             </div>
-
             <div className="flex justify-end gap-4 p-6 border-t border-gray-200/20">
               <button
                 onClick={closeUpdateModal}
@@ -506,7 +553,7 @@ const UpdateProblem = () => {
               </button>
               <button
                 onClick={handleUpdateProblem}
-                disabled={updating}
+                disabled={!!updating} // Ensure this disables correctly
                 className="px-6 py-3 bg-primary hover:bg-primary-light text-white rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {updating ? (
