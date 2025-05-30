@@ -7,8 +7,6 @@ import {
   X,
   Save,
   AlertCircle,
-  CheckCircle,
-  Eye,
   Plus,
   Trash2,
 } from "lucide-react";
@@ -47,7 +45,6 @@ const UpdateProblem = () => {
   useEffect(() => {
     let filtered = problems;
 
-    // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(
         (problem) =>
@@ -56,7 +53,6 @@ const UpdateProblem = () => {
       );
     }
 
-    // Filter by difficulty
     if (difficultyFilter !== "all") {
       filtered = filtered.filter(
         (problem) => problem.difficulty.toLowerCase() === difficultyFilter
@@ -72,7 +68,6 @@ const UpdateProblem = () => {
 
   const handleUpdateProblem = async () => {
     try {
-      // Use 'id' instead of '_id' for consistency with backend
       const problemId = problemToUpdate.id || problemToUpdate._id;
 
       if (!problemToUpdate || !problemId) {
@@ -84,10 +79,9 @@ const UpdateProblem = () => {
 
       setUpdating(problemId);
 
-      // Create properly formatted data for validation
       const formDataForValidation = {
         ...updateForm,
-        // Fix field names to match schema
+
         codeSnippets: updateForm.codeSnippet,
         referenceSolutions: updateForm.referenceSolution,
       };
@@ -118,7 +112,6 @@ const UpdateProblem = () => {
 
       setErrors({});
 
-      // Send data with backend expected field names
       const response = await axiosInstance.put(
         `/problems/update-problem/${problemId}`,
         updateForm
@@ -177,7 +170,7 @@ const UpdateProblem = () => {
         PYTHON: { input: "", output: "", explanation: "" },
         JAVA: { input: "", output: "", explanation: "" },
       },
-      // Use backend expected field names
+
       codeSnippet: problem.codeSnippet || {
         JAVASCRIPT: "",
         PYTHON: "",
@@ -313,7 +306,6 @@ const UpdateProblem = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-4">
             Update Problems
@@ -323,7 +315,6 @@ const UpdateProblem = () => {
           </p>
         </div>
 
-        {/* Search and Filter */}
         <div className="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-2xl p-6 mb-8">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
@@ -352,7 +343,6 @@ const UpdateProblem = () => {
           </div>
         </div>
 
-        {/* Problems Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProblems.map((problem) => (
             <div
@@ -416,7 +406,6 @@ const UpdateProblem = () => {
         )}
       </div>
 
-      {/* Update Modal */}
       {showUpdateModal && problemToUpdate && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-gray-900/95 backdrop-blur-xl border border-gray-700 rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
@@ -432,7 +421,6 @@ const UpdateProblem = () => {
 
             <div className="p-6 overflow-y-auto flex-grow">
               <div className="space-y-6">
-                {/* Basic Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-semibold text-gray-300 mb-2">
@@ -477,7 +465,6 @@ const UpdateProblem = () => {
                   </div>
                 </div>
 
-                {/* Description */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-300 mb-2">
                     Description *
@@ -498,7 +485,6 @@ const UpdateProblem = () => {
                   )}
                 </div>
 
-                {/* Tags */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-300 mb-2">
                     Tags * (comma-separated)
@@ -523,7 +509,6 @@ const UpdateProblem = () => {
                   )}
                 </div>
 
-                {/* Constraints */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-300 mb-2">
                     Constraints *
@@ -544,7 +529,6 @@ const UpdateProblem = () => {
                   )}
                 </div>
 
-                {/* Hints */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-300 mb-2">
                     Hints (Optional)
@@ -561,7 +545,6 @@ const UpdateProblem = () => {
                   )}
                 </div>
 
-                {/* Editorial */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-300 mb-2">
                     Editorial (Optional)
@@ -582,7 +565,6 @@ const UpdateProblem = () => {
                   )}
                 </div>
 
-                {/* Examples */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-300 mb-4">
                     Examples *
@@ -663,7 +645,6 @@ const UpdateProblem = () => {
                   ))}
                 </div>
 
-                {/* Code Snippets */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-300 mb-4">
                     Code Snippets *
@@ -695,7 +676,6 @@ const UpdateProblem = () => {
                   ))}
                 </div>
 
-                {/* Reference Solutions */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-300 mb-4">
                     Reference Solutions *
@@ -727,7 +707,6 @@ const UpdateProblem = () => {
                   ))}
                 </div>
 
-                {/* Test Cases */}
                 <div>
                   <div className="flex justify-between items-center mb-4">
                     <label className="block text-sm font-semibold text-gray-300">
@@ -802,7 +781,6 @@ const UpdateProblem = () => {
               </div>
             </div>
 
-            {/* Modal Footer */}
             <div className="flex justify-end gap-4 p-6 border-t border-gray-700">
               <button
                 onClick={closeUpdateModal}
