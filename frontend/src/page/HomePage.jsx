@@ -8,9 +8,6 @@ import {
   Play,
   TrendingUp,
   Star,
-  Zap,
-  Users,
-  Award,
   ChevronDown,
 } from "lucide-react";
 import { axiosInstance } from "../util/axios";

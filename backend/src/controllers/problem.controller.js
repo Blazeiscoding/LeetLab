@@ -6,7 +6,6 @@ import {
 } from "../libs/judge0.lib.js";
 
 export const createProblem = async (req, res) => {
-  // going to get all the data from request body
   const {
     title,
     description,
@@ -19,7 +18,6 @@ export const createProblem = async (req, res) => {
     referenceSolution,
   } = req.body;
 
-  // going to check user role once again
   if (req.user.role !== "ADMIN") {
     return res
       .status(403)
@@ -27,7 +25,6 @@ export const createProblem = async (req, res) => {
   }
 
   try {
-    // First validate all reference solutions before creating the problem
     for (const [language, solutionCode] of Object.entries(referenceSolution)) {
       const languageId = getJudge0LanguageId(language);
       if (!languageId) {
@@ -59,7 +56,6 @@ export const createProblem = async (req, res) => {
       }
     }
 
-    // All validations passed, now create the problem
     const newProblem = await db.problem.create({
       data: {
         title,

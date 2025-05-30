@@ -173,7 +173,6 @@ export const addProblemToPlaylist = async (req, res) => {
       });
     }
 
-    // Check if playlist belongs to user
     const playlist = await db.playlist.findUnique({
       where: {
         id: playlistId,
@@ -188,7 +187,6 @@ export const addProblemToPlaylist = async (req, res) => {
       });
     }
 
-    // Check for duplicate entries
     const existingProblems = await db.problemInPlaylist.findMany({
       where: {
         playlistId,
@@ -243,7 +241,6 @@ export const removeProblemFromPlaylist = async (req, res) => {
       });
     }
 
-    // Check if playlist belongs to user
     const playlist = await db.playlist.findUnique({
       where: {
         id: playlistId,

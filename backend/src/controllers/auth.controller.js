@@ -58,7 +58,7 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "User not found" });
     }
 
-    const isMatched = await bcrypt.compare(password, user.password); // Add await here
+    const isMatched = await bcrypt.compare(password, user.password);
     if (!isMatched) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -69,7 +69,7 @@ export const login = async (req, res) => {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "7d", // Add expiration
+        expiresIn: "7d",
       }
     );
 

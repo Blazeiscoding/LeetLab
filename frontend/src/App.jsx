@@ -40,7 +40,6 @@ function AppContent() {
     checkAuth();
   }, [checkAuth]);
 
-  // Only show loading screen if we're checking auth AND we don't have user data yet
   if (isCheckingAuth && authUser === null) {
     return (
       <div className="flex items-center justify-center h-screen">

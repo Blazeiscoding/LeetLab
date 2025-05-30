@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { db } from "../libs/db.js";
 
-// Middleware to authenticate user
+
 export const authMiddleware = async (req, res, next) => {
   try {
     const token = req.cookies.jwt;
@@ -32,7 +32,7 @@ export const authMiddleware = async (req, res, next) => {
       return res.status(401).json({ message: "User Not Found" });
     }
 
-    req.user = user; // Attach full user object including role
+    req.user = user; 
     next();
   } catch (error) {
     console.error("Error in authMiddleware:", error);
@@ -40,7 +40,7 @@ export const authMiddleware = async (req, res, next) => {
   }
 };
 
-// Middleware to check if user is admin
+
 export const checkAdmin = (req, res, next) => {
   try {
     if (req.user?.role !== "ADMIN") {

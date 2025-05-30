@@ -1,13 +1,5 @@
-import React, { useState, useEffect } from "react";
-import {
-  Plus,
-  BookOpen,
-  Trash2,
-  Edit,
-  Play,
-  Target,
-  AlertCircle,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, BookOpen, Trash2, Edit, Play, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { axiosInstance } from "../util/axios";
 import toast from "react-hot-toast";

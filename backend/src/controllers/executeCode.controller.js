@@ -6,12 +6,10 @@ import {
 
 import { db } from "../libs/db.js";
 
-// New function for just running code (no submission record)
 export const runCode = async (req, res) => {
   try {
     const { source_code, language_id, stdin, expected_outputs } = req.body;
 
-    // Validate testCases array
     if (
       !Array.isArray(stdin) ||
       stdin.length === 0 ||
@@ -21,14 +19,12 @@ export const runCode = async (req, res) => {
       return res.status(400).json({ error: "Invalid testCases array" });
     }
 
-    // Prepare each test case for judge0 batch submission
     const submissions = stdin.map((input) => ({
       source_code,
       language_id,
       stdin: input,
     }));
 
-    // Submit batch to judge0
     const submitResponse = await submitBatch(submissions);
     const tokens = submitResponse.map((res) => res.token);
     const results = await pollBatchResults(tokens);
@@ -68,7 +64,6 @@ export const runCode = async (req, res) => {
   }
 };
 
-// Updated function for submitting code (creates submission record)
 export const executeCode = async (req, res) => {
   try {
     const { source_code, language_id, stdin, expected_outputs, problem_id } =
@@ -76,7 +71,6 @@ export const executeCode = async (req, res) => {
 
     const userId = req.user.id;
 
-    // Validate testCases array
     if (
       !Array.isArray(stdin) ||
       stdin.length === 0 ||
@@ -86,14 +80,12 @@ export const executeCode = async (req, res) => {
       return res.status(400).json({ error: "Invalid testCases array" });
     }
 
-    // Prepare each test case for judge0 batch submission
     const submissions = stdin.map((input) => ({
       source_code,
       language_id,
       stdin: input,
     }));
 
-    // Submit batch to judge0
     const submitResponse = await submitBatch(submissions);
     const tokens = submitResponse.map((res) => res.token);
     const results = await pollBatchResults(tokens);
@@ -119,7 +111,6 @@ export const executeCode = async (req, res) => {
       };
     });
 
-    // Store submission summary (only when submitting)
     const submission = await db.submission.create({
       data: {
         userId,
@@ -140,7 +131,6 @@ export const executeCode = async (req, res) => {
       },
     });
 
-    // If all passed, mark problem as solved for the current user
     if (allPassed) {
       await db.problemSolved.upsert({
         where: {
@@ -157,7 +147,6 @@ export const executeCode = async (req, res) => {
       });
     }
 
-    // Save individual test case results
     const testCaseResults = detailedResults.map((result) => ({
       submissionId: submission.id,
       testCase: result.testCase,

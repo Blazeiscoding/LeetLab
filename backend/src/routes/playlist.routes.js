@@ -11,26 +11,20 @@ import {
 
 const playlistRoutes = express.Router();
 
-// Get all playlists for user
 playlistRoutes.get("/", authMiddleware, getAllListDetails);
 
-// Get specific playlist details
 playlistRoutes.get("/:playlistId", authMiddleware, getPlayListDetails);
 
-// Create new playlist
 playlistRoutes.post("/create-playlist", authMiddleware, createPlaylist);
 
-// Add problems to playlist
 playlistRoutes.post(
   "/:playlistId/add-problem",
   authMiddleware,
   addProblemToPlaylist
 );
 
-// Delete playlist
 playlistRoutes.delete("/:playlistId", authMiddleware, deletePlaylist);
 
-// Remove problems from playlist - Fixed route to match controller
 playlistRoutes.delete(
   "/:playlistId/remove-problem",
   authMiddleware,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Plus,
@@ -7,7 +7,6 @@ import {
   Play,
   BookOpen,
   Target,
-  Clock,
   CheckCircle,
 } from "lucide-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
