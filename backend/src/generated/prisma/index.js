@@ -272,7 +272,7 @@ const config = {
     "db": {
       "url": {
         "fromEnvVar": "DATABASE_URL",
-        "value": "postgresql://myuser:mypassword@localhost:5432/postgres"
+        "value": "postgresql://CodingShastara_owner:npg_2RqMBLEJ7huk@ep-wild-fire-a8wkun3k-pooler.eastus2.azure.neon.tech/CodingShastara?sslmode=require"
       }
     }
   },

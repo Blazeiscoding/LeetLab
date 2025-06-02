@@ -10,38 +10,77 @@ export const getJudge0LanguageId = (language) => {
 };
 
 export const submitBatch = async (submissions) => {
-  const { data } = await axios.post(
-    `${process.env.JUDGE0_API_URL}/submissions/batch?base64_encoded=false`,
-    { submissions }
-  );
+  try {
+    const options = {
+      method: "POST",
+      url: `${process.env.JUDGE0_API_URL}/submissions/batch`,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${process.env.JUDGE0_AUTH}`,
+      },
+      data: {
+        submissions,
+      },
+    };
 
-  console.log("Submission Results", data);
-
-  return data;
-};
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-export const pollBatchResults = async (tokens) => {
-  while (true) {
-    const { data } = await axios.get(
-      `${process.env.JUDGE0_API_URL}/submissions/batch/`,
-      {
-        params: {
-          tokens: tokens.join(","),
-          base64_encoded: false,
-        },
-      }
+    const { data } = await axios.request(options);
+    console.log("Submission Results", data);
+    return data;
+  } catch (error) {
+    console.error(
+      "Error submitting batch:",
+      error.response?.data || error.message
     );
-    const results = data.submissions;
-    const isAllDone = results.every(
-      (r) => r.status.id !== 1 && r.status.id !== 2
-    );
-    if (isAllDone) {
-      return results;
-    }
-
-    if (isAllDone) return results;
-    await sleep(1000);
+    throw error;
   }
+};
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export const pollBatchResults = async (tokens) => {
+  const maxAttempts = 30; // Prevent infinite loops
+  let attempts = 0;
+
+  while (attempts < maxAttempts) {
+    try {
+      const { data } = await axios.get(
+        `${process.env.JUDGE0_API_URL}/submissions/batch`,
+        {
+          params: {
+            tokens: tokens.join(","),
+            base64_encoded: false,
+          },
+          headers: {
+            Authorization: `Bearer ${process.env.JUDGE0_AUTH}`,
+          },
+        }
+      );
+
+      const results = data.submissions;
+
+      // Check if all submissions are done processing
+      // Status IDs: 1 = In Queue, 2 = Processing
+      const isAllDone = results.every(
+        (result) => result.status.id !== 1 && result.status.id !== 2
+      );
+
+      if (isAllDone) {
+        return results;
+      }
+
+      await sleep(1000);
+      attempts++;
+    } catch (error) {
+      console.error(
+        "Error polling results:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }
+
+  throw new Error("Polling timeout: Results took too long to process");
 };
 
 export function getLanguageName(languageId) {
