@@ -35,12 +35,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.7.0
- * Query Engine version: 3cff47a7f5d65c3ea74883f1d736e41d68ce91ed
+ * Prisma Client JS version: 6.8.2
+ * Query Engine version: 2060c79ba17c6bb9f5823312b6f6b7f4a845738e
  */
 Prisma.prismaVersion = {
-  client: "6.7.0",
-  engine: "3cff47a7f5d65c3ea74883f1d736e41d68ce91ed"
+  client: "6.8.2",
+  engine: "2060c79ba17c6bb9f5823312b6f6b7f4a845738e"
 }
 
 Prisma.PrismaClientKnownRequestError = PrismaClientKnownRequestError;
@@ -239,7 +239,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "E:\\Cohort\\LeetLab\\backend\\src\\generated\\prisma",
+      "value": "E:\\Cohort\\LeetLab-Backend\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -250,10 +250,14 @@ const config = {
         "fromEnvVar": null,
         "value": "windows",
         "native": true
+      },
+      {
+        "fromEnvVar": null,
+        "value": "debian-openssl-3.0.x"
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "E:\\Cohort\\LeetLab\\backend\\prisma\\schema.prisma",
+    "sourceFilePath": "E:\\Cohort\\LeetLab-Backend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -261,8 +265,8 @@ const config = {
     "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../../../prisma",
-  "clientVersion": "6.7.0",
-  "engineVersion": "3cff47a7f5d65c3ea74883f1d736e41d68ce91ed",
+  "clientVersion": "6.8.2",
+  "engineVersion": "2060c79ba17c6bb9f5823312b6f6b7f4a845738e",
   "datasourceNames": [
     "db"
   ],
@@ -271,12 +275,12 @@ const config = {
     "db": {
       "url": {
         "fromEnvVar": "DATABASE_URL",
-        "value": "postgresql://CodingShastara_owner:npg_2RqMBLEJ7huk@ep-wild-fire-a8wkun3k-pooler.eastus2.azure.neon.tech/CodingShastara?sslmode=require"
+        "value": null
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nenum UserRole {\n  ADMIN\n  USER\n}\n\nenum Difficulty {\n  EASY\n  MEDIUM\n  HARD\n}\n\nenum status {\n  Accepted\n  WrongAnswer\n}\n\nmodel User {\n  id        String   @id @default(uuid())\n  name      String?\n  email     String   @unique\n  image     String?\n  role      UserRole @default(USER)\n  password  String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  problems      Problem[]\n  submission    Submission[]\n  problemSolved ProblemSolved[]\n  playlists     Playlist[]\n}\n\nmodel Problem {\n  id          String     @id @default(uuid())\n  title       String\n  description String\n  difficulty  Difficulty\n  tags        String[]\n  userId      String\n  examples    Json\n  constraints String\n  hints       String?\n  editorial   String?\n\n  testCases         Json\n  codeSnippet       Json\n  referenceSolution Json\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  // Relationship\n  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)\n  submission        Submission[]\n  solvedBy          ProblemSolved[]\n  problemsPlaylists ProblemInPlaylist[]\n}\n\nmodel Submission {\n  id            String   @id @default(uuid())\n  userId        String\n  problemId     String\n  sourceCode    Json\n  language      String\n  stdin         String?\n  stdout        String?\n  stderr        String?\n  compileOutput String?\n  status        status   @default(WrongAnswer) // Accepted, Wrong Asnwer\n  memory        String?\n  time          String?\n  createdAt     DateTime @default(now())\n  updatedAt     DateTime @updatedAt\n\n  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)\n  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)\n\n  testCases TestCaseResult[]\n}\n\nmodel TestCaseResult {\n  id            String   @id @default(uuid())\n  submissionId  String\n  testCase      Int\n  passed        Boolean\n  stdout        String?\n  expected      String\n  stderr        String?\n  compileOutput String?\n  status        status   @default(WrongAnswer)\n  memory        String?\n  time          String?\n  createdAt     DateTime @default(now())\n  updatedAt     DateTime @updatedAt\n\n  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)\n\n  @@index([submissionId])\n}\n\nmodel ProblemSolved {\n  id        String   @id @default(uuid())\n  userId    String\n  problemId String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)\n  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)\n\n  @@unique([userId, problemId])\n}\n\nmodel Playlist {\n  id          String   @id @default(uuid())\n  name        String\n  description String?\n  userId      String\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  problems ProblemInPlaylist[]\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([name, userId])\n}\n\nmodel ProblemInPlaylist {\n  id         String   @id @default(uuid())\n  playlistId String\n  problemId  String\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n\n  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)\n\n  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)\n\n  @@unique([playlistId, problemId])\n}\n",
-  "inlineSchemaHash": "ddbc226591fc9b67286b9c40f02e7e94d3d15a03e3ae62bb7b177a6a73fd00d7",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider      = \"prisma-client-js\"\n  output        = \"../src/generated/prisma\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nenum UserRole {\n  ADMIN\n  USER\n}\n\nenum Difficulty {\n  EASY\n  MEDIUM\n  HARD\n}\n\nenum status {\n  Accepted\n  WrongAnswer\n}\n\nmodel User {\n  id        String   @id @default(uuid())\n  name      String?\n  email     String   @unique\n  image     String?\n  role      UserRole @default(USER)\n  password  String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  problems      Problem[]\n  submission    Submission[]\n  problemSolved ProblemSolved[]\n  playlists     Playlist[]\n}\n\nmodel Problem {\n  id          String     @id @default(uuid())\n  title       String\n  description String\n  difficulty  Difficulty\n  tags        String[]\n  userId      String\n  examples    Json\n  constraints String\n  hints       String?\n  editorial   String?\n\n  testCases         Json\n  codeSnippet       Json\n  referenceSolution Json\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  // Relationship\n  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)\n  submission        Submission[]\n  solvedBy          ProblemSolved[]\n  problemsPlaylists ProblemInPlaylist[]\n}\n\nmodel Submission {\n  id            String   @id @default(uuid())\n  userId        String\n  problemId     String\n  sourceCode    Json\n  language      String\n  stdin         String?\n  stdout        String?\n  stderr        String?\n  compileOutput String?\n  status        status   @default(WrongAnswer) // Accepted, Wrong Asnwer\n  memory        String?\n  time          String?\n  createdAt     DateTime @default(now())\n  updatedAt     DateTime @updatedAt\n\n  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)\n  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)\n\n  testCases TestCaseResult[]\n}\n\nmodel TestCaseResult {\n  id            String   @id @default(uuid())\n  submissionId  String\n  testCase      Int\n  passed        Boolean\n  stdout        String?\n  expected      String\n  stderr        String?\n  compileOutput String?\n  status        status   @default(WrongAnswer)\n  memory        String?\n  time          String?\n  createdAt     DateTime @default(now())\n  updatedAt     DateTime @updatedAt\n\n  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)\n\n  @@index([submissionId])\n}\n\nmodel ProblemSolved {\n  id        String   @id @default(uuid())\n  userId    String\n  problemId String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)\n  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)\n\n  @@unique([userId, problemId])\n}\n\nmodel Playlist {\n  id          String   @id @default(uuid())\n  name        String\n  description String?\n  userId      String\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  problems ProblemInPlaylist[]\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([name, userId])\n}\n\nmodel ProblemInPlaylist {\n  id         String   @id @default(uuid())\n  playlistId String\n  problemId  String\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n\n  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)\n\n  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)\n\n  @@unique([playlistId, problemId])\n}\n",
+  "inlineSchemaHash": "ee305a991b0a2cf0960a511d98f787ddfc0120abfae51926d2aa3434f901e973",
   "copyEngine": true
 }
 config.dirname = '/'

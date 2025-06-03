@@ -16,8 +16,16 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173",""],
+    origin: [
+      "http://localhost:5173",
+      "https://www.codingshastra.codes",
+      "https://codingshastra.codes",
+      "https://coding-shastra.vercel.app/",
+    ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    exposedHeaders: ["Set-Cookie"],
   })
 );
 app.get("/", (req, res) => {
@@ -29,6 +37,6 @@ app.use("/api/v1/problems", problemRoutes);
 app.use("/api/v1/execute-code", executionRoute);
 app.use("/api/v1/submission", submissionRoute);
 app.use("/api/v1/playlist", playlistRoutes);
-app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT || 5000, () => {
   console.log("Server is running on port ", process.env.PORT);
 });
