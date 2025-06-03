@@ -25,6 +25,10 @@ const ProblemDetailPage = () => {
   const [hints, setHints] = useState([]);
   const [loadingHints, setLoadingHints] = useState(false);
 
+  // Cooldown states
+  const [runCooldown, setRunCooldown] = useState(0);
+  const [submitCooldown, setSubmitCooldown] = useState(0);
+
   const languageMap = {
     JAVASCRIPT: { id: 63, name: "JavaScript", extension: "js" },
     PYTHON: { id: 71, name: "Python", extension: "py" },
@@ -40,6 +44,27 @@ const ProblemDetailPage = () => {
       setCode(problem.codeSnippet[selectedLanguage] || "");
     }
   }, [selectedLanguage, problem]);
+
+  // Cooldown timers
+  useEffect(() => {
+    let runTimer;
+    if (runCooldown > 0) {
+      runTimer = setTimeout(() => {
+        setRunCooldown(runCooldown - 1);
+      }, 1000);
+    }
+    return () => clearTimeout(runTimer);
+  }, [runCooldown]);
+
+  useEffect(() => {
+    let submitTimer;
+    if (submitCooldown > 0) {
+      submitTimer = setTimeout(() => {
+        setSubmitCooldown(submitCooldown - 1);
+      }, 1000);
+    }
+    return () => clearTimeout(submitTimer);
+  }, [submitCooldown]);
 
   const fetchProblem = async () => {
     try {
@@ -72,6 +97,11 @@ const ProblemDetailPage = () => {
   const runCode = async () => {
     if (!code.trim()) {
       toast.error("Please write some code first");
+      return;
+    }
+
+    if (runCooldown > 0) {
+      toast.error(`Please wait ${runCooldown} seconds before running again`);
       return;
     }
 
@@ -113,6 +143,9 @@ const ProblemDetailPage = () => {
       } else {
         toast.error(`${passedCount}/${totalCount} test cases passed`);
       }
+
+      // Start 15-second cooldown
+      setRunCooldown(15);
     } catch (error) {
       console.error("Error running code:", error);
 
@@ -132,6 +165,9 @@ const ProblemDetailPage = () => {
       setTestResults(errorResults);
       setActiveTab("output");
       toast.error("Error running code");
+
+      // Start 15-second cooldown even on error
+      setRunCooldown(15);
     } finally {
       setIsRunning(false);
     }
@@ -140,6 +176,13 @@ const ProblemDetailPage = () => {
   const submitCode = async () => {
     if (!code.trim()) {
       toast.error("Please write some code first");
+      return;
+    }
+
+    if (submitCooldown > 0) {
+      toast.error(
+        `Please wait ${submitCooldown} seconds before submitting again`
+      );
       return;
     }
 
@@ -183,6 +226,9 @@ const ProblemDetailPage = () => {
         const totalCount = formattedResults.testCases.length;
         toast.error(`${passedCount}/${totalCount} test cases passed`);
       }
+
+      // Start 15-second cooldown
+      setSubmitCooldown(15);
     } catch (error) {
       console.error("Error submitting code:", error);
 
@@ -202,6 +248,9 @@ const ProblemDetailPage = () => {
       setTestResults(errorResults);
       setActiveTab("output");
       toast.error("Error submitting code");
+
+      // Start 15-second cooldown even on error
+      setSubmitCooldown(15);
     } finally {
       setIsSubmitting(false);
     }
@@ -562,26 +611,36 @@ const ProblemDetailPage = () => {
               <button
                 className="btn btn-outline btn-sm"
                 onClick={runCode}
-                disabled={isRunning}
+                disabled={isRunning || runCooldown > 0}
+                title={
+                  runCooldown > 0
+                    ? `Wait ${runCooldown}s before running again`
+                    : "Run code"
+                }
               >
                 {isRunning ? (
                   <span className="loading loading-spinner loading-xs"></span>
                 ) : (
                   <Play className="w-4 h-4" />
                 )}
-                Run
+                {runCooldown > 0 ? `Run (${runCooldown}s)` : "Run"}
               </button>
               <button
                 className="btn btn-primary btn-sm"
                 onClick={submitCode}
-                disabled={isSubmitting}
+                disabled={isSubmitting || submitCooldown > 0}
+                title={
+                  submitCooldown > 0
+                    ? `Wait ${submitCooldown}s before submitting again`
+                    : "Submit code"
+                }
               >
                 {isSubmitting ? (
                   <span className="loading loading-spinner loading-xs"></span>
                 ) : (
                   <Send className="w-4 h-4" />
                 )}
-                Submit
+                {submitCooldown > 0 ? `Submit (${submitCooldown}s)` : "Submit"}
               </button>
             </div>
           </div>
