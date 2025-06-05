@@ -19,16 +19,39 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://www.codingshastra.codes",
-      "https://codingshastra.codes",
-      "https://coding-shastra.vercel.app/",
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+
+      const allowedOrigins = [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://www.codingshastra.codes",
+        "https://codingshastra.codes",
+        "https://coding-shastra.vercel.app",
+        // Remove trailing slash from the last one
+      ];
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log("CORS blocked origin:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // This is crucial for cookies
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Cookie",
+      "Set-Cookie",
+      "Access-Control-Allow-Credentials",
     ],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
     exposedHeaders: ["Set-Cookie"],
+    // Add these for better cross-origin cookie support
+    optionsSuccessStatus: 200,
+    preflightContinue: false,
   })
 );
 app.get("/", (req, res) => {
