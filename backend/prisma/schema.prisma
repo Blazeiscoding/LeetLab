@@ -33,6 +33,7 @@ model User {
   email     String  @unique
   image     String?
   role  UserRole @default(USER)
+  isVerified Boolean @default(false)
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -41,7 +42,30 @@ model User {
   submission Submission[]
   problemSolved ProblemSolved[]
   playlists Playlist[]
+
+  otpVerifications OtpVerification[]
+  @@map("users")
 }
+
+model OtpVerification {
+  id        String   @id @default(cuid())
+  email     String
+  otp       String
+  type      OtpType
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [email], references: [email], onDelete: Cascade)
+  
+  @@map("otp_verifications")
+}
+
+enum OtpType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
 
 model Problem {
   id String @id @default(uuid())

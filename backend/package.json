@@ -19,10 +19,12 @@
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "node-cron": "^4.1.0"
+    "node-cron": "^4.1.0",
+    "resend": "^4.5.2"
   },
   "devDependencies": {
     "prisma": "^6.8.2"
