@@ -29,7 +29,7 @@ app.use(
         "https://www.codingshastra.codes",
         "https://codingshastra.codes",
         "https://coding-shastra.vercel.app",
-        // Remove trailing slash from the last one
+       
       ];
 
       if (allowedOrigins.includes(origin)) {

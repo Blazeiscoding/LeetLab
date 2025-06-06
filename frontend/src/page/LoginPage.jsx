@@ -6,6 +6,7 @@ import { Code, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { loginSchema } from "../util/zodSchema";
 import AuthImagePattern from "../components/AuthImagePattern";
 import { useAuthStore } from "../store/useAuthStore";
+
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoggingIn } = useAuthStore();
@@ -119,14 +120,7 @@ const LoginPage = () => {
           </form>
 
           {/* Footer */}
-          <div className="text-center space-y-4">
-            <Link
-              to="/forgot-password"
-              className="text-base-content/60 hover:text-primary transition-colors text-sm"
-            >
-              Forgot your password?
-            </Link>
-
+          <div className="text-center">
             <p className="text-base-content/60">
               Don't have an account?{" "}
               <Link to="/signup" className="link link-primary">

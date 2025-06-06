@@ -2,14 +2,15 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Code, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import { Code, Eye, EyeOff, Loader2, Lock, Mail, User } from "lucide-react";
 import { signUpSchema } from "../util/zodSchema";
 import AuthImagePattern from "../components/AuthImagePattern";
 import { useAuthStore } from "../store/useAuthStore";
+
 const SignupPage = () => {
   const [showPassword, setShowPassword] = useState(false);
 
-  const { signup, isSigninUp } = useAuthStore();
+  const { signup, isSigningUp } = useAuthStore();
 
   const {
     register,
@@ -22,9 +23,8 @@ const SignupPage = () => {
   const onSubmit = async (data) => {
     try {
       await signup(data);
-      console.log("signup data", data);
     } catch (error) {
-      console.log("Error in signup", error);
+      console.error("Error in signup", error);
     }
   };
 
@@ -38,21 +38,21 @@ const SignupPage = () => {
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                 <Code className="w-6 h-6 text-primary" />
               </div>
-              <h1 className="text-2xl font-bold mt-2">Welcome </h1>
-              <p className="text-base-content/60">Sign Up to your account</p>
+              <h1 className="text-2xl font-bold mt-2">Welcome</h1>
+              <p className="text-base-content/60">Create your account</p>
             </div>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* name */}
+            {/* Name */}
             <div className="form-control">
               <label className="label">
                 <span className="label-text font-medium">Name</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Code className="h-5 w-5 text-base-content/40" />
+                  <User className="h-5 w-5 text-base-content/40" />
                 </div>
                 <input
                   type="text"
@@ -69,6 +69,7 @@ const SignupPage = () => {
                 </p>
               )}
             </div>
+
             {/* Email */}
             <div className="form-control">
               <label className="label">
@@ -93,6 +94,7 @@ const SignupPage = () => {
                 </p>
               )}
             </div>
+
             {/* Password */}
             <div className="form-control">
               <label className="label">
@@ -132,15 +134,15 @@ const SignupPage = () => {
             <button
               type="submit"
               className="btn btn-primary w-full"
-              disabled={isSigninUp}
+              disabled={isSigningUp}
             >
-              {isSigninUp ? (
+              {isSigningUp ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  Loading...
+                  Creating Account...
                 </>
               ) : (
-                "Sign Up"
+                "Create Account"
               )}
             </button>
           </form>
@@ -150,7 +152,7 @@ const SignupPage = () => {
             <p className="text-base-content/60">
               Already have an account?{" "}
               <Link to="/login" className="link link-primary">
-                Sign in
+                Sign In
               </Link>
             </p>
           </div>
@@ -159,9 +161,9 @@ const SignupPage = () => {
 
       {/* Right Side - Image/Pattern */}
       <AuthImagePattern
-        title={"Welcome to our platform!"}
+        title={"Join Our Platform!"}
         subtitle={
-          "Sign up to access our platform and start using our services."
+          "Create your account to access all features and start your journey with us."
         }
       />
     </div>
