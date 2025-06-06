@@ -24,11 +24,24 @@ export const useAuthStore = create((set) => ({
   signup: async (data) => {
     set({ isSigninUp: true });
     try {
+      // Debug: Log the data being sent
+      console.log("Signup data being sent:", data);
+      console.log(
+        "Request URL:",
+        axiosInstance.defaults.baseURL + "/auth/register"
+      );
+
       const res = await axiosInstance.post("/auth/register", data);
       set({ authUser: res.data.user });
       toast.success(res.data.message);
     } catch (error) {
       console.log("Error in signup", error);
+
+      // Debug: Log the full error details
+      console.log("Error status:", error.response?.status);
+      console.log("Error data:", error.response?.data);
+      console.log("Error headers:", error.response?.headers);
+
       // Safe error handling - check if response exists
       const errorMessage =
         error.response?.data?.message || error.message || "Signup failed";
@@ -40,11 +53,24 @@ export const useAuthStore = create((set) => ({
   login: async (data) => {
     set({ isLoggingIn: true });
     try {
+      // Debug: Log the data being sent
+      console.log("Login data being sent:", data);
+      console.log(
+        "Request URL:",
+        axiosInstance.defaults.baseURL + "/auth/login"
+      );
+
       const res = await axiosInstance.post("/auth/login", data);
       set({ authUser: res.data.user });
       toast.success(res.data.message);
     } catch (error) {
       console.log("Error in login", error);
+
+      // Debug: Log the full error details
+      console.log("Error status:", error.response?.status);
+      console.log("Error data:", error.response?.data);
+      console.log("Error headers:", error.response?.headers);
+
       // Safe error handling - check if response exists
       const errorMessage =
         error.response?.data?.message || error.message || "Login failed";
