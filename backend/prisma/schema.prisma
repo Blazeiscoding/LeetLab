@@ -43,28 +43,52 @@ model User {
   problemSolved ProblemSolved[]
   playlists Playlist[]
 
-  otpVerifications OtpVerification[]
+  
   
 }
-
-model OtpVerification {
+model EmailVerification {
   id        String   @id @default(cuid())
   email     String
-  otp       String
-  type      OtpType
+  token     String   @unique
+  used      Boolean  @default(false)
   expiresAt DateTime
-  verified  Boolean  @default(false)
   createdAt DateTime @default(now())
-  
-  user      User     @relation(fields: [email], references: [email], onDelete: Cascade)
-  
-  @@map("otp_verifications")
+  updatedAt DateTime @updatedAt
+
+  @@map("email_verifications")
 }
 
-enum OtpType {
-  EMAIL_VERIFICATION
-  PASSWORD_RESET
+model PasswordReset {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("password_resets")
 }
+
+
+// model OtpVerification {
+//   id        String   @id @default(cuid())
+//   email     String
+//   otp       String
+//   type      OtpType
+//   expiresAt DateTime
+//   verified  Boolean  @default(false)
+//   createdAt DateTime @default(now())
+  
+//   user      User     @relation(fields: [email], references: [email], onDelete: Cascade)
+  
+//   @@map("otp_verifications")
+// }
+
+// enum OtpType {
+//   EMAIL_VERIFICATION
+//   PASSWORD_RESET
+// }
 
 
 model Problem {

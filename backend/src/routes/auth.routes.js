@@ -5,7 +5,7 @@ import {
   logout,
   me,
   verifyEmail,
-  resendVerificationOTP,
+  resendVerificationEmail,
   forgotPassword,
   resetPassword,
 } from "../controllers/auth.controller.js";
@@ -15,7 +15,7 @@ const authRoutes = express.Router();
 
 authRoutes.post("/register", register);
 authRoutes.post("/verify-email", verifyEmail);
-authRoutes.post("/resend-verification", resendVerificationOTP);
+authRoutes.post("/resend-verification", resendVerificationEmail);
 authRoutes.post("/login", login);
 authRoutes.post("/forgot-password", forgotPassword);
 authRoutes.post("/reset-password", resetPassword);

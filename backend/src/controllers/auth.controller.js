@@ -3,12 +3,11 @@ import { db } from "../libs/db.js";
 import { UserRole } from "../generated/prisma/index.js";
 import jwt from "jsonwebtoken";
 import {
-  generateOTP,
+  generateVerificationToken,
   sendVerificationEmail,
   sendPasswordResetEmail,
-} from "../libs/resend.lib.js";
+} from "../libs/mailtrap.lib.js";
 
-// Helper function to get cookie options
 const getCookieOptions = () => {
   const isProduction = process.env.NODE_ENV === "production";
 
@@ -35,7 +34,6 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user but not verified
     const user = await db.user.create({
       data: {
         name,
@@ -46,24 +44,22 @@ export const register = async (req, res) => {
       },
     });
 
-    // Generate and send OTP
-    const otp = generateOTP();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const verificationToken = generateVerificationToken();
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    await db.otpVerification.create({
+    await db.emailVerification.create({
       data: {
         email,
-        otp,
-        type: "EMAIL_VERIFICATION",
+        token: verificationToken,
         expiresAt,
       },
     });
 
-    await sendVerificationEmail(email, otp, name);
+    await sendVerificationEmail(email, verificationToken, name);
 
     return res.status(201).json({
       message:
-        "Registration successful. Please check your email for verification OTP.",
+        "Registration successful. Please check your email to verify your account.",
       requiresVerification: true,
       email: email,
     });
@@ -74,33 +70,32 @@ export const register = async (req, res) => {
 };
 
 export const verifyEmail = async (req, res) => {
-  const { email, otp } = req.body;
+  const { email, token } = req.body;
 
   try {
-    const otpRecord = await db.otpVerification.findFirst({
+    const verificationRecord = await db.emailVerification.findFirst({
       where: {
         email,
-        otp,
-        type: "EMAIL_VERIFICATION",
-        verified: false,
+        token,
+        used: false,
         expiresAt: { gt: new Date() },
       },
     });
 
-    if (!otpRecord) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
+    if (!verificationRecord) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired verification link" });
     }
 
-    // Update user verification status
     await db.user.update({
       where: { email },
       data: { isVerified: true },
     });
 
-    // Mark OTP as verified
-    await db.otpVerification.update({
-      where: { id: otpRecord.id },
-      data: { verified: true },
+    await db.emailVerification.update({
+      where: { id: verificationRecord.id },
+      data: { used: true },
     });
 
     const user = await db.user.findUnique({
@@ -108,13 +103,12 @@ export const verifyEmail = async (req, res) => {
       select: { id: true, name: true, email: true, role: true },
     });
 
-    // Generate token and set cookie
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+    const jwtToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 
     const cookieOptions = getCookieOptions();
-    res.cookie("jwt", token, cookieOptions);
+    res.cookie("jwt", jwtToken, cookieOptions);
 
     return res.status(200).json({
       message: "Email verified successfully",
@@ -126,7 +120,7 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
-export const resendVerificationOTP = async (req, res) => {
+export const resendVerificationEmail = async (req, res) => {
   const { email } = req.body;
 
   try {
@@ -138,33 +132,29 @@ export const resendVerificationOTP = async (req, res) => {
     if (user.isVerified) {
       return res.status(400).json({ message: "Email already verified" });
     }
-
-    // Delete old OTPs
-    await db.otpVerification.deleteMany({
-      where: { email, type: "EMAIL_VERIFICATION" },
+    await db.emailVerification.deleteMany({
+      where: { email },
     });
 
-    // Generate new OTP
-    const otp = generateOTP();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const verificationToken = generateVerificationToken();
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    await db.otpVerification.create({
+    await db.emailVerification.create({
       data: {
         email,
-        otp,
-        type: "EMAIL_VERIFICATION",
+        token: verificationToken,
         expiresAt,
       },
     });
 
-    await sendVerificationEmail(email, otp, user.name);
+    await sendVerificationEmail(email, verificationToken, user.name);
 
     return res.status(200).json({
-      message: "Verification OTP resent successfully",
+      message: "Verification email resent successfully",
     });
   } catch (error) {
-    console.error("Resend OTP error:", error);
-    res.status(500).json({ message: "Failed to resend OTP" });
+    console.error("Resend verification email error:", error);
+    res.status(500).json({ message: "Failed to resend verification email" });
   }
 };
 
@@ -220,32 +210,29 @@ export const forgotPassword = async (req, res) => {
     if (!user) {
       // Don't reveal if email exists or not
       return res.status(200).json({
-        message: "If the email exists, you will receive a password reset OTP",
+        message: "If the email exists, you will receive a password reset link",
       });
     }
 
-    // Delete old password reset OTPs
-    await db.otpVerification.deleteMany({
-      where: { email, type: "PASSWORD_RESET" },
+    await db.passwordReset.deleteMany({
+      where: { email },
     });
 
-    // Generate new OTP
-    const otp = generateOTP();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const resetToken = generateVerificationToken();
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-    await db.otpVerification.create({
+    await db.passwordReset.create({
       data: {
         email,
-        otp,
-        type: "PASSWORD_RESET",
+        token: resetToken,
         expiresAt,
       },
     });
 
-    await sendPasswordResetEmail(email, otp, user.name);
+    await sendPasswordResetEmail(email, resetToken, user.name);
 
     return res.status(200).json({
-      message: "If the email exists, you will receive a password reset OTP",
+      message: "If the email exists, you will receive a password reset link",
     });
   } catch (error) {
     console.error("Forgot password error:", error);
@@ -254,35 +241,32 @@ export const forgotPassword = async (req, res) => {
 };
 
 export const resetPassword = async (req, res) => {
-  const { email, otp, newPassword } = req.body;
+  const { email, token, newPassword } = req.body;
 
   try {
-    const otpRecord = await db.otpVerification.findFirst({
+    const resetRecord = await db.passwordReset.findFirst({
       where: {
         email,
-        otp,
-        type: "PASSWORD_RESET",
-        verified: false,
+        token,
+        used: false,
         expiresAt: { gt: new Date() },
       },
     });
 
-    if (!otpRecord) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
+    if (!resetRecord) {
+      return res.status(400).json({ message: "Invalid or expired reset link" });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update password
     await db.user.update({
       where: { email },
       data: { password: hashedPassword },
     });
 
-    // Mark OTP as verified
-    await db.otpVerification.update({
-      where: { id: otpRecord.id },
-      data: { verified: true },
+    await db.passwordReset.update({
+      where: { id: resetRecord.id },
+      data: { used: true },
     });
 
     return res.status(200).json({
@@ -319,4 +303,3 @@ export const me = async (req, res) => {
     return res.status(500).json({ error: "Error While Fetching User" });
   }
 };
-

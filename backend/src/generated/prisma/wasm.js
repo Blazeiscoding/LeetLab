@@ -132,14 +132,24 @@ exports.Prisma.UserScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.OtpVerificationScalarFieldEnum = {
+exports.Prisma.EmailVerificationScalarFieldEnum = {
   id: 'id',
   email: 'email',
-  otp: 'otp',
-  type: 'type',
+  token: 'token',
+  used: 'used',
   expiresAt: 'expiresAt',
-  verified: 'verified',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PasswordResetScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  token: 'token',
+  used: 'used',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.ProblemScalarFieldEnum = {
@@ -247,11 +257,6 @@ exports.UserRole = exports.$Enums.UserRole = {
   USER: 'USER'
 };
 
-exports.OtpType = exports.$Enums.OtpType = {
-  EMAIL_VERIFICATION: 'EMAIL_VERIFICATION',
-  PASSWORD_RESET: 'PASSWORD_RESET'
-};
-
 exports.Difficulty = exports.$Enums.Difficulty = {
   EASY: 'EASY',
   MEDIUM: 'MEDIUM',
@@ -265,7 +270,8 @@ exports.status = exports.$Enums.status = {
 
 exports.Prisma.ModelName = {
   User: 'User',
-  OtpVerification: 'OtpVerification',
+  EmailVerification: 'EmailVerification',
+  PasswordReset: 'PasswordReset',
   Problem: 'Problem',
   Submission: 'Submission',
   TestCaseResult: 'TestCaseResult',
