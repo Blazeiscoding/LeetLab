@@ -5,7 +5,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useAuthStore } from "./store/useAuthStore";
-
+import { useEffect } from "react";
 // Import all your authentication pages
 import LoginPage from "./page/LoginPage";
 import SignupPage from "./page/SignupPage";
@@ -83,7 +83,7 @@ function App() {
   }
 
   return (
-    <Router>
+  
       <Routes>
         {/* Public Routes */}
         <Route
@@ -151,7 +151,7 @@ function App() {
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </Router>
+    
   );
 }
 
