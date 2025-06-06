@@ -32,7 +32,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   // Check if email is verified (optional - remove if not needed)
-  
+
   return children;
 };
 
@@ -47,8 +47,6 @@ const PublicRoute = ({ children }) => {
       </div>
     );
   }
-
- 
 
   return children;
 };
@@ -88,25 +86,8 @@ function App() {
           </PublicRoute>
         }
       />
-      <Route
-        path="/forgot-password"
-        element={
-          <PublicRoute>
-            <ForgotPasswordPage />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/reset-password"
-        element={
-          <PublicRoute>
-            <ResetPasswordPage />
-          </PublicRoute>
-        }
-      />
 
       {/* Email Verification Route (accessible to authenticated users) */}
-      <Route path="/verify-email" element={<VerifyEmailPage />} />
 
       {/* Protected Routes */}
       <Route
