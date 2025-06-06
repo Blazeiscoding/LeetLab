@@ -1,4 +1,4 @@
-import  { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -119,7 +119,14 @@ const LoginPage = () => {
           </form>
 
           {/* Footer */}
-          <div className="text-center">
+          <div className="text-center space-y-4">
+            <Link
+              to="/forgot-password"
+              className="text-base-content/60 hover:text-primary transition-colors text-sm"
+            >
+              Forgot your password?
+            </Link>
+
             <p className="text-base-content/60">
               Don't have an account?{" "}
               <Link to="/signup" className="link link-primary">

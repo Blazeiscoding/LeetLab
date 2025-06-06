@@ -1,117 +1,158 @@
-import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
-  useLocation,
 } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/useAuthStore";
-import { Loader } from "lucide-react";
 
-// Layout
-import Layout from "./layout/Layout";
-
-// Auth Pages
+// Import all your authentication pages
 import LoginPage from "./page/LoginPage";
 import SignupPage from "./page/SignupPage";
+import ForgotPasswordPage from "./page/ForgotPassword";
+import ResetPasswordPage from "./page/ResetPassword";
+import VerifyEmailPage from "./page/VerifyEmail";
 
-// Main Pages
-import HomePage from "./page/HomePage";
-import { ProblemsPage } from "./page/ProblemsPage";
-import ProblemDetailPage from "./page/ProblemDetailPage";
-import ProfilePage from "./page/ProfilePage";
-import PlaylistsPage from "./page/PlaylistsPage";
-import PlaylistDetailPage from "./page/PlaylistDetailPage";
-import AddProblem from "./page/AddProblem";
-import DeleteProblem from "./page/DeleteProblem";
-import UpdateProblem from "./page/UpdateProblem";
+// Import your protected components
+import ProfilePage from "./page/ProfilePage"; // Your profile component
+import ProblemsPage from "./page/ProblemsPage"; // Your problems component
+import HomePage from "./page/HomePage"; // Your home component
 
-// Components
-import ProtectedRoute from "./components/ProtectedRoute";
-import AdminRoute from "./components/AdminRoute";
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { authUser, isCheckingAuth } = useAuthStore();
 
-function AppContent() {
-  const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
-  const location = useLocation();
+  if (isCheckingAuth) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
 
+  if (!authUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Check if email is verified (optional - remove if not needed)
+  if (!authUser.isEmailVerified) {
+    return <Navigate to="/verify-email" replace />;
+  }
+
+  return children;
+};
+
+// Public Route Component (redirect authenticated users)
+const PublicRoute = ({ children }) => {
+  const { authUser, isCheckingAuth } = useAuthStore();
+
+  if (isCheckingAuth) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
+
+  if (authUser) {
+    // If user is authenticated but email not verified
+    if (!authUser.isEmailVerified) {
+      return <Navigate to="/verify-email" replace />;
+    }
+    // If fully authenticated, redirect to home
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+function App() {
+  const { checkAuth, isCheckingAuth } = useAuthStore();
+
+  // Check authentication status on app load
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
-  if (isCheckingAuth && authUser === null) {
+  if (isCheckingAuth) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader className="size-10 animate-spin" />
+      <div className="flex items-center justify-center min-h-screen">
+        <span className="loading loading-spinner loading-lg"></span>
       </div>
     );
   }
 
   return (
-    <div className="App">
+    <Router>
       <Routes>
         {/* Public Routes */}
         <Route
           path="/login"
           element={
-            !authUser ? (
+            <PublicRoute>
               <LoginPage />
-            ) : (
-              <Navigate to={location.state?.from || "/"} replace />
-            )
+            </PublicRoute>
           }
         />
         <Route
           path="/signup"
           element={
-            !authUser ? (
+            <PublicRoute>
               <SignupPage />
-            ) : (
-              <Navigate to={location.state?.from || "/"} replace />
-            )
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <ForgotPasswordPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <PublicRoute>
+              <ResetPasswordPage />
+            </PublicRoute>
           }
         />
 
-        {/* Protected Routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route element={<Layout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/problems" element={<ProblemsPage />} />
-            <Route path="/problems/:id" element={<ProblemDetailPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/playlists" element={<PlaylistsPage />} />
-            <Route path="/playlists/:id" element={<PlaylistDetailPage />} />
+        {/* Email Verification Route (accessible to authenticated users) */}
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
 
-            {/* Admin Routes */}
-            <Route element={<AdminRoute />}>
-              <Route path="/add-problem" element={<AddProblem />} />
-              <Route path="/update-problem" element={<UpdateProblem />} />
-              <Route path="/delete-problem" element={<DeleteProblem />} />
-            </Route>
-          </Route>
-        </Route>
+        {/* Protected Routes */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <HomePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/problems"
+          element={
+            <ProtectedRoute>
+              <ProblemsPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: "var(--fallback-b1,oklch(var(--b1)))",
-            color: "var(--fallback-bc,oklch(var(--bc)))",
-          },
-        }}
-      />
-    </div>
+    </Router>
   );
-}
-
-function App() {
-  return <AppContent />;
 }
 
 export default App;
