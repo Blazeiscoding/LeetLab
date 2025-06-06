@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Code, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { loginSchema } from "../util/zodSchema";
@@ -9,20 +9,34 @@ import { useAuthStore } from "../store/useAuthStore";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
   const { login, isLoggingIn } = useAuthStore();
+  
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setError,
   } = useForm({
     resolver: zodResolver(loginSchema),
   });
 
   const onSubmit = async (data) => {
     try {
-      await login(data);
+      const result = await login(data);
+      
+      if (result.success) {
+        // Redirect to home page after successful login
+        navigate("/", { replace: true });
+      } else {
+        // Handle login failure
+        if (result.error.includes("credentials")) {
+          setError("email", { message: "Invalid email or password" });
+          setError("password", { message: "Invalid email or password" });
+        }
+      }
     } catch (error) {
-      console.error("Error in login", error);
+      console.error("Error in login form submission:", error);
     }
   };
 
@@ -36,7 +50,7 @@ const LoginPage = () => {
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                 <Code className="w-6 h-6 text-primary" />
               </div>
-              <h1 className="text-2xl font-bold mt-2">Welcome </h1>
+              <h1 className="text-2xl font-bold mt-2">Welcome Back</h1>
               <p className="text-base-content/60">Login to your account</p>
             </div>
           </div>
@@ -59,6 +73,7 @@ const LoginPage = () => {
                     errors.email ? "input-error" : ""
                   }`}
                   placeholder="you@example.com"
+                  disabled={isLoggingIn}
                 />
               </div>
               {errors.email && (
@@ -67,6 +82,7 @@ const LoginPage = () => {
                 </p>
               )}
             </div>
+
             {/* Password */}
             <div className="form-control">
               <label className="label">
@@ -79,15 +95,17 @@ const LoginPage = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   {...register("password")}
-                  className={`input input-bordered w-full pl-10 ${
+                  className={`input input-bordered w-full pl-10 pr-10 ${
                     errors.password ? "input-error" : ""
                   }`}
                   placeholder="••••••••"
+                  disabled={isLoggingIn}
                 />
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoggingIn}
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5 text-base-content/40" />
@@ -111,7 +129,7 @@ const LoginPage = () => {
               {isLoggingIn ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  Loading...
+                  Logging in...
                 </>
               ) : (
                 "Login"
@@ -123,7 +141,11 @@ const LoginPage = () => {
           <div className="text-center">
             <p className="text-base-content/60">
               Don't have an account?{" "}
-              <Link to="/signup" className="link link-primary">
+              <Link 
+                to="/signup" 
+                className="link link-primary"
+                tabIndex={isLoggingIn ? -1 : 0}
+              >
                 Sign Up
               </Link>
             </p>

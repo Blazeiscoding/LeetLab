@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Code, Eye, EyeOff, Loader2, Lock, Mail, User } from "lucide-react";
 import { signUpSchema } from "../util/zodSchema";
@@ -9,22 +9,40 @@ import { useAuthStore } from "../store/useAuthStore";
 
 const SignupPage = () => {
   const [showPassword, setShowPassword] = useState(false);
-
-  const { signup, isSigningUp } = useAuthStore();
+  const navigate = useNavigate();
+  const { signup, isSigningUp } = useAuthStore(); // Fixed typo
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setError,
   } = useForm({
     resolver: zodResolver(signUpSchema),
   });
 
   const onSubmit = async (data) => {
     try {
-      await signup(data);
+      const result = await signup(data);
+
+      if (result.success) {
+        // Redirect to login page after successful registration
+        // Since backend doesn't auto-login after registration
+        navigate("/login", {
+          replace: true,
+          state: {
+            message:
+              "Registration successful! Please login with your credentials.",
+          },
+        });
+      } else {
+        // Handle specific signup errors
+        if (result.error.includes("already exists")) {
+          setError("email", { message: "Email already registered" });
+        }
+      }
     } catch (error) {
-      console.error("Error in signup", error);
+      console.error("Error in signup form submission:", error);
     }
   };
 
@@ -38,8 +56,8 @@ const SignupPage = () => {
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                 <Code className="w-6 h-6 text-primary" />
               </div>
-              <h1 className="text-2xl font-bold mt-2">Welcome</h1>
-              <p className="text-base-content/60">Create your account</p>
+              <h1 className="text-2xl font-bold mt-2">Create Account</h1>
+              <p className="text-base-content/60">Join us today</p>
             </div>
           </div>
 
@@ -48,7 +66,7 @@ const SignupPage = () => {
             {/* Name */}
             <div className="form-control">
               <label className="label">
-                <span className="label-text font-medium">Name</span>
+                <span className="label-text font-medium">Full Name</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -61,6 +79,7 @@ const SignupPage = () => {
                     errors.name ? "input-error" : ""
                   }`}
                   placeholder="John Doe"
+                  disabled={isSigningUp}
                 />
               </div>
               {errors.name && (
@@ -86,6 +105,7 @@ const SignupPage = () => {
                     errors.email ? "input-error" : ""
                   }`}
                   placeholder="you@example.com"
+                  disabled={isSigningUp}
                 />
               </div>
               {errors.email && (
@@ -107,15 +127,17 @@ const SignupPage = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   {...register("password")}
-                  className={`input input-bordered w-full pl-10 ${
+                  className={`input input-bordered w-full pl-10 pr-10 ${
                     errors.password ? "input-error" : ""
                   }`}
                   placeholder="••••••••"
+                  disabled={isSigningUp}
                 />
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
+                  disabled={isSigningUp}
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5 text-base-content/40" />
@@ -151,7 +173,11 @@ const SignupPage = () => {
           <div className="text-center">
             <p className="text-base-content/60">
               Already have an account?{" "}
-              <Link to="/login" className="link link-primary">
+              <Link
+                to="/login"
+                className="link link-primary"
+                tabIndex={isSigningUp ? -1 : 0}
+              >
                 Sign In
               </Link>
             </p>
