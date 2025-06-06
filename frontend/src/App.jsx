@@ -15,7 +15,7 @@ import VerifyEmailPage from "./page/VerifyEmail";
 
 // Import your protected components
 import ProfilePage from "./page/ProfilePage"; // Your profile component
-import ProblemsPage from "./page/ProblemsPage"; // Your problems component
+import { ProblemsPage } from "./page/ProblemsPage"; // Your problems component
 import HomePage from "./page/HomePage"; // Your home component
 
 // Protected Route Component
