@@ -137,11 +137,9 @@ function App() {
   }
 
   return (
-    <Router>
-      <div className="min-h-screen bg-base-100">
-        <AppRoutes />
-      </div>
-    </Router>
+    <div className="min-h-screen bg-base-100">
+      <AppRoutes />
+    </div>
   );
 }
 
