@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -5,142 +6,112 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/useAuthStore";
-import { useEffect } from "react";
-import toast from "react-hot-toast";
+import { Loader } from "lucide-react";
 
-// Import all your authentication pages
+// Layout
+import Layout from "./layout/Layout";
+
+// Auth Pages
 import LoginPage from "./page/LoginPage";
 import SignupPage from "./page/SignupPage";
 
-// Import your protected components
-import ProfilePage from "./page/ProfilePage";
-import { ProblemsPage } from "./page/ProblemsPage";
+// Main Pages
 import HomePage from "./page/HomePage";
+import { ProblemsPage } from "./page/ProblemsPage";
+import ProblemDetailPage from "./page/ProblemDetailPage";
+import ProfilePage from "./page/ProfilePage";
+import PlaylistsPage from "./page/PlaylistsPage";
+import PlaylistDetailPage from "./page/PlaylistDetailPage";
+import AddProblem from "./page/AddProblem";
+import DeleteProblem from "./page/DeleteProblem";
+import UpdateProblem from "./page/UpdateProblem";
 
-// Loading component
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-screen bg-base-100">
-    <div className="flex flex-col items-center gap-4">
-      <span className="loading loading-spinner loading-lg text-primary"></span>
-      <p className="text-base-content/60">Loading...</p>
-    </div>
-  </div>
-);
+// Components
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 
-// Protected Route Component
-const ProtectedRoute = ({ children }) => {
-  const { authUser, isCheckingAuth } = useAuthStore();
-
-  if (isCheckingAuth) {
-    return <LoadingSpinner />;
-  }
-
-  if (!authUser) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
-};
-
-// Public Route Component (redirect authenticated users)
-const PublicRoute = ({ children }) => {
-  const { authUser, isCheckingAuth } = useAuthStore();
+function AppContent() {
+  const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
   const location = useLocation();
 
-  if (isCheckingAuth) {
-    return <LoadingSpinner />;
-  }
-
-  // If user is authenticated, redirect to home
-  if (authUser) {
-    return <Navigate to="/" replace />;
-  }
-
-  // Show success message if coming from signup
-  useEffect(() => {
-    if (location.state?.message) {
-      toast.success(location.state.message);
-      // Clear the state to prevent showing message again
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state]);
-
-  return children;
-};
-
-// App Routes Component
-const AppRoutes = () => {
-  return (
-    <Routes>
-      {/* Public Routes */}
-      <Route
-        path="/login"
-        element={
-          <PublicRoute>
-            <LoginPage />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/signup"
-        element={
-          <PublicRoute>
-            <SignupPage />
-          </PublicRoute>
-        }
-      />
-
-      {/* Protected Routes */}
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <HomePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/problems"
-        element={
-          <ProtectedRoute>
-            <ProblemsPage />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Catch all route */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
-};
-
-function App() {
-  const { checkAuth, isCheckingAuth, authUser } = useAuthStore();
-
-  // Check authentication status on app load
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
-  // Show loading spinner while checking auth
-  if (isCheckingAuth) {
-    return <LoadingSpinner />;
+  if (isCheckingAuth && authUser === null) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader className="size-10 animate-spin" />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-base-100">
-      <AppRoutes />
+    <div className="App">
+      <Routes>
+        {/* Public Routes */}
+        <Route
+          path="/login"
+          element={
+            !authUser ? (
+              <LoginPage />
+            ) : (
+              <Navigate to={location.state?.from || "/"} replace />
+            )
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            !authUser ? (
+              <SignupPage />
+            ) : (
+              <Navigate to={location.state?.from || "/"} replace />
+            )
+          }
+        />
+
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/problems" element={<ProblemsPage />} />
+            <Route path="/problems/:id" element={<ProblemDetailPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/playlists" element={<PlaylistsPage />} />
+            <Route path="/playlists/:id" element={<PlaylistDetailPage />} />
+
+            {/* Admin Routes */}
+            <Route element={<AdminRoute />}>
+              <Route path="/add-problem" element={<AddProblem />} />
+              <Route path="/update-problem" element={<UpdateProblem />} />
+              <Route path="/delete-problem" element={<DeleteProblem />} />
+            </Route>
+          </Route>
+        </Route>
+
+        {/* Catch all route */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "var(--fallback-b1,oklch(var(--b1)))",
+            color: "var(--fallback-bc,oklch(var(--bc)))",
+          },
+        }}
+      />
     </div>
   );
+}
+
+function App() {
+  return <AppContent />;
 }
 
 export default App;
