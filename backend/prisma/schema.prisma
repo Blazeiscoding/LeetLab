@@ -44,7 +44,7 @@ model User {
   playlists Playlist[]
 
   otpVerifications OtpVerification[]
-  @@map("users")
+  
 }
 
 model OtpVerification {
