@@ -35,14 +35,6 @@ export const authMiddleware = async (req, res, next) => {
       return res.status(401).json({ message: "User Not Found" });
     }
 
-    if (!user.isVerified) {
-      return res.status(401).json({
-        message: "Email not verified. Please verify your email.",
-        requiresVerification: true,
-        email: user.email,
-      });
-    }
-
     req.user = user;
     next();
   } catch (error) {

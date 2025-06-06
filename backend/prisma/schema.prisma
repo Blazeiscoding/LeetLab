@@ -33,7 +33,6 @@ model User {
   email     String  @unique
   image     String?
   role  UserRole @default(USER)
-  isVerified Boolean @default(false)
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -42,54 +41,7 @@ model User {
   submission Submission[]
   problemSolved ProblemSolved[]
   playlists Playlist[]
-
-  
-  
 }
-model EmailVerification {
-  id        String   @id @default(cuid())
-  email     String
-  token     String   @unique
-  used      Boolean  @default(false)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("email_verifications")
-}
-
-model PasswordReset {
-  id        String   @id @default(cuid())
-  email     String
-  token     String   @unique
-  used      Boolean  @default(false)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("password_resets")
-}
-
-
-// model OtpVerification {
-//   id        String   @id @default(cuid())
-//   email     String
-//   otp       String
-//   type      OtpType
-//   expiresAt DateTime
-//   verified  Boolean  @default(false)
-//   createdAt DateTime @default(now())
-  
-//   user      User     @relation(fields: [email], references: [email], onDelete: Cascade)
-  
-//   @@map("otp_verifications")
-// }
-
-// enum OtpType {
-//   EMAIL_VERIFICATION
-//   PASSWORD_RESET
-// }
-
 
 model Problem {
   id String @id @default(uuid())
@@ -133,13 +85,11 @@ model Submission{
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-
   user User @relation(fields: [userId], references: [id],onDelete: Cascade)
   problem Problem @relation(fields: [problemId], references: [id],onDelete: Cascade)
 
   testCases TestCaseResult[]
 }
-
 
 model TestCaseResult{
   id String @id @default(uuid())
@@ -187,7 +137,6 @@ model Playlist {
   user User @relation(fields: [userId], references: [id],onDelete: Cascade)
 
   @@unique([name,userId])
-
 }
 
 model ProblemInPlaylist{
