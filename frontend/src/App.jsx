@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -106,6 +107,7 @@ function AppContent() {
           },
         }}
       />
+      <Analytics />
     </div>
   );
 }
