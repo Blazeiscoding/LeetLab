@@ -7,6 +7,9 @@ import {
   CheckCircle,
   XCircle,
   Clock,
+  Lightbulb,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import Editor from "@monaco-editor/react";
 import { axiosInstance } from "../util/axios";
@@ -24,6 +27,7 @@ const ProblemDetailPage = () => {
   const [activeTab, setActiveTab] = useState("description");
   const [hints, setHints] = useState([]);
   const [loadingHints, setLoadingHints] = useState(false);
+  const [revealedHints, setRevealedHints] = useState(new Set());
 
   // Cooldown states
   const [runCooldown, setRunCooldown] = useState(0);
@@ -44,6 +48,34 @@ const ProblemDetailPage = () => {
       setCode(problem.codeSnippet[selectedLanguage] || "");
     }
   }, [selectedLanguage, problem]);
+
+  // Process hints when problem is loaded
+  useEffect(() => {
+    if (problem && problem.hints) {
+      try {
+        // If hints is a string, try to parse it as JSON, otherwise split by newlines
+        let processedHints = [];
+        if (typeof problem.hints === 'string') {
+          try {
+            // Try parsing as JSON first
+            processedHints = JSON.parse(problem.hints);
+          } catch {
+            // If not JSON, split by newlines and filter empty lines
+            processedHints = problem.hints
+              .split('\n')
+              .map(hint => hint.trim())
+              .filter(hint => hint.length > 0);
+          }
+        } else if (Array.isArray(problem.hints)) {
+          processedHints = problem.hints;
+        }
+        setHints(processedHints);
+      } catch (error) {
+        console.error("Error processing hints:", error);
+        setHints([]);
+      }
+    }
+  }, [problem]);
 
   // Cooldown timers
   useEffect(() => {
@@ -78,20 +110,16 @@ const ProblemDetailPage = () => {
     }
   };
 
-  const fetchHints = async () => {
-    if (hints.length > 0) return; // Don't fetch if already loaded
+  const revealHint = (index) => {
+    setRevealedHints(prev => new Set([...prev, index]));
+  };
 
-    setLoadingHints(true);
-    try {
-      // Note: This endpoint doesn't exist in your backend, you may need to add it
-      // For now, we'll show a placeholder
-      setHints([]);
-    } catch (error) {
-      console.error("Error fetching hints:", error);
-      setHints([]);
-    } finally {
-      setLoadingHints(false);
-    }
+  const hideHint = (index) => {
+    setRevealedHints(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(index);
+      return newSet;
+    });
   };
 
   const runCode = async () => {
@@ -119,10 +147,8 @@ const ProblemDetailPage = () => {
         problem_id: id,
       };
 
-      // Fixed: Use correct endpoint for running code
       const response = await axiosInstance.post("/execute-code/run", payload);
 
-      // Fixed: Handle the correct response structure from runCode endpoint
       const responseData = response.data.results;
       const formattedResults = {
         status: responseData.status,
@@ -144,12 +170,10 @@ const ProblemDetailPage = () => {
         toast.error(`${passedCount}/${totalCount} test cases passed`);
       }
 
-      // Start 15-second cooldown
       setRunCooldown(15);
     } catch (error) {
       console.error("Error running code:", error);
 
-      // Set error results for display in output tab
       const errorResults = {
         status: "Error",
         testCases: [],
@@ -165,8 +189,6 @@ const ProblemDetailPage = () => {
       setTestResults(errorResults);
       setActiveTab("output");
       toast.error("Error running code");
-
-      // Start 15-second cooldown even on error
       setRunCooldown(15);
     } finally {
       setIsRunning(false);
@@ -200,13 +222,11 @@ const ProblemDetailPage = () => {
         problem_id: id,
       };
 
-      // Fixed: Use correct endpoint for submitting code
       const response = await axiosInstance.post(
         "/execute-code/submit",
         payload
       );
 
-      // Fixed: Handle the correct response structure from executeCode endpoint
       const submissionData = response.data.submission;
       const formattedResults = {
         status: submissionData.status,
@@ -227,12 +247,10 @@ const ProblemDetailPage = () => {
         toast.error(`${passedCount}/${totalCount} test cases passed`);
       }
 
-      // Start 15-second cooldown
       setSubmitCooldown(15);
     } catch (error) {
       console.error("Error submitting code:", error);
 
-      // Set error results for display in output tab
       const errorResults = {
         status: "Error",
         testCases: [],
@@ -248,8 +266,6 @@ const ProblemDetailPage = () => {
       setTestResults(errorResults);
       setActiveTab("output");
       toast.error("Error submitting code");
-
-      // Start 15-second cooldown even on error
       setSubmitCooldown(15);
     } finally {
       setIsSubmitting(false);
@@ -333,12 +349,10 @@ const ProblemDetailPage = () => {
             </button>
             <button
               className={`tab ${activeTab === "hints" ? "tab-active" : ""}`}
-              onClick={() => {
-                setActiveTab("hints");
-                fetchHints();
-              }}
+              onClick={() => setActiveTab("hints")}
             >
-              Hints
+              <Lightbulb className="w-4 h-4 mr-1" />
+              Hints {hints.length > 0 && `(${hints.length})`}
             </button>
             <button
               className={`tab ${activeTab === "output" ? "tab-active" : ""}`}
@@ -411,25 +425,76 @@ const ProblemDetailPage = () => {
               </div>
             ) : activeTab === "hints" ? (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Hints</h3>
-                <div className="text-center py-8">
-                  <div className="text-gray-500">
-                    <svg
-                      className="w-12 h-12 mx-auto mb-2 opacity-50"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                      />
-                    </svg>
-                    <p>No hints available for this problem</p>
-                  </div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Lightbulb className="w-5 h-5 text-yellow-500" />
+                  <h3 className="text-lg font-semibold">Hints</h3>
                 </div>
+                
+                {hints.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="alert alert-info">
+                      <div className="flex items-start gap-2">
+                        <svg className="w-5 h-5 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                        <div className="text-sm">
+                          <div className="font-medium">💡 Stuck on this problem?</div>
+                          <div>Click on a hint below to reveal it. Try to solve the problem step by step!</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {hints.map((hint, index) => (
+                      <div key={index} className="card bg-base-100 border border-base-300 shadow-sm">
+                        <div className="card-body p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium text-sm text-gray-600">
+                              Hint #{index + 1}
+                            </h4>
+                            {revealedHints.has(index) ? (
+                              <button
+                                className="btn btn-ghost btn-xs"
+                                onClick={() => hideHint(index)}
+                                title="Hide hint"
+                              >
+                                <EyeOff className="w-4 h-4" />
+                                Hide
+                              </button>
+                            ) : (
+                              <button
+                                className="btn btn-primary btn-xs"
+                                onClick={() => revealHint(index)}
+                                title="Reveal hint"
+                              >
+                                <Eye className="w-4 h-4" />
+                                Reveal
+                              </button>
+                            )}
+                          </div>
+                          
+                          {revealedHints.has(index) ? (
+                            <div className="text-sm text-gray-700 leading-relaxed bg-yellow-50 border-l-4 border-yellow-400 pl-4 py-2">
+                              {hint}
+                            </div>
+                          ) : (
+                            <div className="text-center py-4 text-gray-400">
+                              <Lightbulb className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                              <p className="text-sm">Click "Reveal" to see this hint</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-gray-500">
+                      <Lightbulb className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>No hints available for this problem</p>
+                      <p className="text-sm mt-1">Try to solve it on your own or check the examples above!</p>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-4">

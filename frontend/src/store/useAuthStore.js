@@ -12,7 +12,7 @@ export const useAuthStore = create((set, get) => ({
     set({ isCheckingAuth: true });
     try {
       const res = await axiosInstance.get("/auth/me");
-      console.log("Check auth response:", res.data);
+      // console.log("Check auth response:", res.data);
       set({ authUser: res.data.user });
       return res.data.user;
     } catch (error) {
@@ -30,11 +30,11 @@ export const useAuthStore = create((set, get) => ({
   signup: async (data) => {
     set({ isSigningUp: true }); // Fixed typo
     try {
-      console.log("Signup data being sent:", data);
-      console.log(
-        "Request URL:",
-        axiosInstance.defaults.baseURL + "/auth/register"
-      );
+      // console.log("Signup data being sent:", data);
+      // console.log(
+      //   "Request URL:",
+      //   axiosInstance.defaults.baseURL + "/auth/register"
+      // );
 
       const res = await axiosInstance.post("/auth/register", data);
 
@@ -63,11 +63,11 @@ export const useAuthStore = create((set, get) => ({
   login: async (data) => {
     set({ isLoggingIn: true });
     try {
-      console.log("Login data being sent:", data);
-      console.log(
-        "Request URL:",
-        axiosInstance.defaults.baseURL + "/auth/login"
-      );
+      // console.log("Login data being sent:", data);
+      // console.log(
+      //   "Request URL:",
+      //   axiosInstance.defaults.baseURL + "/auth/login"
+      // );
 
       const res = await axiosInstance.post("/auth/login", data);
 

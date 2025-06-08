@@ -543,6 +543,8 @@ const CreateProblemForm = () => {
         testCases: data.testCases || data.testcases, // Handle both naming conventions
         codeSnippet: data.codeSnippets,
         referenceSolution: data.referenceSolutions,
+        hints: data.hints, // ADD THIS LINE
+        editorial: data.editorial, // ADD THIS LINE
       };
 
       console.log("Sending problem data to API:", problemData); // Debug log
