@@ -15,6 +15,8 @@ export const createProblem = async (req, res) => {
     constraints,
     testCases,
     codeSnippet,
+    hints,
+    editorial,
     referenceSolution,
   } = req.body;
 
@@ -66,6 +68,8 @@ export const createProblem = async (req, res) => {
         constraints,
         testCases,
         codeSnippet,
+        hints,
+        editorial,
         referenceSolution,
         userId: req.user.id,
       },
@@ -140,6 +144,8 @@ export const updateProblem = async (req, res) => {
     constraints,
     testCases,
     codeSnippet,
+    hints,
+    editorial,
     referenceSolution,
   } = req.body;
 
@@ -157,6 +163,8 @@ export const updateProblem = async (req, res) => {
         constraints,
         testCases,
         codeSnippet,
+        hints,
+        editorial,
         referenceSolution,
       },
     });
