@@ -67,7 +67,7 @@ app.use("/api/v1", healthRoutes);
 app.listen(process.env.PORT || 5000, () => {
   console.log("Server is running on port ", process.env.PORT);
   if (process.env.NODE_ENV === "production") {
-    cron.schedule("*/5 * * * *", async () => {
+    cron.schedule("*/120 * * * *", async () => {
       try {
         const serverUrl =
           process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
