@@ -11,6 +11,19 @@ export const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+// OTP schemas
+export const otpEmailSchema = z.object({
+  email: z.string().email("Enter a valid email"),
+});
+
+export const otpVerifySchema = z.object({
+  email: z.string().email("Enter a valid email"),
+  otp: z
+    .string()
+    .length(6, "OTP must be exactly 6 digits")
+    .regex(/^\d+$/, "OTP must contain only numbers"),
+});
+
 export const problemSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),

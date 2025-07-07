@@ -4,20 +4,20 @@ import toast from "react-hot-toast";
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
-  isSigningUp: false, // Fixed typo: was isSigninUp
+  isSigningUp: false,
   isLoggingIn: false,
   isCheckingAuth: false,
+  isSendingOTP: false,
+  isVerifyingOTP: false,
 
   checkAuth: async () => {
     set({ isCheckingAuth: true });
     try {
       const res = await axiosInstance.get("/auth/me");
-      // console.log("Check auth response:", res.data);
       set({ authUser: res.data.user });
       return res.data.user;
     } catch (error) {
       console.log("Error in checking auth:", error);
-      // If token is invalid, clear auth state
       if (error.response?.status === 401) {
         set({ authUser: null });
       }
@@ -28,66 +28,83 @@ export const useAuthStore = create((set, get) => ({
   },
 
   signup: async (data) => {
-    set({ isSigningUp: true }); // Fixed typo
+    set({ isSigningUp: true });
     try {
-      // console.log("Signup data being sent:", data);
-      // console.log(
-      //   "Request URL:",
-      //   axiosInstance.defaults.baseURL + "/auth/register"
-      // );
-
       const res = await axiosInstance.post("/auth/register", data);
-
-      // Note: Backend returns user data but doesn't set JWT cookie on registration
-      // User needs to login after registration
       toast.success(
         res.data.message || "Registration successful! Please login."
       );
-
       return { success: true, user: res.data.user };
     } catch (error) {
       console.log("Error in signup:", error);
-      console.log("Error status:", error.response?.status);
-      console.log("Error data:", error.response?.data);
-
       const errorMessage =
         error.response?.data?.message || error.message || "Signup failed";
       toast.error(errorMessage);
-
       return { success: false, error: errorMessage };
     } finally {
-      set({ isSigningUp: false }); // Fixed typo
+      set({ isSigningUp: false });
     }
   },
 
   login: async (data) => {
     set({ isLoggingIn: true });
     try {
-      // console.log("Login data being sent:", data);
-      // console.log(
-      //   "Request URL:",
-      //   axiosInstance.defaults.baseURL + "/auth/login"
-      // );
-
       const res = await axiosInstance.post("/auth/login", data);
-
-      // Backend sets JWT cookie and returns user data
       set({ authUser: res.data.user });
       toast.success(res.data.message || "Login successful!");
-
       return { success: true, user: res.data.user };
     } catch (error) {
       console.log("Error in login:", error);
-      console.log("Error status:", error.response?.status);
-      console.log("Error data:", error.response?.data);
-
       const errorMessage =
         error.response?.data?.message || error.message || "Login failed";
       toast.error(errorMessage);
-
       return { success: false, error: errorMessage };
     } finally {
       set({ isLoggingIn: false });
+    }
+  },
+
+  // Send OTP to user's email
+  sendOTP: async (email) => {
+    set({ isSendingOTP: true });
+    try {
+      const res = await axiosInstance.post("/auth/send-otp", { email });
+      toast.success(res.data.message || "OTP sent successfully!");
+      return {
+        success: true,
+        email: res.data.email,
+        expiresAt: res.data.expiresAt,
+        remainingAttempts: res.data.remainingAttempts,
+      };
+    } catch (error) {
+      console.log("Error sending OTP:", error);
+      const errorMessage =
+        error.response?.data?.message || error.message || "Failed to send OTP";
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      set({ isSendingOTP: false });
+    }
+  },
+
+  // Verify OTP and login user
+  verifyOTP: async (email, otp) => {
+    set({ isVerifyingOTP: true });
+    try {
+      const res = await axiosInstance.post("/auth/verify-otp", { email, otp });
+      set({ authUser: res.data.user });
+      toast.success(res.data.message || "OTP verified successfully!");
+      return { success: true, user: res.data.user };
+    } catch (error) {
+      console.log("Error verifying OTP:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to verify OTP";
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      set({ isVerifyingOTP: false });
     }
   },
 
@@ -99,19 +116,15 @@ export const useAuthStore = create((set, get) => ({
       return { success: true };
     } catch (error) {
       console.log("Error in logout:", error);
-
-      // Even if logout fails on backend, clear local state
       set({ authUser: null });
-
       const errorMessage =
         error.response?.data?.message || error.message || "Logout failed";
       toast.error(errorMessage);
-
       return { success: false, error: errorMessage };
     }
   },
 
-  // Helper method to clear auth state (useful for token expiration)
+  // Helper method to clear auth state
   clearAuth: () => {
     set({ authUser: null });
   },

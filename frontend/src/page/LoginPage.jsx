@@ -2,16 +2,18 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Code, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import { Code, Eye, EyeOff, Loader2, Lock, Mail, KeyRound } from "lucide-react";
 import { loginSchema } from "../util/zodSchema";
 import AuthImagePattern from "../components/AuthImagePattern";
 import { useAuthStore } from "../store/useAuthStore";
+import OTPLogin from "../components/OtpLogin";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [loginMethod, setLoginMethod] = useState("password"); // 'password' or 'otp'
   const navigate = useNavigate();
   const { login, isLoggingIn } = useAuthStore();
-  
+
   const {
     register,
     handleSubmit,
@@ -24,12 +26,10 @@ const LoginPage = () => {
   const onSubmit = async (data) => {
     try {
       const result = await login(data);
-      
+
       if (result.success) {
-        // Redirect to home page after successful login
         navigate("/", { replace: true });
       } else {
-        // Handle login failure
         if (result.error.includes("credentials")) {
           setError("email", { message: "Invalid email or password" });
           setError("password", { message: "Invalid email or password" });
@@ -43,121 +43,169 @@ const LoginPage = () => {
   return (
     <div className="h-screen grid lg:grid-cols-2">
       <div className="flex flex-col justify-center items-center p-6 sm:p-12">
-        <div className="w-full max-w-md space-y-8">
-          {/* Logo */}
-          <div className="text-center mb-8">
-            <div className="flex flex-col items-center gap-2 group">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                <Code className="w-6 h-6 text-primary" />
-              </div>
-              <h1 className="text-2xl font-bold mt-2">Welcome Back</h1>
-              <p className="text-base-content/60">Login to your account</p>
-            </div>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Email */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text font-medium">Email</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-base-content/40" />
+        {loginMethod === "otp" ? (
+          <OTPLogin onBackToLogin={() => setLoginMethod("password")} />
+        ) : (
+          <div className="w-full max-w-md space-y-8">
+            {/* Logo */}
+            <div className="text-center mb-8">
+              <div className="flex flex-col items-center gap-2 group">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <Code className="w-6 h-6 text-primary" />
                 </div>
-                <input
-                  type="email"
-                  {...register("email")}
-                  className={`input input-bordered w-full pl-10 ${
-                    errors.email ? "input-error" : ""
-                  }`}
-                  placeholder="you@example.com"
-                  disabled={isLoggingIn}
-                />
+                <h1 className="text-2xl font-bold mt-2">Welcome Back</h1>
+                <p className="text-base-content/60">Login to your account</p>
               </div>
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.email.message}
-                </p>
-              )}
             </div>
 
-            {/* Password */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text font-medium">Password</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-base-content/40" />
+            {/* Login Method Toggle */}
+            <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
+              <button
+                type="button"
+                onClick={() => setLoginMethod("password")}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  loginMethod === "password"
+                    ? "bg-primary text-primary-content"
+                    : "text-base-content/60 hover:text-base-content"
+                }`}
+              >
+                <Lock className="w-4 h-4 inline mr-2" />
+                Password
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoginMethod("otp")}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  loginMethod === "otp"
+                    ? "bg-primary text-primary-content"
+                    : "text-base-content/60 hover:text-base-content"
+                }`}
+              >
+                <KeyRound className="w-4 h-4 inline mr-2" />
+                OTP
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* Email */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Email</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="h-5 w-5 text-base-content/40" />
+                  </div>
+                  <input
+                    type="email"
+                    {...register("email")}
+                    className={`input input-bordered w-full pl-10 ${
+                      errors.email ? "input-error" : ""
+                    }`}
+                    placeholder="you@example.com"
+                    disabled={isLoggingIn}
+                  />
                 </div>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  {...register("password")}
-                  className={`input input-bordered w-full pl-10 pr-10 ${
-                    errors.password ? "input-error" : ""
-                  }`}
-                  placeholder="••••••••"
-                  disabled={isLoggingIn}
-                />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Password */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Password</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-base-content/40" />
+                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    {...register("password")}
+                    className={`input input-bordered w-full pl-10 pr-10 ${
+                      errors.password ? "input-error" : ""
+                    }`}
+                    placeholder="••••••••"
+                    disabled={isLoggingIn}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoggingIn}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-base-content/40" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-base-content/40" />
+                    )}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-primary w-full"
+                disabled={isLoggingIn}
+              >
+                {isLoggingIn ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Logging in...
+                  </>
+                ) : (
+                  "Login"
+                )}
+              </button>
+            </form>
+
+            {/* Alternative Login Method */}
+            <div className="text-center">
+              <p className="text-base-content/60 text-sm">
+                Or{" "}
                 <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setLoginMethod("otp")}
+                  className="link link-primary"
                   disabled={isLoggingIn}
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-base-content/40" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-base-content/40" />
-                  )}
+                  login with OTP
                 </button>
-              </div>
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.password.message}
-                </p>
-              )}
+              </p>
             </div>
 
-            <button
-              type="submit"
-              className="btn btn-primary w-full"
-              disabled={isLoggingIn}
-            >
-              {isLoggingIn ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Logging in...
-                </>
-              ) : (
-                "Login"
-              )}
-            </button>
-          </form>
-
-          {/* Footer */}
-          <div className="text-center">
-            <p className="text-base-content/60">
-              Don't have an account?{" "}
-              <Link 
-                to="/signup" 
-                className="link link-primary"
-                tabIndex={isLoggingIn ? -1 : 0}
-              >
-                Sign Up
-              </Link>
-            </p>
+            {/* Footer */}
+            <div className="text-center">
+              <p className="text-base-content/60">
+                Don't have an account?{" "}
+                <Link
+                  to="/signup"
+                  className="link link-primary"
+                  tabIndex={isLoggingIn ? -1 : 0}
+                >
+                  Sign Up
+                </Link>
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Right Side - Image/Pattern */}
       <AuthImagePattern
-        title={"Welcome Back!"}
+        title={loginMethod === "otp" ? "Secure OTP Login" : "Welcome Back!"}
         subtitle={
-          "Sign in to continue your journey with us. Don't have an account? Create one now."
+          loginMethod === "otp"
+            ? "Enter your email to receive a secure one-time password for quick access."
+            : "Sign in to continue your journey with us. Don't have an account? Create one now."
         }
       />
     </div>
