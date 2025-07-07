@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import { db } from "../libs/db.js";
 import { UserRole } from "../generated/prisma/index.js";
 import jwt from "jsonwebtoken";
+import emailService from "../services/email.service.js";
+import otpService from "../services/otp.service.js";
 
 const getCookieOptions = () => {
   const isProduction = process.env.NODE_ENV === "production";
@@ -35,7 +37,6 @@ export const register = async (req, res) => {
         email,
         password: hashedPassword,
         role: UserRole.USER,
-        
       },
     });
 
@@ -87,6 +88,91 @@ export const login = async (req, res) => {
   } catch (error) {
     console.error("Login error:", error);
     return res.status(500).json({ message: "Login Failed" });
+  }
+};
+
+// Send OTP to user's email
+export const sendOTP = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    // Check if user exists
+    const user = await db.user.findUnique({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check rate limiting
+    const remainingAttempts = await otpService.getRemainingAttempts(email);
+    if (remainingAttempts <= 0) {
+      return res.status(429).json({ 
+        message: "Too many OTP requests. Please try again later.",
+        remainingAttempts: 0 
+      });
+    }
+
+    // Generate and store OTP
+    const otpResult = await otpService.createOTP(user.id, email);
+    if (!otpResult.success) {
+      return res.status(500).json({ message: "Failed to generate OTP" });
+    }
+
+    // Send OTP email
+    const emailResult = await emailService.sendOTP(email, otpResult.otpCode);
+    if (!emailResult.success) {
+      return res.status(500).json({ message: "Failed to send OTP email" });
+    }
+
+    return res.status(200).json({
+      message: "OTP sent successfully",
+      email: email,
+      expiresAt: otpResult.expiresAt,
+      remainingAttempts: remainingAttempts - 1,
+    });
+  } catch (error) {
+    console.error("Send OTP error:", error);
+    return res.status(500).json({ message: "Failed to send OTP" });
+  }
+};
+
+// Verify OTP and login user
+export const verifyOTP = async (req, res) => {
+  const { email, otp } = req.body;
+
+  try {
+    // Validate inputs
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    // Verify OTP
+    const otpResult = await otpService.verifyOTP(email, otp);
+    if (!otpResult.success) {
+      return res.status(400).json({ message: otpResult.error });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign({ id: otpResult.user.id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    // Set cookie
+    const cookieOptions = getCookieOptions();
+    res.cookie("jwt", token, cookieOptions);
+
+    return res.status(200).json({
+      message: "OTP verified successfully. Login successful.",
+      user: otpResult.user,
+    });
+  } catch (error) {
+    console.error("Verify OTP error:", error);
+    return res.status(500).json({ message: "Failed to verify OTP" });
   }
 };
 

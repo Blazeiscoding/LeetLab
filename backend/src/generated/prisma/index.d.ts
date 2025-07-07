@@ -19,6 +19,11 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type User = $Result.DefaultSelection<Prisma.$UserPayload>
 /**
+ * Model OTP
+ * 
+ */
+export type OTP = $Result.DefaultSelection<Prisma.$OTPPayload>
+/**
  * Model Problem
  * 
  */
@@ -227,6 +232,16 @@ export class PrismaClient<
   get user(): Prisma.UserDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.oTP`: Exposes CRUD operations for the **OTP** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more OTPS
+    * const oTPS = await prisma.oTP.findMany()
+    * ```
+    */
+  get oTP(): Prisma.OTPDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.problem`: Exposes CRUD operations for the **Problem** model.
     * Example usage:
     * ```ts
@@ -343,8 +358,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.9.0
-   * Query Engine version: 81e4af48011447c3cc503a190e86995b66d2a28e
+   * Prisma Client JS version: 6.11.1
+   * Query Engine version: f40f79ec31188888a2e33acda0ecc8fd10a853a9
    */
   export type PrismaVersion = {
     client: string
@@ -726,6 +741,7 @@ export namespace Prisma {
 
   export const ModelName: {
     User: 'User',
+    OTP: 'OTP',
     Problem: 'Problem',
     Submission: 'Submission',
     TestCaseResult: 'TestCaseResult',
@@ -750,7 +766,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "problem" | "submission" | "testCaseResult" | "problemSolved" | "playlist" | "problemInPlaylist"
+      modelProps: "user" | "oTP" | "problem" | "submission" | "testCaseResult" | "problemSolved" | "playlist" | "problemInPlaylist"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -825,6 +841,80 @@ export namespace Prisma {
           count: {
             args: Prisma.UserCountArgs<ExtArgs>
             result: $Utils.Optional<UserCountAggregateOutputType> | number
+          }
+        }
+      }
+      OTP: {
+        payload: Prisma.$OTPPayload<ExtArgs>
+        fields: Prisma.OTPFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.OTPFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OTPPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.OTPFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OTPPayload>
+          }
+          findFirst: {
+            args: Prisma.OTPFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OTPPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.OTPFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OTPPayload>
+          }
+          findMany: {
+            args: Prisma.OTPFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OTPPayload>[]
+          }
+          create: {
+            args: Prisma.OTPCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OTPPayload>
+          }
+          createMany: {
+            args: Prisma.OTPCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.OTPCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OTPPayload>[]
+          }
+          delete: {
+            args: Prisma.OTPDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OTPPayload>
+          }
+          update: {
+            args: Prisma.OTPUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OTPPayload>
+          }
+          deleteMany: {
+            args: Prisma.OTPDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.OTPUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.OTPUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OTPPayload>[]
+          }
+          upsert: {
+            args: Prisma.OTPUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OTPPayload>
+          }
+          aggregate: {
+            args: Prisma.OTPAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateOTP>
+          }
+          groupBy: {
+            args: Prisma.OTPGroupByArgs<ExtArgs>
+            result: $Utils.Optional<OTPGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.OTPCountArgs<ExtArgs>
+            result: $Utils.Optional<OTPCountAggregateOutputType> | number
           }
         }
       }
@@ -1357,6 +1447,7 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     user?: UserOmit
+    oTP?: OTPOmit
     problem?: ProblemOmit
     submission?: SubmissionOmit
     testCaseResult?: TestCaseResultOmit
@@ -1461,6 +1552,7 @@ export namespace Prisma {
     submission: number
     problemSolved: number
     playlists: number
+    otps: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1468,6 +1560,7 @@ export namespace Prisma {
     submission?: boolean | UserCountOutputTypeCountSubmissionArgs
     problemSolved?: boolean | UserCountOutputTypeCountProblemSolvedArgs
     playlists?: boolean | UserCountOutputTypeCountPlaylistsArgs
+    otps?: boolean | UserCountOutputTypeCountOtpsArgs
   }
 
   // Custom InputTypes
@@ -1507,6 +1600,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountPlaylistsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PlaylistWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountOtpsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OTPWhereInput
   }
 
 
@@ -1817,6 +1917,7 @@ export namespace Prisma {
     submission?: boolean | User$submissionArgs<ExtArgs>
     problemSolved?: boolean | User$problemSolvedArgs<ExtArgs>
     playlists?: boolean | User$playlistsArgs<ExtArgs>
+    otps?: boolean | User$otpsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1859,6 +1960,7 @@ export namespace Prisma {
     submission?: boolean | User$submissionArgs<ExtArgs>
     problemSolved?: boolean | User$problemSolvedArgs<ExtArgs>
     playlists?: boolean | User$playlistsArgs<ExtArgs>
+    otps?: boolean | User$otpsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1871,6 +1973,7 @@ export namespace Prisma {
       submission: Prisma.$SubmissionPayload<ExtArgs>[]
       problemSolved: Prisma.$ProblemSolvedPayload<ExtArgs>[]
       playlists: Prisma.$PlaylistPayload<ExtArgs>[]
+      otps: Prisma.$OTPPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2279,6 +2382,7 @@ export namespace Prisma {
     submission<T extends User$submissionArgs<ExtArgs> = {}>(args?: Subset<T, User$submissionArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SubmissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     problemSolved<T extends User$problemSolvedArgs<ExtArgs> = {}>(args?: Subset<T, User$problemSolvedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProblemSolvedPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     playlists<T extends User$playlistsArgs<ExtArgs> = {}>(args?: Subset<T, User$playlistsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlaylistPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    otps<T extends User$otpsArgs<ExtArgs> = {}>(args?: Subset<T, User$otpsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OTPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2800,6 +2904,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.otps
+   */
+  export type User$otpsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OTP
+     */
+    select?: OTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OTP
+     */
+    omit?: OTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OTPInclude<ExtArgs> | null
+    where?: OTPWhereInput
+    orderBy?: OTPOrderByWithRelationInput | OTPOrderByWithRelationInput[]
+    cursor?: OTPWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: OTPScalarFieldEnum | OTPScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2815,6 +2943,1103 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: UserInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model OTP
+   */
+
+  export type AggregateOTP = {
+    _count: OTPCountAggregateOutputType | null
+    _min: OTPMinAggregateOutputType | null
+    _max: OTPMaxAggregateOutputType | null
+  }
+
+  export type OTPMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    email: string | null
+    otpCode: string | null
+    expiresAt: Date | null
+    isUsed: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type OTPMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    email: string | null
+    otpCode: string | null
+    expiresAt: Date | null
+    isUsed: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type OTPCountAggregateOutputType = {
+    id: number
+    userId: number
+    email: number
+    otpCode: number
+    expiresAt: number
+    isUsed: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type OTPMinAggregateInputType = {
+    id?: true
+    userId?: true
+    email?: true
+    otpCode?: true
+    expiresAt?: true
+    isUsed?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type OTPMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    email?: true
+    otpCode?: true
+    expiresAt?: true
+    isUsed?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type OTPCountAggregateInputType = {
+    id?: true
+    userId?: true
+    email?: true
+    otpCode?: true
+    expiresAt?: true
+    isUsed?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type OTPAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OTP to aggregate.
+     */
+    where?: OTPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OTPS to fetch.
+     */
+    orderBy?: OTPOrderByWithRelationInput | OTPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: OTPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OTPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OTPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned OTPS
+    **/
+    _count?: true | OTPCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: OTPMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: OTPMaxAggregateInputType
+  }
+
+  export type GetOTPAggregateType<T extends OTPAggregateArgs> = {
+        [P in keyof T & keyof AggregateOTP]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateOTP[P]>
+      : GetScalarType<T[P], AggregateOTP[P]>
+  }
+
+
+
+
+  export type OTPGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OTPWhereInput
+    orderBy?: OTPOrderByWithAggregationInput | OTPOrderByWithAggregationInput[]
+    by: OTPScalarFieldEnum[] | OTPScalarFieldEnum
+    having?: OTPScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: OTPCountAggregateInputType | true
+    _min?: OTPMinAggregateInputType
+    _max?: OTPMaxAggregateInputType
+  }
+
+  export type OTPGroupByOutputType = {
+    id: string
+    userId: string
+    email: string
+    otpCode: string
+    expiresAt: Date
+    isUsed: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: OTPCountAggregateOutputType | null
+    _min: OTPMinAggregateOutputType | null
+    _max: OTPMaxAggregateOutputType | null
+  }
+
+  type GetOTPGroupByPayload<T extends OTPGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<OTPGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof OTPGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], OTPGroupByOutputType[P]>
+            : GetScalarType<T[P], OTPGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type OTPSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    email?: boolean
+    otpCode?: boolean
+    expiresAt?: boolean
+    isUsed?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["oTP"]>
+
+  export type OTPSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    email?: boolean
+    otpCode?: boolean
+    expiresAt?: boolean
+    isUsed?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["oTP"]>
+
+  export type OTPSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    email?: boolean
+    otpCode?: boolean
+    expiresAt?: boolean
+    isUsed?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["oTP"]>
+
+  export type OTPSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    email?: boolean
+    otpCode?: boolean
+    expiresAt?: boolean
+    isUsed?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type OTPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "email" | "otpCode" | "expiresAt" | "isUsed" | "createdAt" | "updatedAt", ExtArgs["result"]["oTP"]>
+  export type OTPInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type OTPIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type OTPIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $OTPPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "OTP"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      email: string
+      otpCode: string
+      expiresAt: Date
+      isUsed: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["oTP"]>
+    composites: {}
+  }
+
+  type OTPGetPayload<S extends boolean | null | undefined | OTPDefaultArgs> = $Result.GetResult<Prisma.$OTPPayload, S>
+
+  type OTPCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<OTPFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: OTPCountAggregateInputType | true
+    }
+
+  export interface OTPDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['OTP'], meta: { name: 'OTP' } }
+    /**
+     * Find zero or one OTP that matches the filter.
+     * @param {OTPFindUniqueArgs} args - Arguments to find a OTP
+     * @example
+     * // Get one OTP
+     * const oTP = await prisma.oTP.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends OTPFindUniqueArgs>(args: SelectSubset<T, OTPFindUniqueArgs<ExtArgs>>): Prisma__OTPClient<$Result.GetResult<Prisma.$OTPPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one OTP that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {OTPFindUniqueOrThrowArgs} args - Arguments to find a OTP
+     * @example
+     * // Get one OTP
+     * const oTP = await prisma.oTP.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends OTPFindUniqueOrThrowArgs>(args: SelectSubset<T, OTPFindUniqueOrThrowArgs<ExtArgs>>): Prisma__OTPClient<$Result.GetResult<Prisma.$OTPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first OTP that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OTPFindFirstArgs} args - Arguments to find a OTP
+     * @example
+     * // Get one OTP
+     * const oTP = await prisma.oTP.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends OTPFindFirstArgs>(args?: SelectSubset<T, OTPFindFirstArgs<ExtArgs>>): Prisma__OTPClient<$Result.GetResult<Prisma.$OTPPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first OTP that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OTPFindFirstOrThrowArgs} args - Arguments to find a OTP
+     * @example
+     * // Get one OTP
+     * const oTP = await prisma.oTP.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends OTPFindFirstOrThrowArgs>(args?: SelectSubset<T, OTPFindFirstOrThrowArgs<ExtArgs>>): Prisma__OTPClient<$Result.GetResult<Prisma.$OTPPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more OTPS that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OTPFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all OTPS
+     * const oTPS = await prisma.oTP.findMany()
+     * 
+     * // Get first 10 OTPS
+     * const oTPS = await prisma.oTP.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const oTPWithIdOnly = await prisma.oTP.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends OTPFindManyArgs>(args?: SelectSubset<T, OTPFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OTPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a OTP.
+     * @param {OTPCreateArgs} args - Arguments to create a OTP.
+     * @example
+     * // Create one OTP
+     * const OTP = await prisma.oTP.create({
+     *   data: {
+     *     // ... data to create a OTP
+     *   }
+     * })
+     * 
+     */
+    create<T extends OTPCreateArgs>(args: SelectSubset<T, OTPCreateArgs<ExtArgs>>): Prisma__OTPClient<$Result.GetResult<Prisma.$OTPPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many OTPS.
+     * @param {OTPCreateManyArgs} args - Arguments to create many OTPS.
+     * @example
+     * // Create many OTPS
+     * const oTP = await prisma.oTP.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends OTPCreateManyArgs>(args?: SelectSubset<T, OTPCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many OTPS and returns the data saved in the database.
+     * @param {OTPCreateManyAndReturnArgs} args - Arguments to create many OTPS.
+     * @example
+     * // Create many OTPS
+     * const oTP = await prisma.oTP.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many OTPS and only return the `id`
+     * const oTPWithIdOnly = await prisma.oTP.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends OTPCreateManyAndReturnArgs>(args?: SelectSubset<T, OTPCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OTPPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a OTP.
+     * @param {OTPDeleteArgs} args - Arguments to delete one OTP.
+     * @example
+     * // Delete one OTP
+     * const OTP = await prisma.oTP.delete({
+     *   where: {
+     *     // ... filter to delete one OTP
+     *   }
+     * })
+     * 
+     */
+    delete<T extends OTPDeleteArgs>(args: SelectSubset<T, OTPDeleteArgs<ExtArgs>>): Prisma__OTPClient<$Result.GetResult<Prisma.$OTPPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one OTP.
+     * @param {OTPUpdateArgs} args - Arguments to update one OTP.
+     * @example
+     * // Update one OTP
+     * const oTP = await prisma.oTP.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends OTPUpdateArgs>(args: SelectSubset<T, OTPUpdateArgs<ExtArgs>>): Prisma__OTPClient<$Result.GetResult<Prisma.$OTPPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more OTPS.
+     * @param {OTPDeleteManyArgs} args - Arguments to filter OTPS to delete.
+     * @example
+     * // Delete a few OTPS
+     * const { count } = await prisma.oTP.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends OTPDeleteManyArgs>(args?: SelectSubset<T, OTPDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more OTPS.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OTPUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many OTPS
+     * const oTP = await prisma.oTP.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends OTPUpdateManyArgs>(args: SelectSubset<T, OTPUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more OTPS and returns the data updated in the database.
+     * @param {OTPUpdateManyAndReturnArgs} args - Arguments to update many OTPS.
+     * @example
+     * // Update many OTPS
+     * const oTP = await prisma.oTP.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more OTPS and only return the `id`
+     * const oTPWithIdOnly = await prisma.oTP.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends OTPUpdateManyAndReturnArgs>(args: SelectSubset<T, OTPUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OTPPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one OTP.
+     * @param {OTPUpsertArgs} args - Arguments to update or create a OTP.
+     * @example
+     * // Update or create a OTP
+     * const oTP = await prisma.oTP.upsert({
+     *   create: {
+     *     // ... data to create a OTP
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the OTP we want to update
+     *   }
+     * })
+     */
+    upsert<T extends OTPUpsertArgs>(args: SelectSubset<T, OTPUpsertArgs<ExtArgs>>): Prisma__OTPClient<$Result.GetResult<Prisma.$OTPPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of OTPS.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OTPCountArgs} args - Arguments to filter OTPS to count.
+     * @example
+     * // Count the number of OTPS
+     * const count = await prisma.oTP.count({
+     *   where: {
+     *     // ... the filter for the OTPS we want to count
+     *   }
+     * })
+    **/
+    count<T extends OTPCountArgs>(
+      args?: Subset<T, OTPCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], OTPCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a OTP.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OTPAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends OTPAggregateArgs>(args: Subset<T, OTPAggregateArgs>): Prisma.PrismaPromise<GetOTPAggregateType<T>>
+
+    /**
+     * Group by OTP.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OTPGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends OTPGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: OTPGroupByArgs['orderBy'] }
+        : { orderBy?: OTPGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, OTPGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetOTPGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the OTP model
+   */
+  readonly fields: OTPFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for OTP.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__OTPClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the OTP model
+   */
+  interface OTPFieldRefs {
+    readonly id: FieldRef<"OTP", 'String'>
+    readonly userId: FieldRef<"OTP", 'String'>
+    readonly email: FieldRef<"OTP", 'String'>
+    readonly otpCode: FieldRef<"OTP", 'String'>
+    readonly expiresAt: FieldRef<"OTP", 'DateTime'>
+    readonly isUsed: FieldRef<"OTP", 'Boolean'>
+    readonly createdAt: FieldRef<"OTP", 'DateTime'>
+    readonly updatedAt: FieldRef<"OTP", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * OTP findUnique
+   */
+  export type OTPFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OTP
+     */
+    select?: OTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OTP
+     */
+    omit?: OTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OTPInclude<ExtArgs> | null
+    /**
+     * Filter, which OTP to fetch.
+     */
+    where: OTPWhereUniqueInput
+  }
+
+  /**
+   * OTP findUniqueOrThrow
+   */
+  export type OTPFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OTP
+     */
+    select?: OTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OTP
+     */
+    omit?: OTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OTPInclude<ExtArgs> | null
+    /**
+     * Filter, which OTP to fetch.
+     */
+    where: OTPWhereUniqueInput
+  }
+
+  /**
+   * OTP findFirst
+   */
+  export type OTPFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OTP
+     */
+    select?: OTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OTP
+     */
+    omit?: OTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OTPInclude<ExtArgs> | null
+    /**
+     * Filter, which OTP to fetch.
+     */
+    where?: OTPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OTPS to fetch.
+     */
+    orderBy?: OTPOrderByWithRelationInput | OTPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OTPS.
+     */
+    cursor?: OTPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OTPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OTPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OTPS.
+     */
+    distinct?: OTPScalarFieldEnum | OTPScalarFieldEnum[]
+  }
+
+  /**
+   * OTP findFirstOrThrow
+   */
+  export type OTPFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OTP
+     */
+    select?: OTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OTP
+     */
+    omit?: OTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OTPInclude<ExtArgs> | null
+    /**
+     * Filter, which OTP to fetch.
+     */
+    where?: OTPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OTPS to fetch.
+     */
+    orderBy?: OTPOrderByWithRelationInput | OTPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OTPS.
+     */
+    cursor?: OTPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OTPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OTPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OTPS.
+     */
+    distinct?: OTPScalarFieldEnum | OTPScalarFieldEnum[]
+  }
+
+  /**
+   * OTP findMany
+   */
+  export type OTPFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OTP
+     */
+    select?: OTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OTP
+     */
+    omit?: OTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OTPInclude<ExtArgs> | null
+    /**
+     * Filter, which OTPS to fetch.
+     */
+    where?: OTPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OTPS to fetch.
+     */
+    orderBy?: OTPOrderByWithRelationInput | OTPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing OTPS.
+     */
+    cursor?: OTPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OTPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OTPS.
+     */
+    skip?: number
+    distinct?: OTPScalarFieldEnum | OTPScalarFieldEnum[]
+  }
+
+  /**
+   * OTP create
+   */
+  export type OTPCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OTP
+     */
+    select?: OTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OTP
+     */
+    omit?: OTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OTPInclude<ExtArgs> | null
+    /**
+     * The data needed to create a OTP.
+     */
+    data: XOR<OTPCreateInput, OTPUncheckedCreateInput>
+  }
+
+  /**
+   * OTP createMany
+   */
+  export type OTPCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many OTPS.
+     */
+    data: OTPCreateManyInput | OTPCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * OTP createManyAndReturn
+   */
+  export type OTPCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OTP
+     */
+    select?: OTPSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the OTP
+     */
+    omit?: OTPOmit<ExtArgs> | null
+    /**
+     * The data used to create many OTPS.
+     */
+    data: OTPCreateManyInput | OTPCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OTPIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * OTP update
+   */
+  export type OTPUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OTP
+     */
+    select?: OTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OTP
+     */
+    omit?: OTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OTPInclude<ExtArgs> | null
+    /**
+     * The data needed to update a OTP.
+     */
+    data: XOR<OTPUpdateInput, OTPUncheckedUpdateInput>
+    /**
+     * Choose, which OTP to update.
+     */
+    where: OTPWhereUniqueInput
+  }
+
+  /**
+   * OTP updateMany
+   */
+  export type OTPUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update OTPS.
+     */
+    data: XOR<OTPUpdateManyMutationInput, OTPUncheckedUpdateManyInput>
+    /**
+     * Filter which OTPS to update
+     */
+    where?: OTPWhereInput
+    /**
+     * Limit how many OTPS to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * OTP updateManyAndReturn
+   */
+  export type OTPUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OTP
+     */
+    select?: OTPSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the OTP
+     */
+    omit?: OTPOmit<ExtArgs> | null
+    /**
+     * The data used to update OTPS.
+     */
+    data: XOR<OTPUpdateManyMutationInput, OTPUncheckedUpdateManyInput>
+    /**
+     * Filter which OTPS to update
+     */
+    where?: OTPWhereInput
+    /**
+     * Limit how many OTPS to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OTPIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * OTP upsert
+   */
+  export type OTPUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OTP
+     */
+    select?: OTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OTP
+     */
+    omit?: OTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OTPInclude<ExtArgs> | null
+    /**
+     * The filter to search for the OTP to update in case it exists.
+     */
+    where: OTPWhereUniqueInput
+    /**
+     * In case the OTP found by the `where` argument doesn't exist, create a new OTP with this data.
+     */
+    create: XOR<OTPCreateInput, OTPUncheckedCreateInput>
+    /**
+     * In case the OTP was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<OTPUpdateInput, OTPUncheckedUpdateInput>
+  }
+
+  /**
+   * OTP delete
+   */
+  export type OTPDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OTP
+     */
+    select?: OTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OTP
+     */
+    omit?: OTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OTPInclude<ExtArgs> | null
+    /**
+     * Filter which OTP to delete.
+     */
+    where: OTPWhereUniqueInput
+  }
+
+  /**
+   * OTP deleteMany
+   */
+  export type OTPDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OTPS to delete
+     */
+    where?: OTPWhereInput
+    /**
+     * Limit how many OTPS to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * OTP without action
+   */
+  export type OTPDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OTP
+     */
+    select?: OTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OTP
+     */
+    omit?: OTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OTPInclude<ExtArgs> | null
   }
 
 
@@ -9738,6 +10963,20 @@ export namespace Prisma {
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
+  export const OTPScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    email: 'email',
+    otpCode: 'otpCode',
+    expiresAt: 'expiresAt',
+    isUsed: 'isUsed',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type OTPScalarFieldEnum = (typeof OTPScalarFieldEnum)[keyof typeof OTPScalarFieldEnum]
+
+
   export const ProblemScalarFieldEnum: {
     id: 'id',
     title: 'title',
@@ -9920,6 +11159,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'Difficulty'
    */
   export type EnumDifficultyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Difficulty'>
@@ -9976,13 +11222,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Boolean'
-   */
-  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
-    
-
-
-  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -10015,6 +11254,7 @@ export namespace Prisma {
     submission?: SubmissionListRelationFilter
     problemSolved?: ProblemSolvedListRelationFilter
     playlists?: PlaylistListRelationFilter
+    otps?: OTPListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -10030,6 +11270,7 @@ export namespace Prisma {
     submission?: SubmissionOrderByRelationAggregateInput
     problemSolved?: ProblemSolvedOrderByRelationAggregateInput
     playlists?: PlaylistOrderByRelationAggregateInput
+    otps?: OTPOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -10048,6 +11289,7 @@ export namespace Prisma {
     submission?: SubmissionListRelationFilter
     problemSolved?: ProblemSolvedListRelationFilter
     playlists?: PlaylistListRelationFilter
+    otps?: OTPListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -10076,6 +11318,76 @@ export namespace Prisma {
     password?: StringWithAggregatesFilter<"User"> | string
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+  }
+
+  export type OTPWhereInput = {
+    AND?: OTPWhereInput | OTPWhereInput[]
+    OR?: OTPWhereInput[]
+    NOT?: OTPWhereInput | OTPWhereInput[]
+    id?: StringFilter<"OTP"> | string
+    userId?: StringFilter<"OTP"> | string
+    email?: StringFilter<"OTP"> | string
+    otpCode?: StringFilter<"OTP"> | string
+    expiresAt?: DateTimeFilter<"OTP"> | Date | string
+    isUsed?: BoolFilter<"OTP"> | boolean
+    createdAt?: DateTimeFilter<"OTP"> | Date | string
+    updatedAt?: DateTimeFilter<"OTP"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type OTPOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    email?: SortOrder
+    otpCode?: SortOrder
+    expiresAt?: SortOrder
+    isUsed?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type OTPWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: OTPWhereInput | OTPWhereInput[]
+    OR?: OTPWhereInput[]
+    NOT?: OTPWhereInput | OTPWhereInput[]
+    userId?: StringFilter<"OTP"> | string
+    email?: StringFilter<"OTP"> | string
+    otpCode?: StringFilter<"OTP"> | string
+    expiresAt?: DateTimeFilter<"OTP"> | Date | string
+    isUsed?: BoolFilter<"OTP"> | boolean
+    createdAt?: DateTimeFilter<"OTP"> | Date | string
+    updatedAt?: DateTimeFilter<"OTP"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type OTPOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    email?: SortOrder
+    otpCode?: SortOrder
+    expiresAt?: SortOrder
+    isUsed?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: OTPCountOrderByAggregateInput
+    _max?: OTPMaxOrderByAggregateInput
+    _min?: OTPMinOrderByAggregateInput
+  }
+
+  export type OTPScalarWhereWithAggregatesInput = {
+    AND?: OTPScalarWhereWithAggregatesInput | OTPScalarWhereWithAggregatesInput[]
+    OR?: OTPScalarWhereWithAggregatesInput[]
+    NOT?: OTPScalarWhereWithAggregatesInput | OTPScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"OTP"> | string
+    userId?: StringWithAggregatesFilter<"OTP"> | string
+    email?: StringWithAggregatesFilter<"OTP"> | string
+    otpCode?: StringWithAggregatesFilter<"OTP"> | string
+    expiresAt?: DateTimeWithAggregatesFilter<"OTP"> | Date | string
+    isUsed?: BoolWithAggregatesFilter<"OTP"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"OTP"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"OTP"> | Date | string
   }
 
   export type ProblemWhereInput = {
@@ -10590,6 +11902,7 @@ export namespace Prisma {
     submission?: SubmissionCreateNestedManyWithoutUserInput
     problemSolved?: ProblemSolvedCreateNestedManyWithoutUserInput
     playlists?: PlaylistCreateNestedManyWithoutUserInput
+    otps?: OTPCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -10605,6 +11918,7 @@ export namespace Prisma {
     submission?: SubmissionUncheckedCreateNestedManyWithoutUserInput
     problemSolved?: ProblemSolvedUncheckedCreateNestedManyWithoutUserInput
     playlists?: PlaylistUncheckedCreateNestedManyWithoutUserInput
+    otps?: OTPUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -10620,6 +11934,7 @@ export namespace Prisma {
     submission?: SubmissionUpdateManyWithoutUserNestedInput
     problemSolved?: ProblemSolvedUpdateManyWithoutUserNestedInput
     playlists?: PlaylistUpdateManyWithoutUserNestedInput
+    otps?: OTPUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -10635,6 +11950,7 @@ export namespace Prisma {
     submission?: SubmissionUncheckedUpdateManyWithoutUserNestedInput
     problemSolved?: ProblemSolvedUncheckedUpdateManyWithoutUserNestedInput
     playlists?: PlaylistUncheckedUpdateManyWithoutUserNestedInput
+    otps?: OTPUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -10666,6 +11982,82 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     password?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OTPCreateInput = {
+    id?: string
+    email: string
+    otpCode: string
+    expiresAt: Date | string
+    isUsed?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutOtpsInput
+  }
+
+  export type OTPUncheckedCreateInput = {
+    id?: string
+    userId: string
+    email: string
+    otpCode: string
+    expiresAt: Date | string
+    isUsed?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OTPUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    otpCode?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isUsed?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutOtpsNestedInput
+  }
+
+  export type OTPUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    otpCode?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isUsed?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OTPCreateManyInput = {
+    id?: string
+    userId: string
+    email: string
+    otpCode: string
+    expiresAt: Date | string
+    isUsed?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OTPUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    otpCode?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isUsed?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OTPUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    otpCode?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isUsed?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11285,6 +12677,12 @@ export namespace Prisma {
     none?: PlaylistWhereInput
   }
 
+  export type OTPListRelationFilter = {
+    every?: OTPWhereInput
+    some?: OTPWhereInput
+    none?: OTPWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -11303,6 +12701,10 @@ export namespace Prisma {
   }
 
   export type PlaylistOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type OTPOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -11399,6 +12801,57 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type UserScalarRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
+  }
+
+  export type OTPCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    email?: SortOrder
+    otpCode?: SortOrder
+    expiresAt?: SortOrder
+    isUsed?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OTPMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    email?: SortOrder
+    otpCode?: SortOrder
+    expiresAt?: SortOrder
+    isUsed?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OTPMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    email?: SortOrder
+    otpCode?: SortOrder
+    expiresAt?: SortOrder
+    isUsed?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type EnumDifficultyFilter<$PrismaModel = never> = {
     equals?: $Enums.Difficulty | EnumDifficultyFieldRefInput<$PrismaModel>
     in?: $Enums.Difficulty[] | ListEnumDifficultyFieldRefInput<$PrismaModel>
@@ -11435,11 +12888,6 @@ export namespace Prisma {
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-
-  export type UserScalarRelationFilter = {
-    is?: UserWhereInput
-    isNot?: UserWhereInput
   }
 
   export type ProblemInPlaylistListRelationFilter = {
@@ -11624,11 +13072,6 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
   export type SubmissionScalarRelationFilter = {
     is?: SubmissionWhereInput
     isNot?: SubmissionWhereInput
@@ -11704,14 +13147,6 @@ export namespace Prisma {
     _sum?: NestedIntFilter<$PrismaModel>
     _min?: NestedIntFilter<$PrismaModel>
     _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type ProblemSolvedUserIdProblemIdCompoundUniqueInput = {
@@ -11837,6 +13272,13 @@ export namespace Prisma {
     connect?: PlaylistWhereUniqueInput | PlaylistWhereUniqueInput[]
   }
 
+  export type OTPCreateNestedManyWithoutUserInput = {
+    create?: XOR<OTPCreateWithoutUserInput, OTPUncheckedCreateWithoutUserInput> | OTPCreateWithoutUserInput[] | OTPUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: OTPCreateOrConnectWithoutUserInput | OTPCreateOrConnectWithoutUserInput[]
+    createMany?: OTPCreateManyUserInputEnvelope
+    connect?: OTPWhereUniqueInput | OTPWhereUniqueInput[]
+  }
+
   export type ProblemUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<ProblemCreateWithoutUserInput, ProblemUncheckedCreateWithoutUserInput> | ProblemCreateWithoutUserInput[] | ProblemUncheckedCreateWithoutUserInput[]
     connectOrCreate?: ProblemCreateOrConnectWithoutUserInput | ProblemCreateOrConnectWithoutUserInput[]
@@ -11863,6 +13305,13 @@ export namespace Prisma {
     connectOrCreate?: PlaylistCreateOrConnectWithoutUserInput | PlaylistCreateOrConnectWithoutUserInput[]
     createMany?: PlaylistCreateManyUserInputEnvelope
     connect?: PlaylistWhereUniqueInput | PlaylistWhereUniqueInput[]
+  }
+
+  export type OTPUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<OTPCreateWithoutUserInput, OTPUncheckedCreateWithoutUserInput> | OTPCreateWithoutUserInput[] | OTPUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: OTPCreateOrConnectWithoutUserInput | OTPCreateOrConnectWithoutUserInput[]
+    createMany?: OTPCreateManyUserInputEnvelope
+    connect?: OTPWhereUniqueInput | OTPWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -11937,6 +13386,20 @@ export namespace Prisma {
     deleteMany?: PlaylistScalarWhereInput | PlaylistScalarWhereInput[]
   }
 
+  export type OTPUpdateManyWithoutUserNestedInput = {
+    create?: XOR<OTPCreateWithoutUserInput, OTPUncheckedCreateWithoutUserInput> | OTPCreateWithoutUserInput[] | OTPUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: OTPCreateOrConnectWithoutUserInput | OTPCreateOrConnectWithoutUserInput[]
+    upsert?: OTPUpsertWithWhereUniqueWithoutUserInput | OTPUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: OTPCreateManyUserInputEnvelope
+    set?: OTPWhereUniqueInput | OTPWhereUniqueInput[]
+    disconnect?: OTPWhereUniqueInput | OTPWhereUniqueInput[]
+    delete?: OTPWhereUniqueInput | OTPWhereUniqueInput[]
+    connect?: OTPWhereUniqueInput | OTPWhereUniqueInput[]
+    update?: OTPUpdateWithWhereUniqueWithoutUserInput | OTPUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: OTPUpdateManyWithWhereWithoutUserInput | OTPUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: OTPScalarWhereInput | OTPScalarWhereInput[]
+  }
+
   export type ProblemUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<ProblemCreateWithoutUserInput, ProblemUncheckedCreateWithoutUserInput> | ProblemCreateWithoutUserInput[] | ProblemUncheckedCreateWithoutUserInput[]
     connectOrCreate?: ProblemCreateOrConnectWithoutUserInput | ProblemCreateOrConnectWithoutUserInput[]
@@ -11991,6 +13454,38 @@ export namespace Prisma {
     update?: PlaylistUpdateWithWhereUniqueWithoutUserInput | PlaylistUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: PlaylistUpdateManyWithWhereWithoutUserInput | PlaylistUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: PlaylistScalarWhereInput | PlaylistScalarWhereInput[]
+  }
+
+  export type OTPUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<OTPCreateWithoutUserInput, OTPUncheckedCreateWithoutUserInput> | OTPCreateWithoutUserInput[] | OTPUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: OTPCreateOrConnectWithoutUserInput | OTPCreateOrConnectWithoutUserInput[]
+    upsert?: OTPUpsertWithWhereUniqueWithoutUserInput | OTPUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: OTPCreateManyUserInputEnvelope
+    set?: OTPWhereUniqueInput | OTPWhereUniqueInput[]
+    disconnect?: OTPWhereUniqueInput | OTPWhereUniqueInput[]
+    delete?: OTPWhereUniqueInput | OTPWhereUniqueInput[]
+    connect?: OTPWhereUniqueInput | OTPWhereUniqueInput[]
+    update?: OTPUpdateWithWhereUniqueWithoutUserInput | OTPUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: OTPUpdateManyWithWhereWithoutUserInput | OTPUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: OTPScalarWhereInput | OTPScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutOtpsInput = {
+    create?: XOR<UserCreateWithoutOtpsInput, UserUncheckedCreateWithoutOtpsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutOtpsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type UserUpdateOneRequiredWithoutOtpsNestedInput = {
+    create?: XOR<UserCreateWithoutOtpsInput, UserUncheckedCreateWithoutOtpsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutOtpsInput
+    upsert?: UserUpsertWithoutOtpsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutOtpsInput, UserUpdateWithoutOtpsInput>, UserUncheckedUpdateWithoutOtpsInput>
   }
 
   export type ProblemCreatetagsInput = {
@@ -12232,10 +13727,6 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
-  }
-
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
   }
 
   export type SubmissionUpdateOneRequiredWithoutTestCasesNestedInput = {
@@ -12484,6 +13975,19 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type NestedEnumDifficultyFilter<$PrismaModel = never> = {
     equals?: $Enums.Difficulty | EnumDifficultyFieldRefInput<$PrismaModel>
     in?: $Enums.Difficulty[] | ListEnumDifficultyFieldRefInput<$PrismaModel>
@@ -12541,11 +14045,6 @@ export namespace Prisma {
     _max?: NestedEnumstatusFilter<$PrismaModel>
   }
 
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -12571,14 +14070,6 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type ProblemCreateWithoutUserInput = {
@@ -12727,6 +14218,36 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type OTPCreateWithoutUserInput = {
+    id?: string
+    email: string
+    otpCode: string
+    expiresAt: Date | string
+    isUsed?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OTPUncheckedCreateWithoutUserInput = {
+    id?: string
+    email: string
+    otpCode: string
+    expiresAt: Date | string
+    isUsed?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OTPCreateOrConnectWithoutUserInput = {
+    where: OTPWhereUniqueInput
+    create: XOR<OTPCreateWithoutUserInput, OTPUncheckedCreateWithoutUserInput>
+  }
+
+  export type OTPCreateManyUserInputEnvelope = {
+    data: OTPCreateManyUserInput | OTPCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ProblemUpsertWithWhereUniqueWithoutUserInput = {
     where: ProblemWhereUniqueInput
     update: XOR<ProblemUpdateWithoutUserInput, ProblemUncheckedUpdateWithoutUserInput>
@@ -12855,6 +14376,112 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Playlist"> | Date | string
   }
 
+  export type OTPUpsertWithWhereUniqueWithoutUserInput = {
+    where: OTPWhereUniqueInput
+    update: XOR<OTPUpdateWithoutUserInput, OTPUncheckedUpdateWithoutUserInput>
+    create: XOR<OTPCreateWithoutUserInput, OTPUncheckedCreateWithoutUserInput>
+  }
+
+  export type OTPUpdateWithWhereUniqueWithoutUserInput = {
+    where: OTPWhereUniqueInput
+    data: XOR<OTPUpdateWithoutUserInput, OTPUncheckedUpdateWithoutUserInput>
+  }
+
+  export type OTPUpdateManyWithWhereWithoutUserInput = {
+    where: OTPScalarWhereInput
+    data: XOR<OTPUpdateManyMutationInput, OTPUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type OTPScalarWhereInput = {
+    AND?: OTPScalarWhereInput | OTPScalarWhereInput[]
+    OR?: OTPScalarWhereInput[]
+    NOT?: OTPScalarWhereInput | OTPScalarWhereInput[]
+    id?: StringFilter<"OTP"> | string
+    userId?: StringFilter<"OTP"> | string
+    email?: StringFilter<"OTP"> | string
+    otpCode?: StringFilter<"OTP"> | string
+    expiresAt?: DateTimeFilter<"OTP"> | Date | string
+    isUsed?: BoolFilter<"OTP"> | boolean
+    createdAt?: DateTimeFilter<"OTP"> | Date | string
+    updatedAt?: DateTimeFilter<"OTP"> | Date | string
+  }
+
+  export type UserCreateWithoutOtpsInput = {
+    id?: string
+    name?: string | null
+    email: string
+    image?: string | null
+    role?: $Enums.UserRole
+    password: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    problems?: ProblemCreateNestedManyWithoutUserInput
+    submission?: SubmissionCreateNestedManyWithoutUserInput
+    problemSolved?: ProblemSolvedCreateNestedManyWithoutUserInput
+    playlists?: PlaylistCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutOtpsInput = {
+    id?: string
+    name?: string | null
+    email: string
+    image?: string | null
+    role?: $Enums.UserRole
+    password: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    problems?: ProblemUncheckedCreateNestedManyWithoutUserInput
+    submission?: SubmissionUncheckedCreateNestedManyWithoutUserInput
+    problemSolved?: ProblemSolvedUncheckedCreateNestedManyWithoutUserInput
+    playlists?: PlaylistUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutOtpsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutOtpsInput, UserUncheckedCreateWithoutOtpsInput>
+  }
+
+  export type UserUpsertWithoutOtpsInput = {
+    update: XOR<UserUpdateWithoutOtpsInput, UserUncheckedUpdateWithoutOtpsInput>
+    create: XOR<UserCreateWithoutOtpsInput, UserUncheckedCreateWithoutOtpsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutOtpsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutOtpsInput, UserUncheckedUpdateWithoutOtpsInput>
+  }
+
+  export type UserUpdateWithoutOtpsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    password?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    problems?: ProblemUpdateManyWithoutUserNestedInput
+    submission?: SubmissionUpdateManyWithoutUserNestedInput
+    problemSolved?: ProblemSolvedUpdateManyWithoutUserNestedInput
+    playlists?: PlaylistUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutOtpsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    password?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    problems?: ProblemUncheckedUpdateManyWithoutUserNestedInput
+    submission?: SubmissionUncheckedUpdateManyWithoutUserNestedInput
+    problemSolved?: ProblemSolvedUncheckedUpdateManyWithoutUserNestedInput
+    playlists?: PlaylistUncheckedUpdateManyWithoutUserNestedInput
+  }
+
   export type UserCreateWithoutProblemsInput = {
     id?: string
     name?: string | null
@@ -12867,6 +14494,7 @@ export namespace Prisma {
     submission?: SubmissionCreateNestedManyWithoutUserInput
     problemSolved?: ProblemSolvedCreateNestedManyWithoutUserInput
     playlists?: PlaylistCreateNestedManyWithoutUserInput
+    otps?: OTPCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProblemsInput = {
@@ -12881,6 +14509,7 @@ export namespace Prisma {
     submission?: SubmissionUncheckedCreateNestedManyWithoutUserInput
     problemSolved?: ProblemSolvedUncheckedCreateNestedManyWithoutUserInput
     playlists?: PlaylistUncheckedCreateNestedManyWithoutUserInput
+    otps?: OTPUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProblemsInput = {
@@ -13003,6 +14632,7 @@ export namespace Prisma {
     submission?: SubmissionUpdateManyWithoutUserNestedInput
     problemSolved?: ProblemSolvedUpdateManyWithoutUserNestedInput
     playlists?: PlaylistUpdateManyWithoutUserNestedInput
+    otps?: OTPUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProblemsInput = {
@@ -13017,6 +14647,7 @@ export namespace Prisma {
     submission?: SubmissionUncheckedUpdateManyWithoutUserNestedInput
     problemSolved?: ProblemSolvedUncheckedUpdateManyWithoutUserNestedInput
     playlists?: PlaylistUncheckedUpdateManyWithoutUserNestedInput
+    otps?: OTPUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type SubmissionUpsertWithWhereUniqueWithoutProblemInput = {
@@ -13090,6 +14721,7 @@ export namespace Prisma {
     problems?: ProblemCreateNestedManyWithoutUserInput
     problemSolved?: ProblemSolvedCreateNestedManyWithoutUserInput
     playlists?: PlaylistCreateNestedManyWithoutUserInput
+    otps?: OTPCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSubmissionInput = {
@@ -13104,6 +14736,7 @@ export namespace Prisma {
     problems?: ProblemUncheckedCreateNestedManyWithoutUserInput
     problemSolved?: ProblemSolvedUncheckedCreateNestedManyWithoutUserInput
     playlists?: PlaylistUncheckedCreateNestedManyWithoutUserInput
+    otps?: OTPUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSubmissionInput = {
@@ -13219,6 +14852,7 @@ export namespace Prisma {
     problems?: ProblemUpdateManyWithoutUserNestedInput
     problemSolved?: ProblemSolvedUpdateManyWithoutUserNestedInput
     playlists?: PlaylistUpdateManyWithoutUserNestedInput
+    otps?: OTPUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSubmissionInput = {
@@ -13233,6 +14867,7 @@ export namespace Prisma {
     problems?: ProblemUncheckedUpdateManyWithoutUserNestedInput
     problemSolved?: ProblemSolvedUncheckedUpdateManyWithoutUserNestedInput
     playlists?: PlaylistUncheckedUpdateManyWithoutUserNestedInput
+    otps?: OTPUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProblemUpsertWithoutSubmissionInput = {
@@ -13417,6 +15052,7 @@ export namespace Prisma {
     problems?: ProblemCreateNestedManyWithoutUserInput
     submission?: SubmissionCreateNestedManyWithoutUserInput
     playlists?: PlaylistCreateNestedManyWithoutUserInput
+    otps?: OTPCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProblemSolvedInput = {
@@ -13431,6 +15067,7 @@ export namespace Prisma {
     problems?: ProblemUncheckedCreateNestedManyWithoutUserInput
     submission?: SubmissionUncheckedCreateNestedManyWithoutUserInput
     playlists?: PlaylistUncheckedCreateNestedManyWithoutUserInput
+    otps?: OTPUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProblemSolvedInput = {
@@ -13506,6 +15143,7 @@ export namespace Prisma {
     problems?: ProblemUpdateManyWithoutUserNestedInput
     submission?: SubmissionUpdateManyWithoutUserNestedInput
     playlists?: PlaylistUpdateManyWithoutUserNestedInput
+    otps?: OTPUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProblemSolvedInput = {
@@ -13520,6 +15158,7 @@ export namespace Prisma {
     problems?: ProblemUncheckedUpdateManyWithoutUserNestedInput
     submission?: SubmissionUncheckedUpdateManyWithoutUserNestedInput
     playlists?: PlaylistUncheckedUpdateManyWithoutUserNestedInput
+    otps?: OTPUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProblemUpsertWithoutSolvedByInput = {
@@ -13609,6 +15248,7 @@ export namespace Prisma {
     problems?: ProblemCreateNestedManyWithoutUserInput
     submission?: SubmissionCreateNestedManyWithoutUserInput
     problemSolved?: ProblemSolvedCreateNestedManyWithoutUserInput
+    otps?: OTPCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPlaylistsInput = {
@@ -13623,6 +15263,7 @@ export namespace Prisma {
     problems?: ProblemUncheckedCreateNestedManyWithoutUserInput
     submission?: SubmissionUncheckedCreateNestedManyWithoutUserInput
     problemSolved?: ProblemSolvedUncheckedCreateNestedManyWithoutUserInput
+    otps?: OTPUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPlaylistsInput = {
@@ -13669,6 +15310,7 @@ export namespace Prisma {
     problems?: ProblemUpdateManyWithoutUserNestedInput
     submission?: SubmissionUpdateManyWithoutUserNestedInput
     problemSolved?: ProblemSolvedUpdateManyWithoutUserNestedInput
+    otps?: OTPUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPlaylistsInput = {
@@ -13683,6 +15325,7 @@ export namespace Prisma {
     problems?: ProblemUncheckedUpdateManyWithoutUserNestedInput
     submission?: SubmissionUncheckedUpdateManyWithoutUserNestedInput
     problemSolved?: ProblemSolvedUncheckedUpdateManyWithoutUserNestedInput
+    otps?: OTPUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type PlaylistCreateWithoutProblemsInput = {
@@ -13881,6 +15524,16 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type OTPCreateManyUserInput = {
+    id?: string
+    email: string
+    otpCode: string
+    expiresAt: Date | string
+    isUsed?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type ProblemUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -14031,6 +15684,36 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OTPUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    otpCode?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isUsed?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OTPUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    otpCode?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isUsed?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OTPUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    otpCode?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isUsed?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
