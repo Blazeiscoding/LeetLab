@@ -209,7 +209,7 @@ declare const ColumnTypeEnum: {
 
 declare type CompactedBatchResponse = {
     type: 'compacted';
-    plan: {};
+    plan: object;
     arguments: Record<string, {}>[];
     nestedSelection: string[];
     keys: string[];
@@ -255,7 +255,6 @@ declare type ComputedFieldsMap = {
 declare type ConnectionInfo = {
     schemaName?: string;
     maxBindValues?: number;
-    supportsRelationJoins: boolean;
 };
 
 declare type ConnectorType = 'mysql' | 'mongodb' | 'sqlite' | 'postgresql' | 'postgres' | 'prisma+postgres' | 'sqlserver' | 'cockroachdb';
@@ -1154,22 +1153,10 @@ declare type Error_2 = {
     column?: string;
 } | {
     kind: 'UniqueConstraintViolation';
-    constraint?: {
-        fields: string[];
-    } | {
-        index: string;
-    } | {
-        foreignKey: {};
-    };
+    fields: string[];
 } | {
     kind: 'NullConstraintViolation';
-    constraint?: {
-        fields: string[];
-    } | {
-        index: string;
-    } | {
-        foreignKey: {};
-    };
+    fields: string[];
 } | {
     kind: 'ForeignKeyConstraintViolation';
     constraint?: {
@@ -1203,18 +1190,7 @@ declare type Error_2 = {
     kind: 'TooManyConnections';
     cause: string;
 } | {
-    kind: 'ValueOutOfRange';
-    cause: string;
-} | {
-    kind: 'MissingFullTextSearchIndex';
-} | {
     kind: 'SocketTimeout';
-} | {
-    kind: 'InconsistentColumnData';
-    cause: string;
-} | {
-    kind: 'TransactionAlreadyClosed';
-    cause: string;
 } | {
     kind: 'postgres';
     code: string;
@@ -1234,10 +1210,6 @@ declare type Error_2 = {
      * Sqlite extended error code: https://www.sqlite.org/rescode.html
      */
     extendedCode: number;
-    message: string;
-} | {
-    kind: 'mssql';
-    code: number;
     message: string;
 };
 
@@ -2411,7 +2383,7 @@ export declare const objectEnumValues: {
     };
 };
 
-declare const officialPrismaAdapters: readonly ["@prisma/adapter-planetscale", "@prisma/adapter-neon", "@prisma/adapter-libsql", "@prisma/adapter-better-sqlite3", "@prisma/adapter-d1", "@prisma/adapter-pg", "@prisma/adapter-mssql", "@prisma/adapter-mariadb"];
+declare const officialPrismaAdapters: readonly ["@prisma/adapter-planetscale", "@prisma/adapter-neon", "@prisma/adapter-libsql", "@prisma/adapter-d1", "@prisma/adapter-pg", "@prisma/adapter-pg-worker"];
 
 export declare type Omission = Record<string, boolean | Skip>;
 
@@ -2689,7 +2661,7 @@ declare type PrismaPromiseTransaction<PayloadType = unknown> = PrismaPromiseBatc
 
 export declare const PrivateResultType: unique symbol;
 
-declare type Provider = 'mysql' | 'postgres' | 'sqlite' | 'sqlserver';
+declare type Provider = 'mysql' | 'postgres' | 'sqlite';
 
 declare namespace Public {
     export {
@@ -2727,9 +2699,8 @@ declare interface Queryable<Query, Result> extends AdapterInfo {
 }
 
 declare type QueryCompiler = {
-    compile(request: string): {};
+    compile(request: string): string;
     compileBatch(batchRequest: string): BatchResponse;
-    free(): void;
 };
 
 declare interface QueryCompilerConstructor {
@@ -2769,11 +2740,6 @@ declare interface QueryEngineConstructor {
 declare type QueryEngineInstance = {
     connect(headers: string, requestId: string): Promise<void>;
     disconnect(headers: string, requestId: string): Promise<void>;
-    /**
-     * Frees any resources allocated by the engine's WASM instance. This method is automatically created by WASM bindgen.
-     * Noop for other engines.
-     */
-    free?(): void;
     /**
      * @param requestStr JSON.stringified `QueryEngineRequest | QueryEngineBatchRequest`
      * @param headersStr JSON.stringified `QueryEngineRequestHeaders`

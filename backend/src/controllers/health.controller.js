@@ -99,6 +99,5 @@ export const ping = (req, res) => {
   res.status(200).json({
     status: "pong",
     timestamp: new Date().toISOString(),
-    uptime: Math.floor(process.uptime()),
   });
 };

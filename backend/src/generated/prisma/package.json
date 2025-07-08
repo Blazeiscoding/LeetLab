@@ -141,6 +141,6 @@
     },
     "./*": "./*"
   },
-  "version": "6.11.1",
+  "version": "6.9.0",
   "sideEffects": false
 }

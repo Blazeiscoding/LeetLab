@@ -1,6 +1,6 @@
 // backend/src/services/otp.service.js
-import crypto from 'crypto';
-import { db } from '../libs/db.js';
+import crypto from "crypto";
+import { db } from "../libs/db.js";
 
 class OTPService {
   // Generate 6-digit OTP
@@ -13,7 +13,7 @@ class OTPService {
     try {
       // Clean up expired OTPs for this user
       await this.cleanupExpiredOTPs(email);
-      
+
       const otpCode = this.generateOTP();
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
@@ -32,7 +32,7 @@ class OTPService {
         expiresAt,
       };
     } catch (error) {
-      console.error('Error creating OTP:', error);
+      console.error("Error creating OTP:", error);
       return {
         success: false,
         error: error.message,
@@ -59,6 +59,7 @@ class OTPService {
               name: true,
               email: true,
               role: true,
+              isEmailVerified: true,
             },
           },
         },
@@ -67,7 +68,7 @@ class OTPService {
       if (!otp) {
         return {
           success: false,
-          error: 'Invalid or expired OTP',
+          error: "Invalid or expired OTP",
         };
       }
 
@@ -82,7 +83,7 @@ class OTPService {
         user: otp.user,
       };
     } catch (error) {
-      console.error('Error verifying OTP:', error);
+      console.error("Error verifying OTP:", error);
       return {
         success: false,
         error: error.message,
@@ -96,14 +97,11 @@ class OTPService {
       await db.oTP.deleteMany({
         where: {
           email,
-          OR: [
-            { expiresAt: { lt: new Date() } },
-            { isUsed: true },
-          ],
+          OR: [{ expiresAt: { lt: new Date() } }, { isUsed: true }],
         },
       });
     } catch (error) {
-      console.error('Error cleaning up expired OTPs:', error);
+      console.error("Error cleaning up expired OTPs:", error);
     }
   }
 
@@ -111,7 +109,7 @@ class OTPService {
   async getRemainingAttempts(email) {
     try {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      
+
       const recentOTPs = await db.oTP.count({
         where: {
           email,
@@ -124,7 +122,7 @@ class OTPService {
       const maxAttempts = 5; // Max 5 OTPs per hour
       return Math.max(0, maxAttempts - recentOTPs);
     } catch (error) {
-      console.error('Error getting remaining attempts:', error);
+      console.error("Error getting remaining attempts:", error);
       return 0;
     }
   }

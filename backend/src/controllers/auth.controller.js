@@ -37,17 +37,34 @@ export const register = async (req, res) => {
         email,
         password: hashedPassword,
         role: UserRole.USER,
+        isEmailVerified: false,
       },
     });
 
+    // Generate and send OTP after registration
+    const otpResult = await otpService.createOTP(user.id, email);
+    if (!otpResult.success) {
+      return res.status(500).json({ message: "Failed to generate OTP" });
+    }
+
+    const emailResult = await emailService.sendOTP(email, otpResult.otpCode);
+    if (!emailResult.success) {
+      return res
+        .status(500)
+        .json({ message: "Failed to send verification OTP" });
+    }
+
     return res.status(201).json({
-      message: "Registration successful. You can now log in.",
+      message:
+        "Registration successful. Please verify your email with the OTP sent to your email address.",
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
+        isEmailVerified: false,
       },
+      expiresAt: otpResult.expiresAt,
     });
   } catch (error) {
     console.error("Register error:", error);
@@ -55,35 +72,50 @@ export const register = async (req, res) => {
   }
 };
 
+// Remove traditional login - only OTP-based login allowed
 export const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { email } = req.body;
 
   try {
     const user = await db.user.findUnique({ where: { email } });
     if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "User not found" });
     }
 
-    const isMatched = await bcrypt.compare(password, user.password);
-    if (!isMatched) {
-      return res.status(401).json({ message: "Invalid credentials" });
+    // Check if email is verified
+    if (!user.isEmailVerified) {
+      return res.status(401).json({
+        message:
+          "Please verify your email first. Use the send-otp endpoint to get a verification code.",
+      });
     }
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    // Check rate limiting
+    const remainingAttempts = await otpService.getRemainingAttempts(email);
+    if (remainingAttempts <= 0) {
+      return res.status(429).json({
+        message: "Too many OTP requests. Please try again later.",
+        remainingAttempts: 0,
+      });
+    }
 
-    const cookieOptions = getCookieOptions();
-    res.cookie("jwt", token, cookieOptions);
+    // Generate and store OTP
+    const otpResult = await otpService.createOTP(user.id, email);
+    if (!otpResult.success) {
+      return res.status(500).json({ message: "Failed to generate OTP" });
+    }
+
+    // Send OTP email
+    const emailResult = await emailService.sendOTP(email, otpResult.otpCode);
+    if (!emailResult.success) {
+      return res.status(500).json({ message: "Failed to send OTP email" });
+    }
 
     return res.status(200).json({
-      message: "Login successful",
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      message: "OTP sent to your email. Please verify to complete login.",
+      email: email,
+      expiresAt: otpResult.expiresAt,
+      remainingAttempts: remainingAttempts - 1,
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -91,7 +123,7 @@ export const login = async (req, res) => {
   }
 };
 
-// Send OTP to user's email
+// Send OTP to user's email (can be used for both verification and login)
 export const sendOTP = async (req, res) => {
   const { email } = req.body;
 
@@ -111,9 +143,9 @@ export const sendOTP = async (req, res) => {
     // Check rate limiting
     const remainingAttempts = await otpService.getRemainingAttempts(email);
     if (remainingAttempts <= 0) {
-      return res.status(429).json({ 
+      return res.status(429).json({
         message: "Too many OTP requests. Please try again later.",
-        remainingAttempts: 0 
+        remainingAttempts: 0,
       });
     }
 
@@ -141,7 +173,7 @@ export const sendOTP = async (req, res) => {
   }
 };
 
-// Verify OTP and login user
+// Verify OTP and complete login/verification
 export const verifyOTP = async (req, res) => {
   const { email, otp } = req.body;
 
@@ -157,6 +189,14 @@ export const verifyOTP = async (req, res) => {
       return res.status(400).json({ message: otpResult.error });
     }
 
+    // Update user's email verification status if not already verified
+    if (!otpResult.user.isEmailVerified) {
+      await db.user.update({
+        where: { id: otpResult.user.id },
+        data: { isEmailVerified: true },
+      });
+    }
+
     // Generate JWT token
     const token = jwt.sign({ id: otpResult.user.id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
@@ -168,7 +208,10 @@ export const verifyOTP = async (req, res) => {
 
     return res.status(200).json({
       message: "OTP verified successfully. Login successful.",
-      user: otpResult.user,
+      user: {
+        ...otpResult.user,
+        isEmailVerified: true,
+      },
     });
   } catch (error) {
     console.error("Verify OTP error:", error);
