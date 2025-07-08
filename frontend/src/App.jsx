@@ -41,16 +41,20 @@ function AppContent() {
     checkAuth();
   }, [checkAuth]);
 
-  if (isCheckingAuth && authUser === null) {
+  // Show loading screen while checking authentication
+  if (isCheckingAuth) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader className="size-10 animate-spin" />
+      <div className="flex items-center justify-center h-screen bg-base-100">
+        <div className="text-center">
+          <Loader className="size-12 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-base-content/60">Checking authentication...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="App">
+    <div className="App min-h-screen bg-base-100">
       <Routes>
         {/* Public Routes */}
         <Route
@@ -59,7 +63,11 @@ function AppContent() {
             !authUser ? (
               <LoginPage />
             ) : (
-              <Navigate to={location.state?.from || "/"} replace />
+              <Navigate 
+                to={location.state?.from?.pathname || "/"} 
+                replace 
+                state={{ from: location.state?.from }}
+              />
             )
           }
         />
@@ -69,7 +77,11 @@ function AppContent() {
             !authUser ? (
               <SignupPage />
             ) : (
-              <Navigate to={location.state?.from || "/"} replace />
+              <Navigate 
+                to={location.state?.from?.pathname || "/"} 
+                replace 
+                state={{ from: location.state?.from }}
+              />
             )
           }
         />
@@ -93,17 +105,41 @@ function AppContent() {
           </Route>
         </Route>
 
-        {/* Catch all route */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Catch all route - redirect to home if authenticated, login if not */}
+        <Route 
+          path="*" 
+          element={
+            authUser ? (
+              <Navigate to="/" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          } 
+        />
       </Routes>
 
       <Toaster
         position="top-right"
         toastOptions={{
-          duration: 3000,
+          duration: 4000,
           style: {
             background: "var(--fallback-b1,oklch(var(--b1)))",
             color: "var(--fallback-bc,oklch(var(--bc)))",
+            border: "1px solid var(--fallback-b3,oklch(var(--b3)))",
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: "var(--fallback-su,oklch(var(--su)))",
+              secondary: "var(--fallback-suc,oklch(var(--suc)))",
+            },
+          },
+          error: {
+            duration: 5000,
+            iconTheme: {
+              primary: "var(--fallback-er,oklch(var(--er)))",
+              secondary: "var(--fallback-erc,oklch(var(--erc)))",
+            },
           },
         }}
       />
@@ -113,7 +149,11 @@ function AppContent() {
 }
 
 function App() {
-  return <AppContent />;
+  return (
+    <Router>
+      <AppContent />
+    </Router>
+  );
 }
 
 export default App;
