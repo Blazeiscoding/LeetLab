@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { axiosInstance } from "../libs/axios";
+import { axiosInstance } from "../util/axios";
 import toast from "react-hot-toast";
 
 export const useAuthStore = create((set, get) => ({
@@ -25,10 +25,13 @@ export const useAuthStore = create((set, get) => ({
     set({ isSigningUp: true });
     try {
       const res = await axiosInstance.post("/auth/register", data);
-      toast.success("Registration successful! Please check your email for verification.");
+      toast.success(
+        "Registration successful! Please check your email for verification."
+      );
       return { success: true, data: res.data };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Something went wrong";
+      const errorMessage =
+        error.response?.data?.message || "Something went wrong";
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -40,14 +43,16 @@ export const useAuthStore = create((set, get) => ({
   login: async (data) => {
     set({ isLoggingIn: true });
     try {
-      const res = await axiosInstance.post("/auth/login", { email: data.email });
+      const res = await axiosInstance.post("/auth/login", {
+        email: data.email,
+      });
       toast.success("OTP sent to your email. Please check your inbox.");
-      return { 
-        success: true, 
-        requiresOTP: true, 
+      return {
+        success: true,
+        requiresOTP: true,
         email: data.email,
         expiresAt: res.data.expiresAt,
-        remainingAttempts: res.data.remainingAttempts
+        remainingAttempts: res.data.remainingAttempts,
       };
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Login failed";
@@ -64,14 +69,15 @@ export const useAuthStore = create((set, get) => ({
     try {
       const res = await axiosInstance.post("/auth/send-otp", { email });
       toast.success("OTP sent to your email!");
-      return { 
-        success: true, 
+      return {
+        success: true,
         email: email,
         expiresAt: res.data.expiresAt,
-        remainingAttempts: res.data.remainingAttempts
+        remainingAttempts: res.data.remainingAttempts,
       };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Failed to send OTP";
+      const errorMessage =
+        error.response?.data?.message || "Failed to send OTP";
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -88,7 +94,8 @@ export const useAuthStore = create((set, get) => ({
       toast.success("Login successful!");
       return { success: true, user: res.data.user };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "OTP verification failed";
+      const errorMessage =
+        error.response?.data?.message || "OTP verification failed";
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
