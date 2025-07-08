@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail, KeyRound, Loader2, ArrowLeft, Timer } from "lucide-react";
+import {
+  Mail,
+  KeyRound,
+  Loader2,
+  ArrowLeft,
+  Timer,
+  RefreshCw,
+} from "lucide-react";
 import { z } from "zod";
 import { useAuthStore } from "../store/useAuthStore";
-import { useNavigate } from "react-router-dom";
 
 // Validation schemas
 const emailSchema = z.object({
@@ -18,15 +24,14 @@ const otpSchema = z.object({
     .regex(/^\d+$/, "OTP must contain only numbers"),
 });
 
-const OTPLogin = ({ onBackToLogin }) => {
-  const [step, setStep] = useState("email"); // 'email' or 'otp'
-  const [email, setEmail] = useState("");
+const OTPLogin = ({ email: initialEmail, onBackToLogin, onSuccess }) => {
+  const [step, setStep] = useState(initialEmail ? "otp" : "email");
+  const [email, setEmail] = useState(initialEmail || "");
   const [timer, setTimer] = useState(0);
   const [remainingAttempts, setRemainingAttempts] = useState(5);
   const [otpExpiry, setOtpExpiry] = useState(null);
 
   const { sendOTP, verifyOTP, isSendingOTP, isVerifyingOTP } = useAuthStore();
-  const navigate = useNavigate();
 
   // Email form
   const {
@@ -48,6 +53,15 @@ const OTPLogin = ({ onBackToLogin }) => {
   } = useForm({
     resolver: zodResolver(otpSchema),
   });
+
+  // If email is provided, immediately set up OTP form
+  useEffect(() => {
+    if (initialEmail) {
+      setEmail(initialEmail);
+      setStep("otp");
+      setTimer(600); // 10 minutes
+    }
+  }, [initialEmail]);
 
   // Timer countdown effect
   useEffect(() => {
@@ -75,6 +89,11 @@ const OTPLogin = ({ onBackToLogin }) => {
           setEmailError("email", {
             message: "No account found with this email",
           });
+        } else if (result.error.includes("verify")) {
+          setEmailError("email", {
+            message:
+              "Please verify your email first. We'll send you a verification OTP.",
+          });
         } else if (result.error.includes("Too many")) {
           setEmailError("email", {
             message: "Too many OTP requests. Please try again later.",
@@ -96,11 +115,17 @@ const OTPLogin = ({ onBackToLogin }) => {
       const result = await verifyOTP(email, data.otp);
 
       if (result.success) {
-        navigate("/", { replace: true });
+        if (onSuccess) {
+          onSuccess();
+        }
       } else {
         if (result.error.includes("Invalid or expired")) {
           setOTPError("otp", {
             message: "Invalid or expired OTP. Please try again.",
+          });
+        } else if (result.error.includes("Many attempts")) {
+          setOTPError("otp", {
+            message: "Too many attempts. Please request a new OTP.",
           });
         } else {
           setOTPError("otp", { message: result.error });
@@ -125,9 +150,16 @@ const OTPLogin = ({ onBackToLogin }) => {
         setRemainingAttempts(result.remainingAttempts);
         setOtpExpiry(result.expiresAt);
         resetOTP();
+      } else {
+        setOTPError("otp", {
+          message: result.error || "Failed to resend OTP",
+        });
       }
     } catch (error) {
       console.error("Error resending OTP:", error);
+      setOTPError("otp", {
+        message: "Failed to resend OTP. Please try again.",
+      });
     }
   };
 
@@ -135,6 +167,13 @@ const OTPLogin = ({ onBackToLogin }) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const handleBackToEmail = () => {
+    setStep("email");
+    setTimer(0);
+    setRemainingAttempts(5);
+    resetOTP();
   };
 
   if (step === "email") {
@@ -222,11 +261,7 @@ const OTPLogin = ({ onBackToLogin }) => {
       <div className="text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
           <button
-            onClick={() => {
-              setStep("email");
-              setTimer(0);
-              resetOTP();
-            }}
+            onClick={onBackToLogin ? onBackToLogin : handleBackToEmail}
             className="btn btn-ghost btn-circle btn-sm"
             disabled={isVerifyingOTP}
           >
@@ -308,13 +343,24 @@ const OTPLogin = ({ onBackToLogin }) => {
           className="btn btn-link btn-sm"
           disabled={timer > 0 || isSendingOTP || remainingAttempts <= 0}
         >
-          {timer > 0
-            ? `Resend in ${formatTime(timer)}`
-            : remainingAttempts <= 0
-            ? "No more attempts"
-            : isSendingOTP
-            ? "Resending..."
-            : "Resend OTP"}
+          {timer > 0 ? (
+            <>
+              <Timer className="h-4 w-4 mr-1" />
+              Resend in {formatTime(timer)}
+            </>
+          ) : remainingAttempts <= 0 ? (
+            "No more attempts"
+          ) : isSendingOTP ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              Resending...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="h-4 w-4 mr-1" />
+              Resend OTP
+            </>
+          )}
         </button>
       </div>
     </div>

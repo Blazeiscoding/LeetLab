@@ -1,17 +1,24 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Code, Eye, EyeOff, Loader2, Lock, Mail, KeyRound } from "lucide-react";
-import { loginSchema } from "../util/zodSchema";
+import { Code, Loader2, Lock, Mail, KeyRound } from "lucide-react";
+import { z } from "zod";
 import AuthImagePattern from "../components/AuthImagePattern";
 import { useAuthStore } from "../store/useAuthStore";
 import OTPLogin from "../components/OtpLogin";
 
+// Email only schema for the new login flow
+const emailOnlySchema = z.object({
+  email: z.string().email("Enter a valid email"),
+});
+
 const LoginPage = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [loginMethod, setLoginMethod] = useState("password"); // 'password' or 'otp'
+  const [loginMethod, setLoginMethod] = useState("otp"); // Default to OTP since it's the primary method
+  const [showOTPForm, setShowOTPForm] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, isLoggingIn } = useAuthStore();
 
   const {
@@ -20,19 +27,26 @@ const LoginPage = () => {
     formState: { errors },
     setError,
   } = useForm({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(emailOnlySchema),
   });
 
   const onSubmit = async (data) => {
     try {
       const result = await login(data);
 
-      if (result.success) {
+      if (result.success && result.requiresOTP) {
+        setUserEmail(data.email);
+        setShowOTPForm(true);
+      } else if (result.success) {
+        // Direct login (if still supported)
         navigate("/", { replace: true });
       } else {
-        if (result.error.includes("credentials")) {
-          setError("email", { message: "Invalid email or password" });
-          setError("password", { message: "Invalid email or password" });
+        if (result.error.includes("not found")) {
+          setError("email", { message: "No account found with this email" });
+        } else if (result.error.includes("verify")) {
+          setError("email", { message: "Please verify your email first" });
+        } else {
+          setError("email", { message: result.error });
         }
       }
     } catch (error) {
@@ -40,11 +54,25 @@ const LoginPage = () => {
     }
   };
 
+  const handleBackToEmailForm = () => {
+    setShowOTPForm(false);
+    setUserEmail("");
+  };
+
+  const handleOTPSuccess = () => {
+    const redirectPath = location.state?.from?.pathname || "/";
+    navigate(redirectPath, { replace: true });
+  };
+
   return (
     <div className="h-screen grid lg:grid-cols-2">
       <div className="flex flex-col justify-center items-center p-6 sm:p-12">
-        {loginMethod === "otp" ? (
-          <OTPLogin onBackToLogin={() => setLoginMethod("password")} />
+        {showOTPForm ? (
+          <OTPLogin
+            email={userEmail}
+            onBackToLogin={handleBackToEmailForm}
+            onSuccess={handleOTPSuccess}
+          />
         ) : (
           <div className="w-full max-w-md space-y-8">
             {/* Logo */}
@@ -54,36 +82,22 @@ const LoginPage = () => {
                   <Code className="w-6 h-6 text-primary" />
                 </div>
                 <h1 className="text-2xl font-bold mt-2">Welcome Back</h1>
-                <p className="text-base-content/60">Login to your account</p>
+                <p className="text-base-content/60">
+                  Enter your email to login
+                </p>
               </div>
             </div>
 
-            {/* Login Method Toggle */}
-            <div className="flex gap-2 p-1 bg-base-200 rounded-lg">
-              <button
-                type="button"
-                onClick={() => setLoginMethod("password")}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                  loginMethod === "password"
-                    ? "bg-primary text-primary-content"
-                    : "text-base-content/60 hover:text-base-content"
-                }`}
-              >
-                <Lock className="w-4 h-4 inline mr-2" />
-                Password
-              </button>
-              <button
-                type="button"
-                onClick={() => setLoginMethod("otp")}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                  loginMethod === "otp"
-                    ? "bg-primary text-primary-content"
-                    : "text-base-content/60 hover:text-base-content"
-                }`}
-              >
-                <KeyRound className="w-4 h-4 inline mr-2" />
-                OTP
-              </button>
+            {/* Info Message */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center gap-2 text-blue-700">
+                <KeyRound className="w-5 h-5" />
+                <span className="font-medium">Secure Login</span>
+              </div>
+              <p className="text-sm text-blue-600 mt-1">
+                We'll send you a one-time password (OTP) to your email for
+                secure access.
+              </p>
             </div>
 
             {/* Form */}
@@ -91,7 +105,7 @@ const LoginPage = () => {
               {/* Email */}
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text font-medium">Email</span>
+                  <span className="label-text font-medium">Email Address</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -114,44 +128,6 @@ const LoginPage = () => {
                 )}
               </div>
 
-              {/* Password */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">Password</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-base-content/40" />
-                  </div>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    {...register("password")}
-                    className={`input input-bordered w-full pl-10 pr-10 ${
-                      errors.password ? "input-error" : ""
-                    }`}
-                    placeholder="••••••••"
-                    disabled={isLoggingIn}
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    onClick={() => setShowPassword(!showPassword)}
-                    disabled={isLoggingIn}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-base-content/40" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-base-content/40" />
-                    )}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
-
               <button
                 type="submit"
                 className="btn btn-primary w-full"
@@ -160,27 +136,13 @@ const LoginPage = () => {
                 {isLoggingIn ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    Logging in...
+                    Sending OTP...
                   </>
                 ) : (
-                  "Login"
+                  "Send OTP"
                 )}
               </button>
             </form>
-
-            {/* Alternative Login Method */}
-            <div className="text-center">
-              <p className="text-base-content/60 text-sm">
-                Or{" "}
-                <button
-                  onClick={() => setLoginMethod("otp")}
-                  className="link link-primary"
-                  disabled={isLoggingIn}
-                >
-                  login with OTP
-                </button>
-              </p>
-            </div>
 
             {/* Footer */}
             <div className="text-center">
@@ -201,11 +163,11 @@ const LoginPage = () => {
 
       {/* Right Side - Image/Pattern */}
       <AuthImagePattern
-        title={loginMethod === "otp" ? "Secure OTP Login" : "Welcome Back!"}
+        title={showOTPForm ? "Enter Verification Code" : "Welcome Back!"}
         subtitle={
-          loginMethod === "otp"
-            ? "Enter your email to receive a secure one-time password for quick access."
-            : "Sign in to continue your journey with us. Don't have an account? Create one now."
+          showOTPForm
+            ? "Enter the OTP sent to your email to complete login."
+            : "Enter your email to receive a secure one-time password for quick access."
         }
       />
     </div>

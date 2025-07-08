@@ -1,29 +1,23 @@
 import { create } from "zustand";
-import { axiosInstance } from "../util/axios";
+import { axiosInstance } from "../libs/axios";
 import toast from "react-hot-toast";
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
   isSigningUp: false,
   isLoggingIn: false,
-  isCheckingAuth: false,
+  isUpdatingProfile: false,
+  isCheckingAuth: true,
   isSendingOTP: false,
   isVerifyingOTP: false,
 
   checkAuth: async () => {
-    set({ isCheckingAuth: true });
     try {
       const res = await axiosInstance.get("/auth/me");
-      set({ authUser: res.data.user });
-      return res.data.user;
+      set({ authUser: res.data.user, isCheckingAuth: false });
     } catch (error) {
-      console.log("Error in checking auth:", error);
-      if (error.response?.status === 401) {
-        set({ authUser: null });
-      }
-      return null;
-    } finally {
-      set({ isCheckingAuth: false });
+      console.log("Error in checkAuth:", error);
+      set({ authUser: null, isCheckingAuth: false });
     }
   },
 
@@ -31,14 +25,10 @@ export const useAuthStore = create((set, get) => ({
     set({ isSigningUp: true });
     try {
       const res = await axiosInstance.post("/auth/register", data);
-      toast.success(
-        res.data.message || "Registration successful! Please login."
-      );
-      return { success: true, user: res.data.user };
+      toast.success("Registration successful! Please check your email for verification.");
+      return { success: true, data: res.data };
     } catch (error) {
-      console.log("Error in signup:", error);
-      const errorMessage =
-        error.response?.data?.message || error.message || "Signup failed";
+      const errorMessage = error.response?.data?.message || "Something went wrong";
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -46,17 +36,21 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  // Traditional login with email/password (if still needed)
   login: async (data) => {
     set({ isLoggingIn: true });
     try {
-      const res = await axiosInstance.post("/auth/login", data);
-      set({ authUser: res.data.user });
-      toast.success(res.data.message || "Login successful!");
-      return { success: true, user: res.data.user };
+      const res = await axiosInstance.post("/auth/login", { email: data.email });
+      toast.success("OTP sent to your email. Please check your inbox.");
+      return { 
+        success: true, 
+        requiresOTP: true, 
+        email: data.email,
+        expiresAt: res.data.expiresAt,
+        remainingAttempts: res.data.remainingAttempts
+      };
     } catch (error) {
-      console.log("Error in login:", error);
-      const errorMessage =
-        error.response?.data?.message || error.message || "Login failed";
+      const errorMessage = error.response?.data?.message || "Login failed";
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -64,22 +58,20 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  // Send OTP to user's email
+  // Send OTP to email
   sendOTP: async (email) => {
     set({ isSendingOTP: true });
     try {
       const res = await axiosInstance.post("/auth/send-otp", { email });
-      toast.success(res.data.message || "OTP sent successfully!");
-      return {
-        success: true,
-        email: res.data.email,
+      toast.success("OTP sent to your email!");
+      return { 
+        success: true, 
+        email: email,
         expiresAt: res.data.expiresAt,
-        remainingAttempts: res.data.remainingAttempts,
+        remainingAttempts: res.data.remainingAttempts
       };
     } catch (error) {
-      console.log("Error sending OTP:", error);
-      const errorMessage =
-        error.response?.data?.message || error.message || "Failed to send OTP";
+      const errorMessage = error.response?.data?.message || "Failed to send OTP";
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -87,20 +79,16 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  // Verify OTP and login user
+  // Verify OTP and login
   verifyOTP: async (email, otp) => {
     set({ isVerifyingOTP: true });
     try {
       const res = await axiosInstance.post("/auth/verify-otp", { email, otp });
       set({ authUser: res.data.user });
-      toast.success(res.data.message || "OTP verified successfully!");
+      toast.success("Login successful!");
       return { success: true, user: res.data.user };
     } catch (error) {
-      console.log("Error verifying OTP:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Failed to verify OTP";
+      const errorMessage = error.response?.data?.message || "OTP verification failed";
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -110,22 +98,28 @@ export const useAuthStore = create((set, get) => ({
 
   logout: async () => {
     try {
-      const res = await axiosInstance.post("/auth/logout");
+      await axiosInstance.post("/auth/logout");
       set({ authUser: null });
-      toast.success(res.data.message || "Logout successful!");
-      return { success: true };
+      toast.success("Logged out successfully");
     } catch (error) {
       console.log("Error in logout:", error);
+      // Even if logout fails on backend, clear the frontend state
       set({ authUser: null });
-      const errorMessage =
-        error.response?.data?.message || error.message || "Logout failed";
-      toast.error(errorMessage);
-      return { success: false, error: errorMessage };
+      toast.error("Error logging out");
     }
   },
 
-  // Helper method to clear auth state
-  clearAuth: () => {
-    set({ authUser: null });
+  updateProfile: async (data) => {
+    set({ isUpdatingProfile: true });
+    try {
+      const res = await axiosInstance.put("/auth/update-profile", data);
+      set({ authUser: res.data.user });
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      console.log("Error in updateProfile:", error);
+      toast.error(error.response?.data?.message || "Something went wrong");
+    } finally {
+      set({ isUpdatingProfile: false });
+    }
   },
 }));
