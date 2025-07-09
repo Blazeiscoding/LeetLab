@@ -39,21 +39,34 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  // Traditional login with email/password (if still needed)
+  // Updated login function to handle both verified and unverified accounts
   login: async (data) => {
     set({ isLoggingIn: true });
     try {
       const res = await axiosInstance.post("/auth/login", {
         email: data.email,
+        password: data.password,
       });
-      toast.success("OTP sent to your email. Please check your inbox.");
-      return {
-        success: true,
-        requiresOTP: true,
-        email: data.email,
-        expiresAt: res.data.expiresAt,
-        remainingAttempts: res.data.remainingAttempts,
-      };
+      console.log("LOGIN RESPONSE", res.data); // Debug log
+      // Check if user is verified
+      if (res.data.user && res.data.user.isEmailVerified) {
+        // User is verified, direct login
+        set({ authUser: res.data.user });
+        // Force checkAuth to sync state with backend (fixes login without refresh)
+        await get().checkAuth();
+        toast.success("Login successful!");
+        return { success: true, user: res.data.user };
+      } else {
+        // User is not verified, need OTP verification
+        toast.info("Please verify your email to complete login.");
+        return {
+          success: true,
+          requiresOTP: true,
+          email: data.email,
+          expiresAt: res.data.expiresAt,
+          remainingAttempts: res.data.remainingAttempts,
+        };
+      }
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Login failed";
       toast.error(errorMessage);
@@ -85,13 +98,15 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  // Verify OTP and login
+  // Verify OTP and complete login/registration
   verifyOTP: async (email, otp) => {
     set({ isVerifyingOTP: true });
     try {
       const res = await axiosInstance.post("/auth/verify-otp", { email, otp });
       set({ authUser: res.data.user });
-      toast.success("Login successful!");
+      // Force checkAuth to sync state with backend (fixes login without refresh)
+      await get().checkAuth();
+      toast.success("Email verified successfully!");
       return { success: true, user: res.data.user };
     } catch (error) {
       const errorMessage =

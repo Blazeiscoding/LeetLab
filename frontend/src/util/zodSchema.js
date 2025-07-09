@@ -4,6 +4,9 @@ export const signUpSchema = z.object({
   email: z.string().email("Enter a valid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   name: z.string().min(3, "Name must be at least 3 characters"),
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: "You must accept the terms and conditions",
+  }),
 });
 
 export const loginSchema = z.object({

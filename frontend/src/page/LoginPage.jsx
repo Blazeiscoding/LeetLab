@@ -1,25 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Code, Loader2, Lock, Mail, KeyRound } from "lucide-react";
+import { Code, Loader2, Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 import AuthImagePattern from "../components/AuthImagePattern";
 import { useAuthStore } from "../store/useAuthStore";
 import OTPLogin from "../components/OtpLogin";
 
-// Email only schema for the new login flow
-const emailOnlySchema = z.object({
+// Updated schema to include password
+const loginSchema = z.object({
   email: z.string().email("Enter a valid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 const LoginPage = () => {
-  const [loginMethod, setLoginMethod] = useState("otp"); // Default to OTP since it's the primary method
+  const [showPassword, setShowPassword] = useState(false);
   const [showOTPForm, setShowOTPForm] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isLoggingIn } = useAuthStore();
+  const { login, isLoggingIn, authUser } = useAuthStore();
+
+  useEffect(() => {
+    if (authUser) {
+      const redirectPath = location.state?.from?.pathname || "/";
+      navigate(redirectPath, { replace: true });
+    }
+  }, [authUser, location, navigate]);
 
   const {
     register,
@@ -27,7 +35,7 @@ const LoginPage = () => {
     formState: { errors },
     setError,
   } = useForm({
-    resolver: zodResolver(emailOnlySchema),
+    resolver: zodResolver(loginSchema),
   });
 
   const onSubmit = async (data) => {
@@ -35,22 +43,30 @@ const LoginPage = () => {
       const result = await login(data);
 
       if (result.success && result.requiresOTP) {
+        // User needs email verification (unverified account)
         setUserEmail(data.email);
         setShowOTPForm(true);
       } else if (result.success) {
-        // Direct login (if still supported)
-        navigate("/", { replace: true });
+        // Direct login successful (verified account)
+        const redirectPath = location.state?.from?.pathname || "/";
+        navigate(redirectPath, { replace: true });
       } else {
+        // Handle various error cases
         if (result.error.includes("not found")) {
-          setError("email", { message: "No account found with this email" });
+          setError("email", { message: "You must register your account before logging in." });
         } else if (result.error.includes("verify")) {
           setError("email", { message: "Please verify your email first" });
+        } else if (result.error.includes("Invalid password")) {
+          setError("password", { message: "Incorrect password" });
+        } else if (result.error.includes("Invalid credentials")) {
+          setError("password", { message: "Invalid email or password" });
         } else {
           setError("email", { message: result.error });
         }
       }
     } catch (error) {
       console.error("Error in login form submission:", error);
+      setError("email", { message: "An unexpected error occurred" });
     }
   };
 
@@ -83,21 +99,9 @@ const LoginPage = () => {
                 </div>
                 <h1 className="text-2xl font-bold mt-2">Welcome Back</h1>
                 <p className="text-base-content/60">
-                  Enter your email to login
+                  Sign in to your account
                 </p>
               </div>
-            </div>
-
-            {/* Info Message */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <div className="flex items-center gap-2 text-blue-700">
-                <KeyRound className="w-5 h-5" />
-                <span className="font-medium">Secure Login</span>
-              </div>
-              <p className="text-sm text-blue-600 mt-1">
-                We'll send you a one-time password (OTP) to your email for
-                secure access.
-              </p>
             </div>
 
             {/* Form */}
@@ -128,6 +132,44 @@ const LoginPage = () => {
                 )}
               </div>
 
+              {/* Password */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Password</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-base-content/40" />
+                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    {...register("password")}
+                    className={`input input-bordered w-full pl-10 pr-10 ${
+                      errors.password ? "input-error" : ""
+                    }`}
+                    placeholder="Enter your password"
+                    disabled={isLoggingIn}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-3.5 text-base-content/40 hover:text-base-content"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoggingIn}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
               <button
                 type="submit"
                 className="btn btn-primary w-full"
@@ -136,16 +178,16 @@ const LoginPage = () => {
                 {isLoggingIn ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    Sending OTP...
+                    Signing in...
                   </>
                 ) : (
-                  "Send OTP"
+                  "Sign In"
                 )}
               </button>
             </form>
 
             {/* Footer */}
-            <div className="text-center">
+            <div className="text-center space-y-2">
               <p className="text-base-content/60">
                 Don't have an account?{" "}
                 <Link
@@ -156,6 +198,15 @@ const LoginPage = () => {
                   Sign Up
                 </Link>
               </p>
+              <p className="text-base-content/60">
+                <Link
+                  to="/forgot-password"
+                  className="link link-primary"
+                  tabIndex={isLoggingIn ? -1 : 0}
+                >
+                  Forgot Password?
+                </Link>
+              </p>
             </div>
           </div>
         )}
@@ -163,11 +214,11 @@ const LoginPage = () => {
 
       {/* Right Side - Image/Pattern */}
       <AuthImagePattern
-        title={showOTPForm ? "Enter Verification Code" : "Welcome Back!"}
+        title={showOTPForm ? "Email Verification" : "Welcome Back!"}
         subtitle={
           showOTPForm
-            ? "Enter the OTP sent to your email to complete login."
-            : "Enter your email to receive a secure one-time password for quick access."
+            ? "Please verify your email to complete the login process."
+            : "Enter your credentials to access your account."
         }
       />
     </div>

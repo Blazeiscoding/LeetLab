@@ -87,7 +87,7 @@ const OTPLogin = ({ email: initialEmail, onBackToLogin, onSuccess }) => {
       } else {
         if (result.error.includes("not found")) {
           setEmailError("email", {
-            message: "No account found with this email",
+            message: "You must register your account before logging in.",
           });
         } else if (result.error.includes("verify")) {
           setEmailError("email", {
