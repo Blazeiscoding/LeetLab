@@ -36,11 +36,7 @@ const SignupPage = () => {
     mode: "onChange", // This will validate on every change
   });
 
-  // Watch all form values for debugging
-  const watchedValues = watch();
-
   const onSubmit = async (data) => {
-    console.log("Form submitted with data:", data);
 
     try {
       const result = await signup(data);
@@ -75,15 +71,6 @@ const SignupPage = () => {
   const handleBackToSignup = () => {
     setShowEmailVerification(false);
     setRegistrationEmail("");
-  };
-
-  // Debug function to test button click
-  const handleDebugClick = () => {
-    console.log("Button clicked!");
-    console.log("Current form values:", watchedValues);
-    console.log("Form errors:", errors);
-    console.log("Is form valid:", isValid);
-    console.log("Is signing up:", isSigningUp);
   };
 
   if (showEmailVerification) {
@@ -163,14 +150,6 @@ const SignupPage = () => {
                 Join us and start your journey
               </p>
             </div>
-          </div>
-
-          {/* Debug Info (remove in production) */}
-          <div className="bg-gray-100 p-2 rounded text-xs">
-            <p>Debug Info:</p>
-            <p>Form Valid: {isValid ? "Yes" : "No"}</p>
-            <p>Errors: {Object.keys(errors).length}</p>
-            <p>Is Signing Up: {isSigningUp ? "Yes" : "No"}</p>
           </div>
 
           {/* Form */}
@@ -291,24 +270,11 @@ const SignupPage = () => {
               )}
             </div>
 
-            {/* Debug Button */}
-            <button
-              type="button"
-              onClick={handleDebugClick}
-              className="btn btn-secondary w-full mb-2"
-            >
-              Debug - Check Form State
-            </button>
-
             {/* Submit Button */}
             <button
               type="submit"
               disabled={isSigningUp}
               className="btn btn-primary w-full"
-              onClick={(e) => {
-                console.log("Submit button clicked!");
-                console.log("Event:", e);
-              }}
             >
               {isSigningUp ? (
                 <>
@@ -318,18 +284,6 @@ const SignupPage = () => {
               ) : (
                 "Create Account"
               )}
-            </button>
-
-            {/* Manual submit for testing */}
-            <button
-              type="button"
-              onClick={() => {
-                console.log("Manual submit triggered");
-                handleSubmit(onSubmit)();
-              }}
-              className="btn btn-outline w-full"
-            >
-              Manual Submit (Test)
             </button>
           </form>
 

@@ -198,15 +198,6 @@ const LoginPage = () => {
                   Sign Up
                 </Link>
               </p>
-              <p className="text-base-content/60">
-                <Link
-                  to="/forgot-password"
-                  className="link link-primary"
-                  tabIndex={isLoggingIn ? -1 : 0}
-                >
-                  Forgot Password?
-                </Link>
-              </p>
             </div>
           </div>
         )}
