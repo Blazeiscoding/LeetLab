@@ -74,7 +74,7 @@ export const register = async (req, res) => {
 
 // Remove traditional login - only OTP-based login allowed
 export const login = async (req, res) => {
-  const { email } = req.body;
+  const { email, password } = req.body;
 
   try {
     const user = await db.user.findUnique({ where: { email } });
@@ -82,40 +82,38 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "User not found" });
     }
 
-    // Check if email is verified
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    // Optionally check email verification
     if (!user.isEmailVerified) {
-      return res.status(401).json({
-        message:
-          "Please verify your email first. Use the send-otp endpoint to get a verification code.",
-      });
+      return res
+        .status(401)
+        .json({ message: "Please verify your email first." });
     }
 
-    // Check rate limiting
-    const remainingAttempts = await otpService.getRemainingAttempts(email);
-    if (remainingAttempts <= 0) {
-      return res.status(429).json({
-        message: "Too many OTP requests. Please try again later.",
-        remainingAttempts: 0,
-      });
-    }
+    // Generate JWT token
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
-    // Generate and store OTP
-    const otpResult = await otpService.createOTP(user.id, email);
-    if (!otpResult.success) {
-      return res.status(500).json({ message: "Failed to generate OTP" });
-    }
+    // Set cookie
+    const cookieOptions = getCookieOptions();
+    res.cookie("jwt", token, cookieOptions);
 
-    // Send OTP email
-    const emailResult = await emailService.sendOTP(email, otpResult.otpCode);
-    if (!emailResult.success) {
-      return res.status(500).json({ message: "Failed to send OTP email" });
-    }
-
+    // Return user object with isEmailVerified
     return res.status(200).json({
-      message: "OTP sent to your email. Please verify to complete login.",
-      email: email,
-      expiresAt: otpResult.expiresAt,
-      remainingAttempts: remainingAttempts - 1,
+      message: "Login successful",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified,
+      },
     });
   } catch (error) {
     console.error("Login error:", error);
