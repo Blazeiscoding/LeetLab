@@ -10,6 +10,7 @@ import {
   Star,
   ChevronDown,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { axiosInstance } from "../util/axios";
 import { useAuthStore } from "../store/useAuthStore";
 import toast from "react-hot-toast";
@@ -23,9 +24,11 @@ const HomePage = () => {
     problemsByDifficulty: { EASY: 0, MEDIUM: 0, HARD: 0 },
   });
   const [loading, setLoading] = useState(true);
+  const [topLeaderboard, setTopLeaderboard] = useState([]);
 
   useEffect(() => {
     fetchDashboardData();
+    fetchTopLeaderboard();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -81,6 +84,15 @@ const HomePage = () => {
       console.error("Error fetching dashboard data:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTopLeaderboard = async () => {
+    try {
+      const res = await axiosInstance.get("/leaderboard/monthly");
+      setTopLeaderboard((res.data.data.leaderboard || []).slice(0, 3));
+    } catch (err) {
+      setTopLeaderboard([]);
     }
   };
 

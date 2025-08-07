@@ -16,6 +16,7 @@
     "@vercel/analytics": "^1.5.0",
     "axios": "^1.9.0",
     "daisyui": "^5.0.35",
+    "framer-motion": "^12.23.12",
     "lucide-react": "^0.510.0",
     "monaco-editor": "^0.52.2",
     "react": "^19.1.0",

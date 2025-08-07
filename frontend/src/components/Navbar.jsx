@@ -38,6 +38,7 @@ const Navbar = () => {
     { path: "/", label: "Home", icon: Home },
     { path: "/problems", label: "Problems", icon: Code },
     { path: "/playlists", label: "Playlists", icon: BookOpen },
+    { path: "/leaderboard", label: "Leaderboard", icon: Trophy },
   ];
 
   return (

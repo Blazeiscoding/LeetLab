@@ -28,6 +28,7 @@ import PlaylistDetailPage from "./page/PlaylistDetailPage";
 import AddProblem from "./page/AddProblem";
 import DeleteProblem from "./page/DeleteProblem";
 import UpdateProblem from "./page/UpdateProblem";
+import LeaderboardPage from "./page/LeaderboardPage";
 
 // Components
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -63,9 +64,9 @@ function AppContent() {
             !authUser ? (
               <LoginPage />
             ) : (
-              <Navigate 
-                to={location.state?.from?.pathname || "/"} 
-                replace 
+              <Navigate
+                to={location.state?.from?.pathname || "/"}
+                replace
                 state={{ from: location.state?.from }}
               />
             )
@@ -77,9 +78,9 @@ function AppContent() {
             !authUser ? (
               <SignupPage />
             ) : (
-              <Navigate 
-                to={location.state?.from?.pathname || "/"} 
-                replace 
+              <Navigate
+                to={location.state?.from?.pathname || "/"}
+                replace
                 state={{ from: location.state?.from }}
               />
             )
@@ -95,6 +96,7 @@ function AppContent() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/playlists" element={<PlaylistsPage />} />
             <Route path="/playlists/:id" element={<PlaylistDetailPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
 
             {/* Admin Routes */}
             <Route element={<AdminRoute />}>
@@ -106,15 +108,15 @@ function AppContent() {
         </Route>
 
         {/* Catch all route - redirect to home if authenticated, login if not */}
-        <Route 
-          path="*" 
+        <Route
+          path="*"
           element={
             authUser ? (
               <Navigate to="/" replace />
             ) : (
               <Navigate to="/login" replace />
             )
-          } 
+          }
         />
       </Routes>
 
@@ -149,11 +151,7 @@ function AppContent() {
 }
 
 function App() {
-  return (
-    
-      <AppContent />
-    
-  );
+  return <AppContent />;
 }
 
 export default App;
