@@ -3,20 +3,16 @@ import crypto from "crypto";
 import { db } from "../libs/db.js";
 
 class OTPService {
-  // Generate 6-digit OTP
   generateOTP() {
     return crypto.randomInt(100000, 999999).toString();
   }
 
-  // Create and store OTP for user
   async createOTP(userId, email) {
     try {
-      // Clean up expired OTPs for this user
       await this.cleanupExpiredOTPs(email);
 
       const otpCode = this.generateOTP();
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
-
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
       const otp = await db.oTP.create({
         data: {
           userId,
@@ -40,7 +36,6 @@ class OTPService {
     }
   }
 
-  // Verify OTP
   async verifyOTP(email, otpCode) {
     try {
       const otp = await db.oTP.findFirst({
@@ -72,7 +67,6 @@ class OTPService {
         };
       }
 
-      // Mark OTP as used
       await db.oTP.update({
         where: { id: otp.id },
         data: { isUsed: true },
@@ -91,7 +85,6 @@ class OTPService {
     }
   }
 
-  // Clean up expired OTPs
   async cleanupExpiredOTPs(email) {
     try {
       await db.oTP.deleteMany({
@@ -105,7 +98,6 @@ class OTPService {
     }
   }
 
-  // Get remaining attempts for rate limiting
   async getRemainingAttempts(email) {
     try {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
@@ -119,7 +111,7 @@ class OTPService {
         },
       });
 
-      const maxAttempts = 5; // Max 5 OTPs per hour
+      const maxAttempts = 5;
       return Math.max(0, maxAttempts - recentOTPs);
     } catch (error) {
       console.error("Error getting remaining attempts:", error);

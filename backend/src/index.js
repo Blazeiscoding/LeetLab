@@ -10,16 +10,15 @@ import executionRoute from "./routes/executeCode.routes.js";
 import submissionRoute from "./routes/submission.routes.js";
 import playlistRoutes from "./routes/playlist.routes.js";
 import healthRoutes from "./routes/health.routes.js";
+import leaderboardRoutes from "./routes/leaderboard.routes.js";
 
 dotenv.config();
 
 const app = express();
 
-// Apply CORS middleware BEFORE any other middleware
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (mobile apps, curl, etc.)
       if (!origin) return callback(null, true);
 
       const allowedOrigins = [
@@ -34,7 +33,7 @@ app.use(
         callback(null, true);
       } else {
         console.log("CORS blocked origin:", origin);
-        callback(null, false); // Don't throw error, just deny
+        callback(null, false);
       }
     },
     credentials: true,
@@ -55,7 +54,6 @@ app.use(
   })
 );
 
-// Additional manual CORS headers for extra safety
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   const allowedOrigins = [
@@ -89,7 +87,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Other middleware AFTER CORS
 app.use(express.json());
 app.use(cookieParser());
 
@@ -97,13 +94,12 @@ app.get("/", (req, res) => {
   res.send("Hello Guys welcome to leetlab🔥");
 });
 
-// Remove this since you already have ping in healthRoutes
-
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/problems", problemRoutes);
 app.use("/api/v1/execute-code", executionRoute);
 app.use("/api/v1/submission", submissionRoute);
 app.use("/api/v1/playlist", playlistRoutes);
+app.use("/api/v1/leaderboard", leaderboardRoutes);
 app.use("/api/v1", healthRoutes);
 
 const PORT = process.env.PORT || 5000;
@@ -111,52 +107,44 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log("Server is running on port ", PORT);
 
-  // OPTIMIZED KEEP-ALIVE STRATEGY
   if (process.env.NODE_ENV === "production") {
     let consecutiveFailures = 0;
     const maxFailures = 3;
 
-    // Reduced frequency: every 10 minutes instead of 2 minutes
-    cron.schedule("*/10 * * * *", async () => {
+    cron.schedule("0 9 * * *", async () => {
       try {
         const serverUrl =
           process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
-        console.log("🏃 Keep-alive ping at:", new Date().toISOString());
+        console.log("🏃 Daily keep-alive ping at:", new Date().toISOString());
 
-        // Use your existing ping endpoint
         const response = await axios.get(`${serverUrl}/api/v1/ping`, {
-          timeout: 8000, // Reduced timeout to 8 seconds
+          timeout: 15000,
           headers: {
-            "User-Agent": "KeepAlive-Internal",
+            "User-Agent": "KeepAlive-Daily",
           },
         });
 
-        console.log("✅ Keep-alive ping successful:", response.data);
+        console.log("✅ Daily keep-alive ping successful:", response.data);
         consecutiveFailures = 0; // Reset failure count on success
       } catch (error) {
         consecutiveFailures++;
         console.error(
-          `❌ Keep-alive ping failed (${consecutiveFailures}/${maxFailures}):`,
+          `❌ Daily keep-alive ping failed (${consecutiveFailures}/${maxFailures}):`,
           error.message
         );
 
-        // If too many consecutive failures, temporarily disable keep-alive
         if (consecutiveFailures >= maxFailures) {
-          console.log(
-            "⚠️ Too many failures, skipping next few keep-alive attempts"
-          );
-          // You could implement a backoff strategy here
+          console.log("⚠️ Too many daily failures, requires investigation");
         }
       }
     });
 
-    console.log("⏰ Keep-alive cron job scheduled (every 10 minutes)");
+    console.log("⏰ Daily keep-alive cron job scheduled (9:00 AM UTC)");
   } else {
     console.log("🔧 Development mode - keep-alive disabled");
   }
 });
 
-// Graceful shutdown handling
 process.on("SIGTERM", () => {
   console.log("SIGTERM received, shutting down gracefully");
   process.exit(0);
