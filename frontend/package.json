@@ -14,6 +14,7 @@
     "@monaco-editor/react": "^4.7.0",
     "@tailwindcss/vite": "^4.1.6",
     "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.2.0",
     "axios": "^1.9.0",
     "daisyui": "^5.0.35",
     "framer-motion": "^12.23.12",
