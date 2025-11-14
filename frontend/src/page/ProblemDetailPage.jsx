@@ -149,6 +149,7 @@ const ProblemDetailPage = () => {
         language_id: languageMap[selectedLanguage].id,
         stdin: inputs,
         expected_outputs: outputs,
+        problem_id: id,
       };
 
       const response = await axiosInstance.post("/execute-code/run", payload);
@@ -220,22 +221,9 @@ const ProblemDetailPage = () => {
       const response = await axiosInstance.post("/execute-code/submit", payload);
       const submissionData = response.data.submission;
       
-      // Map testCases from database format to frontend format
-      const mappedTestCases = (submissionData.testCases || []).map((tc) => ({
-        testCase: tc.testCase,
-        passed: tc.passed,
-        stdout: tc.stdout || "",
-        expected: tc.expected || "",
-        stderr: tc.stderr || null,
-        compileOutput: tc.compileOutput || null,
-        status: tc.status === "Accepted" ? "Accepted" : tc.status === "WrongAnswer" ? "Wrong Answer" : tc.status,
-        memory: tc.memory || undefined,
-        time: tc.time || undefined,
-      }));
-      
       const formattedResults = {
-        status: submissionData.status === "Accepted" ? "Accepted" : submissionData.status === "WrongAnswer" ? "Wrong Answer" : submissionData.status,
-        testCases: mappedTestCases,
+        status: submissionData.status,
+        testCases: submissionData.testCases || [],
         error: null,
       };
 
