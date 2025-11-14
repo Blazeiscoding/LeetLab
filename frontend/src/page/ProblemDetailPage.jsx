@@ -221,7 +221,7 @@ const ProblemDetailPage = () => {
       const submissionData = response.data.submission;
       
       // Map testCases from database format to frontend format
-      const testCases = (submissionData.testCases || []).map((tc) => ({
+      const mappedTestCases = (submissionData.testCases || []).map((tc) => ({
         testCase: tc.testCase,
         passed: tc.passed,
         stdout: tc.stdout || "",
@@ -235,7 +235,7 @@ const ProblemDetailPage = () => {
       
       const formattedResults = {
         status: submissionData.status === "Accepted" ? "Accepted" : submissionData.status === "WrongAnswer" ? "Wrong Answer" : submissionData.status,
-        testCases: testCases,
+        testCases: mappedTestCases,
         error: null,
       };
 
