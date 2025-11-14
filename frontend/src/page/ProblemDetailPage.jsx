@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import {
   Play,
@@ -11,9 +11,20 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import Editor from "@monaco-editor/react";
 import { axiosInstance } from "../util/axios";
 import toast from "react-hot-toast";
+
+// ✅ Lazy load Monaco Editor - Only loads when needed
+const Editor = lazy(() => import("@monaco-editor/react"));
+
+const EditorLoader = () => (
+  <div className="flex items-center justify-center h-full bg-gray-900">
+    <div className="text-center">
+      <div className="loading loading-spinner loading-lg text-primary mb-2"></div>
+      <p className="text-gray-400">Loading editor...</p>
+    </div>
+  </div>
+);
 
 const ProblemDetailPage = () => {
   const { id } = useParams();
@@ -26,77 +37,70 @@ const ProblemDetailPage = () => {
   const [testResults, setTestResults] = useState(null);
   const [activeTab, setActiveTab] = useState("description");
   const [hints, setHints] = useState([]);
-  const [loadingHints, setLoadingHints] = useState(false);
   const [revealedHints, setRevealedHints] = useState(new Set());
 
   // Cooldown states
   const [runCooldown, setRunCooldown] = useState(0);
   const [submitCooldown, setSubmitCooldown] = useState(0);
 
-  const languageMap = {
+  // ✅ Memoize language configuration
+  const languageMap = useMemo(() => ({
     JAVASCRIPT: { id: 63, name: "JavaScript", extension: "js" },
     PYTHON: { id: 71, name: "Python", extension: "py" },
     JAVA: { id: 62, name: "Java", extension: "java" },
-  };
+  }), []);
 
   useEffect(() => {
     fetchProblem();
   }, [id]);
 
   useEffect(() => {
-    if (problem && problem.codeSnippet) {
+    if (problem?.codeSnippet) {
       setCode(problem.codeSnippet[selectedLanguage] || "");
     }
   }, [selectedLanguage, problem]);
 
-  // Process hints when problem is loaded
-  useEffect(() => {
-    if (problem && problem.hints) {
-      try {
-        // If hints is a string, try to parse it as JSON, otherwise split by newlines
-        let processedHints = [];
-        if (typeof problem.hints === 'string') {
-          try {
-            // Try parsing as JSON first
-            processedHints = JSON.parse(problem.hints);
-          } catch {
-            // If not JSON, split by newlines and filter empty lines
-            processedHints = problem.hints
-              .split('\n')
-              .map(hint => hint.trim())
-              .filter(hint => hint.length > 0);
-          }
-        } else if (Array.isArray(problem.hints)) {
-          processedHints = problem.hints;
+  // ✅ Memoize processed hints
+  const processedHints = useMemo(() => {
+    if (!problem?.hints) return [];
+    
+    try {
+      if (typeof problem.hints === 'string') {
+        try {
+          return JSON.parse(problem.hints);
+        } catch {
+          return problem.hints
+            .split('\n')
+            .map(hint => hint.trim())
+            .filter(hint => hint.length > 0);
         }
-        setHints(processedHints);
-      } catch (error) {
-        console.error("Error processing hints:", error);
-        setHints([]);
+      } else if (Array.isArray(problem.hints)) {
+        return problem.hints;
       }
+    } catch (error) {
+      console.error("Error processing hints:", error);
     }
-  }, [problem]);
+    return [];
+  }, [problem?.hints]);
 
-  // Cooldown timers
   useEffect(() => {
-    let runTimer;
+    setHints(processedHints);
+  }, [processedHints]);
+
+  // ✅ Cooldown timer optimization - Single effect
+  useEffect(() => {
+    const timers = [];
+    
     if (runCooldown > 0) {
-      runTimer = setTimeout(() => {
-        setRunCooldown(runCooldown - 1);
-      }, 1000);
+      timers.push(setTimeout(() => setRunCooldown(runCooldown - 1), 1000));
     }
-    return () => clearTimeout(runTimer);
-  }, [runCooldown]);
-
-  useEffect(() => {
-    let submitTimer;
+    
     if (submitCooldown > 0) {
-      submitTimer = setTimeout(() => {
-        setSubmitCooldown(submitCooldown - 1);
-      }, 1000);
+      timers.push(setTimeout(() => setSubmitCooldown(submitCooldown - 1), 1000));
     }
-    return () => clearTimeout(submitTimer);
-  }, [submitCooldown]);
+    
+    return () => timers.forEach(clearTimeout);
+  }, [runCooldown, submitCooldown]);
 
   const fetchProblem = async () => {
     try {
@@ -110,19 +114,20 @@ const ProblemDetailPage = () => {
     }
   };
 
-  const revealHint = (index) => {
+  // ✅ useCallback for event handlers
+  const revealHint = useCallback((index) => {
     setRevealedHints(prev => new Set([...prev, index]));
-  };
+  }, []);
 
-  const hideHint = (index) => {
+  const hideHint = useCallback((index) => {
     setRevealedHints(prev => {
       const newSet = new Set(prev);
       newSet.delete(index);
       return newSet;
     });
-  };
+  }, []);
 
-  const runCode = async () => {
+  const runCode = useCallback(async () => {
     if (!code.trim()) {
       toast.error("Please write some code first");
       return;
@@ -144,12 +149,11 @@ const ProblemDetailPage = () => {
         language_id: languageMap[selectedLanguage].id,
         stdin: inputs,
         expected_outputs: outputs,
-        problem_id: id,
       };
 
       const response = await axiosInstance.post("/execute-code/run", payload);
-
       const responseData = response.data.results;
+      
       const formattedResults = {
         status: responseData.status,
         testCases: responseData.testCases || [],
@@ -159,9 +163,7 @@ const ProblemDetailPage = () => {
       setTestResults(formattedResults);
       setActiveTab("output");
 
-      const passedCount = formattedResults.testCases.filter(
-        (tc) => tc.passed
-      ).length;
+      const passedCount = formattedResults.testCases.filter(tc => tc.passed).length;
       const totalCount = formattedResults.testCases.length;
 
       if (formattedResults.status === "Accepted") {
@@ -173,19 +175,14 @@ const ProblemDetailPage = () => {
       setRunCooldown(15);
     } catch (error) {
       console.error("Error running code:", error);
-
       const errorResults = {
         status: "Error",
         testCases: [],
         error: {
-          message:
-            error.response?.data?.error ||
-            error.message ||
-            "Unknown error occurred",
+          message: error.response?.data?.error || error.message || "Unknown error occurred",
           details: error.response?.data?.message || "Failed to execute code",
         },
       };
-
       setTestResults(errorResults);
       setActiveTab("output");
       toast.error("Error running code");
@@ -193,18 +190,16 @@ const ProblemDetailPage = () => {
     } finally {
       setIsRunning(false);
     }
-  };
+  }, [code, runCooldown, problem, languageMap, selectedLanguage, id]);
 
-  const submitCode = async () => {
+  const submitCode = useCallback(async () => {
     if (!code.trim()) {
       toast.error("Please write some code first");
       return;
     }
 
     if (submitCooldown > 0) {
-      toast.error(
-        `Please wait ${submitCooldown} seconds before submitting again`
-      );
+      toast.error(`Please wait ${submitCooldown} seconds before submitting again`);
       return;
     }
 
@@ -222,15 +217,25 @@ const ProblemDetailPage = () => {
         problem_id: id,
       };
 
-      const response = await axiosInstance.post(
-        "/execute-code/submit",
-        payload
-      );
-
+      const response = await axiosInstance.post("/execute-code/submit", payload);
       const submissionData = response.data.submission;
+      
+      // Map testCases from database format to frontend format
+      const testCases = (submissionData.testCases || []).map((tc) => ({
+        testCase: tc.testCase,
+        passed: tc.passed,
+        stdout: tc.stdout || "",
+        expected: tc.expected || "",
+        stderr: tc.stderr || null,
+        compileOutput: tc.compileOutput || null,
+        status: tc.status === "Accepted" ? "Accepted" : tc.status === "WrongAnswer" ? "Wrong Answer" : tc.status,
+        memory: tc.memory || undefined,
+        time: tc.time || undefined,
+      }));
+      
       const formattedResults = {
-        status: submissionData.status,
-        testCases: submissionData.testCases || [],
+        status: submissionData.status === "Accepted" ? "Accepted" : submissionData.status === "WrongAnswer" ? "Wrong Answer" : submissionData.status,
+        testCases: testCases,
         error: null,
       };
 
@@ -240,9 +245,7 @@ const ProblemDetailPage = () => {
       if (formattedResults.status === "Accepted") {
         toast.success("All test cases passed! Problem solved!");
       } else {
-        const passedCount = formattedResults.testCases.filter(
-          (tc) => tc.passed
-        ).length;
+        const passedCount = formattedResults.testCases.filter(tc => tc.passed).length;
         const totalCount = formattedResults.testCases.length;
         toast.error(`${passedCount}/${totalCount} test cases passed`);
       }
@@ -250,19 +253,14 @@ const ProblemDetailPage = () => {
       setSubmitCooldown(15);
     } catch (error) {
       console.error("Error submitting code:", error);
-
       const errorResults = {
         status: "Error",
         testCases: [],
         error: {
-          message:
-            error.response?.data?.error ||
-            error.message ||
-            "Unknown error occurred",
+          message: error.response?.data?.error || error.message || "Unknown error occurred",
           details: error.response?.data?.message || "Failed to submit code",
         },
       };
-
       setTestResults(errorResults);
       setActiveTab("output");
       toast.error("Error submitting code");
@@ -270,26 +268,22 @@ const ProblemDetailPage = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [code, submitCooldown, problem, languageMap, selectedLanguage, id]);
 
-  const resetCode = () => {
-    if (problem && problem.codeSnippet) {
+  const resetCode = useCallback(() => {
+    if (problem?.codeSnippet) {
       setCode(problem.codeSnippet[selectedLanguage] || "");
     }
-  };
+  }, [problem, selectedLanguage]);
 
-  const getDifficultyColor = (difficulty) => {
+  const getDifficultyColor = useCallback((difficulty) => {
     switch (difficulty) {
-      case "EASY":
-        return "badge-success";
-      case "MEDIUM":
-        return "badge-warning";
-      case "HARD":
-        return "badge-error";
-      default:
-        return "badge-ghost";
+      case "EASY": return "badge-success";
+      case "MEDIUM": return "badge-warning";
+      case "HARD": return "badge-error";
+      default: return "badge-ghost";
     }
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -304,9 +298,7 @@ const ProblemDetailPage = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Problem not found</h2>
-          <p className="text-gray-600">
-            The problem you're looking for doesn't exist.
-          </p>
+          <p className="text-gray-600">The problem you're looking for doesn't exist.</p>
         </div>
       </div>
     );
@@ -340,9 +332,7 @@ const ProblemDetailPage = () => {
           {/* Tabs */}
           <div className="tabs tabs-bordered px-4 pt-4">
             <button
-              className={`tab ${
-                activeTab === "description" ? "tab-active" : ""
-              }`}
+              className={`tab ${activeTab === "description" ? "tab-active" : ""}`}
               onClick={() => setActiveTab("description")}
             >
               Description
@@ -366,25 +356,18 @@ const ProblemDetailPage = () => {
           <div className="flex-1 overflow-y-auto p-4">
             {activeTab === "description" ? (
               <div className="space-y-6">
-                {/* Problem Description */}
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">
-                    Problem Statement
-                  </h3>
+                  <h3 className="text-lg font-semibold mb-2">Problem Statement</h3>
                   <div className="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
                     {problem.description}
                   </div>
                 </div>
 
-                {/* Examples */}
                 {problem.examples && (
                   <div>
                     <h3 className="text-lg font-semibold mb-2">Examples</h3>
                     {Object.entries(problem.examples).map(([lang, example]) => (
-                      <div
-                        key={lang}
-                        className="mb-4 p-4 bg-base-200 rounded-lg"
-                      >
+                      <div key={lang} className="mb-4 p-4 bg-base-200 rounded-lg">
                         <h4 className="font-medium mb-2">{lang}</h4>
                         <div className="space-y-2">
                           <div className="text-sm">
@@ -402,9 +385,7 @@ const ProblemDetailPage = () => {
                           {example.explanation && (
                             <div className="text-sm">
                               <strong>Explanation:</strong>
-                              <span className="ml-2 text-gray-600">
-                                {example.explanation}
-                              </span>
+                              <span className="ml-2 text-gray-600">{example.explanation}</span>
                             </div>
                           )}
                         </div>
@@ -413,7 +394,6 @@ const ProblemDetailPage = () => {
                   </div>
                 )}
 
-                {/* Constraints */}
                 {problem.constraints && (
                   <div>
                     <h3 className="text-lg font-semibold mb-2">Constraints</h3>
@@ -448,9 +428,7 @@ const ProblemDetailPage = () => {
                       <div key={index} className="card bg-base-100 border border-base-300 shadow-sm">
                         <div className="card-body p-4">
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-sm text-gray-600">
-                              Hint #{index + 1}
-                            </h4>
+                            <h4 className="font-medium text-sm text-gray-600">Hint #{index + 1}</h4>
                             {revealedHints.has(index) ? (
                               <button
                                 className="btn btn-ghost btn-xs"
@@ -501,81 +479,50 @@ const ProblemDetailPage = () => {
                 <h3 className="text-lg font-semibold">Test Results</h3>
                 {testResults ? (
                   <div className="space-y-4">
-                    {/* Show error if there's a general error */}
                     {testResults.error && (
                       <div className="alert alert-error">
                         <div className="flex items-center gap-2">
                           <XCircle className="w-5 h-5" />
                           <div>
-                            <div className="font-medium">
-                              {testResults.error.message}
-                            </div>
-                            <div className="text-sm opacity-75">
-                              {testResults.error.details}
-                            </div>
+                            <div className="font-medium">{testResults.error.message}</div>
+                            <div className="text-sm opacity-75">{testResults.error.details}</div>
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {/* Overall Status - only show if we have test cases */}
-                    {testResults.testCases &&
-                      testResults.testCases.length > 0 && (
-                        <div
-                          className={`alert ${
-                            testResults.status === "Accepted"
-                              ? "alert-success"
-                              : testResults.status === "Error"
-                              ? "alert-error"
-                              : "alert-warning"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            {testResults.status === "Accepted" ? (
-                              <CheckCircle className="w-5 h-5" />
-                            ) : (
-                              <XCircle className="w-5 h-5" />
-                            )}
-                            <span className="font-medium">
-                              {testResults.status}
-                            </span>
-                            <span className="ml-2">
-                              (
-                              {
-                                testResults.testCases.filter((tc) => tc.passed)
-                                  .length
-                              }
-                              /{testResults.testCases.length} passed)
-                            </span>
-                          </div>
+                    {testResults.testCases?.length > 0 && (
+                      <div className={`alert ${
+                        testResults.status === "Accepted" ? "alert-success" :
+                        testResults.status === "Error" ? "alert-error" : "alert-warning"
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          {testResults.status === "Accepted" ? (
+                            <CheckCircle className="w-5 h-5" />
+                          ) : (
+                            <XCircle className="w-5 h-5" />
+                          )}
+                          <span className="font-medium">{testResults.status}</span>
+                          <span className="ml-2">
+                            ({testResults.testCases.filter(tc => tc.passed).length}/{testResults.testCases.length} passed)
+                          </span>
                         </div>
-                      )}
+                      </div>
+                    )}
 
-                    {/* Individual Test Cases */}
                     {testResults.testCases?.map((testCase, index) => (
                       <div key={index} className="card bg-base-100 shadow">
                         <div className="card-body p-4">
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium">
-                              Test Case {testCase.testCase || index + 1}
-                            </h4>
-                            <div
-                              className={`badge ${
-                                testCase.passed
-                                  ? "badge-success"
-                                  : "badge-error"
-                              }`}
-                            >
+                            <h4 className="font-medium">Test Case {testCase.testCase || index + 1}</h4>
+                            <div className={`badge ${testCase.passed ? "badge-success" : "badge-error"}`}>
                               {testCase.passed ? "PASS" : "FAIL"}
                             </div>
                           </div>
 
                           <div className="space-y-2 text-sm">
-                            <div>
-                              <strong>Status:</strong> {testCase.status}
-                            </div>
+                            <div><strong>Status:</strong> {testCase.status}</div>
 
-                            {/* Show compilation error first if it exists */}
                             {testCase.compileOutput && (
                               <div>
                                 <strong>Compilation Error:</strong>
@@ -585,7 +532,6 @@ const ProblemDetailPage = () => {
                               </div>
                             )}
 
-                            {/* Show runtime error if it exists */}
                             {testCase.stderr && (
                               <div>
                                 <strong>Runtime Error:</strong>
@@ -595,7 +541,6 @@ const ProblemDetailPage = () => {
                               </div>
                             )}
 
-                            {/* Only show output comparison if there's no compilation error */}
                             {!testCase.compileOutput && (
                               <>
                                 {testCase.stdout !== undefined && (
@@ -618,18 +563,9 @@ const ProblemDetailPage = () => {
                               </>
                             )}
 
-                            {/* Performance metrics */}
                             <div className="flex gap-4 pt-2">
-                              {testCase.time && (
-                                <div className="text-xs">
-                                  <strong>Time:</strong> {testCase.time}
-                                </div>
-                              )}
-                              {testCase.memory && (
-                                <div className="text-xs">
-                                  <strong>Memory:</strong> {testCase.memory}
-                                </div>
-                              )}
+                              {testCase.time && <div className="text-xs"><strong>Time:</strong> {testCase.time}</div>}
+                              {testCase.memory && <div className="text-xs"><strong>Memory:</strong> {testCase.memory}</div>}
                             </div>
                           </div>
                         </div>
@@ -658,16 +594,10 @@ const ProblemDetailPage = () => {
                 onChange={(e) => setSelectedLanguage(e.target.value)}
               >
                 {Object.entries(languageMap).map(([key, lang]) => (
-                  <option key={key} value={key}>
-                    {lang.name}
-                  </option>
+                  <option key={key} value={key}>{lang.name}</option>
                 ))}
               </select>
-              <button
-                className="btn btn-ghost btn-sm"
-                onClick={resetCode}
-                title="Reset to template"
-              >
+              <button className="btn btn-ghost btn-sm" onClick={resetCode} title="Reset to template">
                 <RotateCcw className="w-4 h-4" />
               </button>
             </div>
@@ -677,11 +607,7 @@ const ProblemDetailPage = () => {
                 className="btn btn-outline btn-sm"
                 onClick={runCode}
                 disabled={isRunning || runCooldown > 0}
-                title={
-                  runCooldown > 0
-                    ? `Wait ${runCooldown}s before running again`
-                    : "Run code"
-                }
+                title={runCooldown > 0 ? `Wait ${runCooldown}s before running again` : "Run code"}
               >
                 {isRunning ? (
                   <span className="loading loading-spinner loading-xs"></span>
@@ -694,11 +620,7 @@ const ProblemDetailPage = () => {
                 className="btn btn-primary btn-sm"
                 onClick={submitCode}
                 disabled={isSubmitting || submitCooldown > 0}
-                title={
-                  submitCooldown > 0
-                    ? `Wait ${submitCooldown}s before submitting again`
-                    : "Submit code"
-                }
+                title={submitCooldown > 0 ? `Wait ${submitCooldown}s before submitting again` : "Submit code"}
               >
                 {isSubmitting ? (
                   <span className="loading loading-spinner loading-xs"></span>
@@ -710,29 +632,27 @@ const ProblemDetailPage = () => {
             </div>
           </div>
 
-          {/* Code Editor */}
+         
           <div className="flex-1">
-            <Editor
-              height="100%"
-              language={
-                selectedLanguage.toLowerCase() === "javascript"
-                  ? "javascript"
-                  : selectedLanguage.toLowerCase()
-              }
-              theme="vs-dark"
-              value={code}
-              onChange={(value) => setCode(value || "")}
-              options={{
-                minimap: { enabled: false },
-                fontSize: 14,
-                lineNumbers: "on",
-                roundedSelection: false,
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                wordWrap: "on",
-                tabSize: 2,
-              }}
-            />
+            <Suspense fallback={<EditorLoader />}>
+              <Editor
+                height="100%"
+                language={selectedLanguage.toLowerCase() === "javascript" ? "javascript" : selectedLanguage.toLowerCase()}
+                theme="vs-dark"
+                value={code}
+                onChange={(value) => setCode(value || "")}
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 14,
+                  lineNumbers: "on",
+                  roundedSelection: false,
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  wordWrap: "on",
+                  tabSize: 2,
+                }}
+              />
+            </Suspense>
           </div>
         </div>
       </div>

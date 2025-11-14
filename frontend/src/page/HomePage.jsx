@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   Code,
@@ -47,7 +47,6 @@ const HomePage = () => {
       const solvedProblems = solvedRes.data.data || [];
       const submissions = submissionsRes.data.data || [];
 
-      // Create a map of problem IDs to problem details
       const problemMap = allProblems.reduce((acc, problem) => {
         const problemId = problem._id || problem.id;
         acc[problemId] = {
@@ -57,7 +56,6 @@ const HomePage = () => {
         return acc;
       }, {});
 
-      // Add problem names to submissions
       const submissionsWithNames = submissions.map((submission) => ({
         ...submission,
         problemTitle:
@@ -95,6 +93,16 @@ const HomePage = () => {
       setTopLeaderboard([]);
     }
   };
+
+  // Memoize computed stats
+  const computedStats = useMemo(() => ({
+    totalProblems: stats.totalProblems,
+    solvedProblems: stats.solvedProblems,
+    progressPercent: stats.totalProblems > 0
+      ? Math.round((stats.solvedProblems / stats.totalProblems) * 100)
+      : 0,
+    recentCount: stats.recentSubmissions.length,
+  }), [stats.totalProblems, stats.solvedProblems, stats.recentSubmissions.length]);
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
@@ -179,7 +187,7 @@ const HomePage = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
               <div className="bg-base-100/60 backdrop-blur-sm rounded-xl p-4 border border-base-300/50">
                 <div className="text-2xl font-bold text-primary">
-                  {stats.totalProblems}
+                  {computedStats.totalProblems}
                 </div>
                 <div className="text-xs text-base-content/70">
                   Total Problems
@@ -187,24 +195,19 @@ const HomePage = () => {
               </div>
               <div className="bg-base-100/60 backdrop-blur-sm rounded-xl p-4 border border-base-300/50">
                 <div className="text-2xl font-bold text-success">
-                  {stats.solvedProblems}
+                  {computedStats.solvedProblems}
                 </div>
                 <div className="text-xs text-base-content/70">Solved</div>
               </div>
               <div className="bg-base-100/60 backdrop-blur-sm rounded-xl p-4 border border-base-300/50">
                 <div className="text-2xl font-bold text-info">
-                  {stats.totalProblems > 0
-                    ? Math.round(
-                        (stats.solvedProblems / stats.totalProblems) * 100
-                      )
-                    : 0}
-                  %
+                  {computedStats.progressPercent}%
                 </div>
                 <div className="text-xs text-base-content/70">Progress</div>
               </div>
               <div className="bg-base-100/60 backdrop-blur-sm rounded-xl p-4 border border-base-300/50">
                 <div className="text-2xl font-bold text-secondary">
-                  {stats.recentSubmissions.length}
+                  {computedStats.recentCount}
                 </div>
                 <div className="text-xs text-base-content/70">Recent</div>
               </div>
@@ -236,7 +239,7 @@ const HomePage = () => {
                   <Code className="w-6 h-6 text-primary" />
                 </div>
                 <div className="text-2xl font-bold text-primary">
-                  {stats.totalProblems}
+                  {computedStats.totalProblems}
                 </div>
                 <div className="text-sm font-medium">Total Problems</div>
                 <div className="text-xs text-base-content/60 mt-1">
@@ -251,7 +254,7 @@ const HomePage = () => {
                   <Trophy className="w-6 h-6 text-success" />
                 </div>
                 <div className="text-2xl font-bold text-success">
-                  {stats.solvedProblems}
+                  {computedStats.solvedProblems}
                 </div>
                 <div className="text-sm font-medium">Problems Solved</div>
                 <div className="text-xs text-base-content/60 mt-1">
@@ -266,12 +269,7 @@ const HomePage = () => {
                   <Target className="w-6 h-6 text-info" />
                 </div>
                 <div className="text-2xl font-bold text-info">
-                  {stats.totalProblems > 0
-                    ? Math.round(
-                        (stats.solvedProblems / stats.totalProblems) * 100
-                      )
-                    : 0}
-                  %
+                  {computedStats.progressPercent}%
                 </div>
                 <div className="text-sm font-medium">Completion Rate</div>
                 <div className="text-xs text-base-content/60 mt-1">
@@ -286,7 +284,7 @@ const HomePage = () => {
                   <TrendingUp className="w-6 h-6 text-secondary" />
                 </div>
                 <div className="text-2xl font-bold text-secondary">
-                  {stats.recentSubmissions.length}
+                  {computedStats.recentCount}
                 </div>
                 <div className="text-sm font-medium">Recent Activity</div>
                 <div className="text-xs text-base-content/60 mt-1">

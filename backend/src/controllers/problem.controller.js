@@ -3,7 +3,7 @@ import {
   getJudge0LanguageId,
   pollBatchResults,
   submitBatch,
-} from "../libs/judge0.lib.js";
+} from "../libs/rapidapi.lib.js";
 
 export const createProblem = async (req, res) => {
   const {

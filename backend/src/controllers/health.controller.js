@@ -36,23 +36,24 @@ export const healthCheck = async (req, res) => {
       console.error("Database health check failed:", error.message);
     }
 
-    // Check Judge0 API connection (if needed)
-    let judge0Status = "OK";
-    let judge0Latency = 0;
+    // Check RapidAPI connection (if needed)
+    let rapidApiStatus = "OK";
+    let rapidApiLatency = 0;
     try {
-      if (process.env.JUDGE0_API_URL) {
-        const judge0StartTime = Date.now();
-        await axios.get(`${process.env.JUDGE0_API_URL}/languages`, {
+      if (process.env.RAPIDAPI_KEY) {
+        const rapidApiStartTime = Date.now();
+        await axios.get(`${process.env.RAPIDAPI_BASE_URL || "https://judge0-ce.p.rapidapi.com"}/languages`, {
           timeout: 5000,
           headers: {
-            Authorization: `Bearer ${process.env.JUDGE0_AUTH}`,
+            "X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
+            "X-RapidAPI-Host": process.env.RAPIDAPI_HOST || "judge0-ce.p.rapidapi.com",
           },
         });
-        judge0Latency = Date.now() - judge0StartTime;
+        rapidApiLatency = Date.now() - rapidApiStartTime;
       }
     } catch (error) {
-      judge0Status = "ERROR";
-      console.error("Judge0 health check failed:", error.message);
+      rapidApiStatus = "ERROR";
+      console.error("RapidAPI health check failed:", error.message);
     }
 
     const responseTime = Date.now() - startTime;
@@ -64,9 +65,9 @@ export const healthCheck = async (req, res) => {
           status: dbStatus,
           latency: `${dbLatency}ms`,
         },
-        judge0: {
-          status: judge0Status,
-          latency: `${judge0Latency}ms`,
+        rapidapi: {
+          status: rapidApiStatus,
+          latency: `${rapidApiLatency}ms`,
         },
       },
       performance: {
@@ -77,7 +78,7 @@ export const healthCheck = async (req, res) => {
 
     // Determine overall health status
     const overallStatus =
-      dbStatus === "OK" && judge0Status === "OK" ? "healthy" : "degraded";
+      dbStatus === "OK" && rapidApiStatus === "OK" ? "healthy" : "degraded";
 
     res.status(200).json({
       status: overallStatus,

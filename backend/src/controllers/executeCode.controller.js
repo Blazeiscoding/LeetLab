@@ -2,7 +2,7 @@ import {
   getLanguageName,
   pollBatchResults,
   submitBatch,
-} from "../libs/judge0.lib.js";
+} from "../libs/rapidapi.lib.js";
 
 import { db } from "../libs/db.js";
 

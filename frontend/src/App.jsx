@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
+import React, { Suspense, lazy } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -15,111 +14,113 @@ import { Loader } from "lucide-react";
 // Layout
 import Layout from "./layout/Layout";
 
-// Auth Pages
-import LoginPage from "./page/LoginPage";
-import SignupPage from "./page/SignupPage";
+// Loading component
+const PageLoader = () => (
+  <div className="flex items-center justify-center h-screen bg-base-100">
+    <div className="text-center">
+      <Loader className="size-12 animate-spin text-primary mx-auto mb-4" />
+      <p className="text-base-content/60">Loading...</p>
+    </div>
+  </div>
+);
 
-// Main Pages
-import HomePage from "./page/HomePage";
-import { ProblemsPage } from "./page/ProblemsPage";
-import ProblemDetailPage from "./page/ProblemDetailPage";
-import ProfilePage from "./page/ProfilePage";
-import PlaylistsPage from "./page/PlaylistsPage";
-import PlaylistDetailPage from "./page/PlaylistDetailPage";
-import AddProblem from "./page/AddProblem";
-import DeleteProblem from "./page/DeleteProblem";
-import UpdateProblem from "./page/UpdateProblem";
-import LeaderboardPage from "./page/LeaderboardPage";
+// Lazy load all pages
+const LoginPage = lazy(() => import("./page/LoginPage"));
+const SignupPage = lazy(() => import("./page/SignupPage"));
+const HomePage = lazy(() => import("./page/HomePage"));
+const ProblemsPage = lazy(() => import("./page/ProblemsPage"));
+const ProblemDetailPage = lazy(() => import("./page/ProblemDetailPage"));
+const ProfilePage = lazy(() => import("./page/ProfilePage"));
+const PlaylistsPage = lazy(() => import("./page/PlaylistsPage"));
+const PlaylistDetailPage = lazy(() => import("./page/PlaylistDetailPage"));
+const AddProblem = lazy(() => import("./page/AddProblem"));
+const DeleteProblem = lazy(() => import("./page/DeleteProblem"));
+const UpdateProblem = lazy(() => import("./page/UpdateProblem"));
+const LeaderboardPage = lazy(() => import("./page/LeaderboardPage"));
 
-// Components
-import ProtectedRoute from "./components/ProtectedRoute";
-import AdminRoute from "./components/AdminRoute";
+// Lazy load components
+const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
+const AdminRoute = lazy(() => import("./components/AdminRoute"));
 
 function AppContent() {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
   const location = useLocation();
 
-  useEffect(() => {
+  React.useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
-  // Show loading screen while checking authentication
   if (isCheckingAuth) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-base-100">
-        <div className="text-center">
-          <Loader className="size-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-base-content/60">Checking authentication...</p>
-        </div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (
     <div className="App min-h-screen bg-base-100">
-      <Routes>
-        {/* Public Routes */}
-        <Route
-          path="/login"
-          element={
-            !authUser ? (
-              <LoginPage />
-            ) : (
-              <Navigate
-                to={location.state?.from?.pathname || "/"}
-                replace
-                state={{ from: location.state?.from }}
-              />
-            )
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            !authUser ? (
-              <SignupPage />
-            ) : (
-              <Navigate
-                to={location.state?.from?.pathname || "/"}
-                replace
-                state={{ from: location.state?.from }}
-              />
-            )
-          }
-        />
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* Public Routes */}
+          <Route
+            path="/login"
+            element={
+              !authUser ? (
+                <LoginPage />
+              ) : (
+                <Navigate
+                  to={location.state?.from?.pathname || "/"}
+                  replace
+                  state={{ from: location.state?.from }}
+                />
+              )
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              !authUser ? (
+                <SignupPage />
+              ) : (
+                <Navigate
+                  to={location.state?.from?.pathname || "/"}
+                  replace
+                  state={{ from: location.state?.from }}
+                />
+              )
+            }
+          />
 
-        {/* Protected Routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route element={<Layout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/problems" element={<ProblemsPage />} />
-            <Route path="/problems/:id" element={<ProblemDetailPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/playlists" element={<PlaylistsPage />} />
-            <Route path="/playlists/:id" element={<PlaylistDetailPage />} />
-            <Route path="/leaderboard" element={<LeaderboardPage />} />
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<Layout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/problems" element={<ProblemsPage />} />
+              <Route path="/problems/:id" element={<ProblemDetailPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/playlists" element={<PlaylistsPage />} />
+              <Route path="/playlists/:id" element={<PlaylistDetailPage />} />
+              <Route path="/leaderboard" element={<LeaderboardPage />} />
 
-            {/* Admin Routes */}
-            <Route element={<AdminRoute />}>
-              <Route path="/add-problem" element={<AddProblem />} />
-              <Route path="/update-problem" element={<UpdateProblem />} />
-              <Route path="/delete-problem" element={<DeleteProblem />} />
+              {/* Admin Routes */}
+              <Route element={<AdminRoute />}>
+                <Route path="/add-problem" element={<AddProblem />} />
+                <Route path="/update-problem" element={<UpdateProblem />} />
+                <Route path="/delete-problem" element={<DeleteProblem />} />
+              </Route>
             </Route>
           </Route>
-        </Route>
 
-        {/* Catch all route - redirect to home if authenticated, login if not */}
-        <Route
-          path="*"
-          element={
-            authUser ? (
-              <Navigate to="/" replace />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-      </Routes>
+          {/* Catch all */}
+          <Route
+            path="*"
+            element={
+              authUser ? (
+                <Navigate to="/" replace />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+        </Routes>
+      </Suspense>
 
       <Toaster
         position="top-right"

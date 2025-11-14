@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Search, CheckCircle, Clock, Zap } from "lucide-react";
 import { axiosInstance } from "../util/axios";
@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 
 export const ProblemsPage = () => {
   const [problems, setProblems] = useState([]);
-  const [filteredProblems, setFilteredProblems] = useState([]);
   const [solvedProblems, setSolvedProblems] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,10 +16,6 @@ export const ProblemsPage = () => {
     fetchProblems();
     fetchSolvedProblems();
   }, []);
-
-  useEffect(() => {
-    filterProblems();
-  }, [problems, searchTerm, difficultyFilter, statusFilter, solvedProblems]);
 
   const fetchProblems = async () => {
     try {
@@ -41,14 +36,13 @@ export const ProblemsPage = () => {
       setSolvedProblems(solved);
     } catch (error) {
       console.error("Error fetching solved problems:", error);
-      // Don't show error toast as this is optional
     }
   };
 
-  const filterProblems = () => {
+  // Memoize filtered problems
+  const filteredProblems = useMemo(() => {
     let filtered = problems;
 
-    // Search filter
     if (searchTerm) {
       filtered = filtered.filter(
         (problem) =>
@@ -60,14 +54,12 @@ export const ProblemsPage = () => {
       );
     }
 
-    // Difficulty filter
     if (difficultyFilter !== "ALL") {
       filtered = filtered.filter(
         (problem) => problem.difficulty === difficultyFilter
       );
     }
 
-    // Status filter
     if (statusFilter !== "ALL") {
       if (statusFilter === "SOLVED") {
         filtered = filtered.filter((problem) => solvedProblems.has(problem.id));
@@ -78,8 +70,8 @@ export const ProblemsPage = () => {
       }
     }
 
-    setFilteredProblems(filtered);
-  };
+    return filtered;
+  }, [problems, searchTerm, difficultyFilter, statusFilter, solvedProblems]);
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {

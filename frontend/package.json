@@ -16,6 +16,7 @@
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
     "axios": "^1.9.0",
+    "clsx": "^2.1.1",
     "daisyui": "^5.0.35",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.510.0",
@@ -25,7 +26,10 @@
     "react-hook-form": "^7.56.3",
     "react-hot-toast": "^2.5.2",
     "react-router-dom": "^7.6.0",
+    "react-select": "^5.10.2",
+    "react-window": "^2.2.1",
     "tailwindcss": "^4.1.6",
+    "terser": "^5.44.0",
     "zod": "^3.24.4",
     "zustand": "^5.0.4"
   },
@@ -38,6 +42,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vite-plugin-compression": "^0.5.1"
   }
 }
