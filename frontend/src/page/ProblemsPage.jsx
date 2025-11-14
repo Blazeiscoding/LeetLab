@@ -4,7 +4,7 @@ import { Search, CheckCircle, Clock, Zap } from "lucide-react";
 import { axiosInstance } from "../util/axios";
 import toast from "react-hot-toast";
 
-export const ProblemsPage = () => {
+const ProblemsPage = () => {
   const [problems, setProblems] = useState([]);
   const [solvedProblems, setSolvedProblems] = useState(new Set());
   const [loading, setLoading] = useState(true);
@@ -274,3 +274,5 @@ export const ProblemsPage = () => {
     </div>
   );
 };
+
+export default ProblemsPage;
