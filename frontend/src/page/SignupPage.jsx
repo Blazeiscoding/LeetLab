@@ -12,6 +12,7 @@ import {
   User,
   CheckCircle,
   AlertCircle,
+  ArrowLeft,
 } from "lucide-react";
 import { signUpSchema } from "../util/zodSchema";
 import AuthImagePattern from "../components/AuthImagePattern";
@@ -75,33 +76,42 @@ const SignupPage = () => {
 
   if (showEmailVerification) {
     return (
-      <div className="h-screen grid lg:grid-cols-2">
-        <div className="flex flex-col justify-center items-center p-6 sm:p-12">
+      <div className="min-h-screen grid lg:grid-cols-2 bg-base-100">
+        <div className="flex flex-col justify-center items-center p-6 sm:p-12 relative">
+           {/* Back Button */}
+           <button 
+            onClick={handleBackToSignup}
+            className="absolute top-8 left-8 p-2 rounded-full hover:bg-base-200 transition-colors group"
+            aria-label="Go back to signup"
+        >
+            <ArrowLeft className="w-5 h-5 text-base-content/60 group-hover:text-base-content" />
+        </button>
+
           <div className="w-full max-w-md space-y-8">
             {/* Success Message */}
             <div className="text-center">
-              <div className="flex flex-col items-center gap-2 mb-6">
-                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                  <CheckCircle className="w-8 h-8 text-green-600" />
+              <div className="flex flex-col items-center gap-4 mb-8">
+                <div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center border border-success/20 animate-bounce-subtle">
+                  <CheckCircle className="w-10 h-10 text-success" />
                 </div>
-                <h1 className="text-2xl font-bold">Registration Successful!</h1>
+                <h1 className="text-3xl font-black tracking-tight">Verify Your Email</h1>
                 <p className="text-base-content/60">
-                  We've sent a verification code to your email
+                  We've sent a verification code to your email address.
                 </p>
               </div>
             </div>
 
             {/* Verification Info */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center gap-2 text-blue-700 mb-2">
-                <AlertCircle className="w-5 h-5" />
-                <span className="font-medium">Email Verification Required</span>
-              </div>
-              <p className="text-sm text-blue-600">
-                Please check your email at <strong>{registrationEmail}</strong>{" "}
-                and enter the verification code below to complete your
-                registration.
+            <div className="bg-base-200/50 border border-base-content/10 rounded-xl p-6 text-center">
+              <p className="text-sm text-base-content/70 mb-2">
+                  Code sent to:
               </p>
+              <p className="font-bold text-lg text-primary mb-4">{registrationEmail}</p>
+              
+              <div className="flex items-center justify-center gap-2 text-warning text-xs font-medium bg-warning/10 py-2 px-3 rounded-lg w-fit mx-auto">
+                <AlertCircle className="w-4 h-4" />
+                <span>Check your spam folder if you don't see it</span>
+              </div>
             </div>
 
             {/* OTP Verification Component */}
@@ -117,9 +127,9 @@ const SignupPage = () => {
                 Wrong email address?{" "}
                 <button
                   onClick={handleBackToSignup}
-                  className="link link-primary"
+                  className="link link-primary font-semibold no-underline hover:underline"
                 >
-                  Go back to signup
+                  Change email
                 </button>
               </p>
             </div>
@@ -136,18 +146,27 @@ const SignupPage = () => {
   }
 
   return (
-    <div className="h-screen grid lg:grid-cols-2">
-      <div className="flex flex-col justify-center items-center p-6 sm:p-12">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-base-100">
+      <div className="flex flex-col justify-center items-center p-6 sm:p-12 relative">
+        {/* Back Button */}
+        <Link 
+            to="/"
+            className="absolute top-8 left-8 p-2 rounded-full hover:bg-base-200 transition-colors group"
+            aria-label="Go back to home"
+        >
+            <ArrowLeft className="w-5 h-5 text-base-content/60 group-hover:text-base-content" />
+        </Link>
+
         <div className="w-full max-w-md space-y-8">
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="flex flex-col items-center gap-2 group">
-              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
-                <Code className="w-6 h-6 text-primary" />
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-primary/10 border border-primary/10">
+                <Code className="w-7 h-7 text-primary" />
               </div>
-              <h1 className="text-2xl font-bold">Create Account</h1>
+              <h1 className="text-3xl font-black mt-4 tracking-tight">Create Account</h1>
               <p className="text-base-content/60">
-                Join us and start your journey
+                Join our community and start coding today
               </p>
             </div>
           </div>
@@ -155,73 +174,69 @@ const SignupPage = () => {
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Full Name */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text font-medium">Full Name</span>
+            <div className="form-control space-y-1.5">
+              <label className="label p-0">
+                <span className="label-text font-bold">Full Name</span>
               </label>
-              <div className="relative">
-                <User className="absolute left-3 top-3.5 h-5 w-5 text-base-content/40" />
+              <div className="relative group">
+                <User className="absolute left-3 top-3.5 h-5 w-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
                 <input
                   type="text"
                   placeholder="Enter your full name"
-                  className={`input input-bordered w-full pl-10 ${
-                    errors.name ? "input-error" : ""
+                  className={`input input-bordered w-full pl-10 bg-base-200/50 focus:bg-base-100 transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 ${
+                    errors.name ? "input-error focus:ring-error/20 focus:border-error" : ""
                   }`}
                   {...register("name")}
                 />
               </div>
               {errors.name && (
-                <label className="label">
-                  <span className="label-text-alt text-error">
-                    {errors.name.message}
-                  </span>
-                </label>
+                <p className="text-error text-sm font-medium mt-1 pl-1">
+                  {errors.name.message}
+                </p>
               )}
             </div>
 
             {/* Email */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text font-medium">Email</span>
+            <div className="form-control space-y-1.5">
+              <label className="label p-0">
+                <span className="label-text font-bold">Email Address</span>
               </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3.5 h-5 w-5 text-base-content/40" />
+              <div className="relative group">
+                <Mail className="absolute left-3 top-3.5 h-5 w-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className={`input input-bordered w-full pl-10 ${
-                    errors.email ? "input-error" : ""
+                  className={`input input-bordered w-full pl-10 bg-base-200/50 focus:bg-base-100 transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 ${
+                    errors.email ? "input-error focus:ring-error/20 focus:border-error" : ""
                   }`}
                   {...register("email")}
                 />
               </div>
               {errors.email && (
-                <label className="label">
-                  <span className="label-text-alt text-error">
-                    {errors.email.message}
-                  </span>
-                </label>
+                <p className="text-error text-sm font-medium mt-1 pl-1">
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
             {/* Password */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text font-medium">Password</span>
+            <div className="form-control space-y-1.5">
+              <label className="label p-0">
+                <span className="label-text font-bold">Password</span>
               </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3.5 h-5 w-5 text-base-content/40" />
+              <div className="relative group">
+                <Lock className="absolute left-3 top-3.5 h-5 w-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Create a password"
-                  className={`input input-bordered w-full pl-10 pr-10 ${
-                    errors.password ? "input-error" : ""
+                  placeholder="Create a strong password"
+                  className={`input input-bordered w-full pl-10 pr-10 bg-base-200/50 focus:bg-base-100 transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 ${
+                    errors.password ? "input-error focus:ring-error/20 focus:border-error" : ""
                   }`}
                   {...register("password")}
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-3.5 text-base-content/40 hover:text-base-content"
+                  className="absolute right-3 top-3.5 text-base-content/40 hover:text-base-content transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -232,41 +247,37 @@ const SignupPage = () => {
                 </button>
               </div>
               {errors.password && (
-                <label className="label">
-                  <span className="label-text-alt text-error">
-                    {errors.password.message}
-                  </span>
-                </label>
+                <p className="text-error text-sm font-medium mt-1 pl-1">
+                  {errors.password.message}
+                </p>
               )}
             </div>
 
             {/* Terms and Conditions */}
             <div className="form-control">
-              <label className="label cursor-pointer justify-start gap-2">
+              <label className="label cursor-pointer justify-start gap-3">
                 <input
                   type="checkbox"
-                  className={`checkbox ${
+                  className={`checkbox checkbox-primary checkbox-sm ${
                     errors.acceptTerms ? "checkbox-error" : ""
                   }`}
                   {...register("acceptTerms")}
                 />
-                <span className="label-text">
+                <span className="label-text text-base-content/70">
                   I agree to the{" "}
-                  <Link to="/terms" className="link link-primary">
+                  <Link to="/terms" className="link link-primary font-medium no-underline hover:underline">
                     Terms of Service
                   </Link>{" "}
                   and{" "}
-                  <Link to="/privacy" className="link link-primary">
+                  <Link to="/privacy" className="link link-primary font-medium no-underline hover:underline">
                     Privacy Policy
                   </Link>
                 </span>
               </label>
               {errors.acceptTerms && (
-                <label className="label">
-                  <span className="label-text-alt text-error">
-                    {errors.acceptTerms.message}
-                  </span>
-                </label>
+                <p className="text-error text-sm font-medium mt-1 pl-1">
+                  {errors.acceptTerms.message}
+                </p>
               )}
             </div>
 
@@ -274,7 +285,7 @@ const SignupPage = () => {
             <button
               type="submit"
               disabled={isSigningUp}
-              className="btn btn-primary w-full"
+              className="btn btn-primary w-full shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all duration-300"
             >
               {isSigningUp ? (
                 <>
@@ -288,11 +299,11 @@ const SignupPage = () => {
           </form>
 
           {/* Login Link */}
-          <div className="text-center">
+          <div className="text-center pt-4">
             <p className="text-base-content/60">
               Already have an account?{" "}
-              <Link to="/login" className="link link-primary">
-                Login here
+              <Link to="/login" className="link link-primary font-semibold hover:text-primary-focus no-underline hover:underline transition-all">
+                Sign in here
               </Link>
             </p>
           </div>

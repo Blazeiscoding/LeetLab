@@ -65,63 +65,67 @@ function reverseList(head) {
   }, [codeSnippets.length]);
 
   return (
-    <div className="hidden lg:flex flex-col items-center justify-center bg-slate-900 text-white p-12 relative overflow-hidden">
+    <div className="hidden lg:flex flex-col items-center justify-center bg-base-200 p-12 relative overflow-hidden">
       {/* Animated code symbols in background */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-[10%] left-[15%] animate-pulse">
+      <div className="absolute inset-0 opacity-5 pointer-events-none">
+        <div className="absolute top-[10%] left-[15%] animate-pulse text-primary">
           <Braces size={40} />
         </div>
-        <div className="absolute top-[30%] left-[80%] animate-pulse delay-300">
+        <div className="absolute top-[30%] left-[80%] animate-pulse delay-300 text-secondary">
           <FileCode size={50} />
         </div>
-        <div className="absolute top-[70%] left-[20%] animate-pulse delay-700">
+        <div className="absolute top-[70%] left-[20%] animate-pulse delay-700 text-accent">
           <Terminal size={45} />
         </div>
-        <div className="absolute top-[60%] left-[75%] animate-pulse delay-500">
+        <div className="absolute top-[60%] left-[75%] animate-pulse delay-500 text-primary">
           <Code size={55} />
         </div>
-        <div className="absolute top-[85%] left-[45%] animate-pulse delay-200">
+        <div className="absolute top-[85%] left-[45%] animate-pulse delay-200 text-secondary">
           <Braces size={35} />
         </div>
-        <div className="absolute top-[15%] left-[60%] animate-pulse delay-100">
+        <div className="absolute top-[15%] left-[60%] animate-pulse delay-100 text-accent">
           <Terminal size={30} />
         </div>
       </div>
 
-      <div className="z-10 max-w-md flex flex-col items-center">
+      <div className="z-10 max-w-md flex flex-col items-center text-center">
         {/* Code editor mockup */}
-        <div className="w-full bg-slate-800 rounded-lg shadow-xl mb-8 overflow-hidden">
+        <div className="w-full bg-base-300 rounded-xl shadow-2xl mb-8 overflow-hidden border border-base-content/5 ring-1 ring-base-content/5 transform transition-transform hover:scale-[1.02] duration-500">
           {/* Editor header */}
-          <div className="bg-slate-700 px-4 py-2 flex items-center">
+          <div className="bg-base-100 px-4 py-3 flex items-center border-b border-base-content/5">
             <div className="flex space-x-2 mr-4">
-              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <div className="w-3 h-3 rounded-full bg-error/80"></div>
+              <div className="w-3 h-3 rounded-full bg-warning/80"></div>
+              <div className="w-3 h-3 rounded-full bg-success/80"></div>
             </div>
-            <div className="text-xs font-mono opacity-70">problem.js</div>
+            <div className="text-xs font-mono opacity-50">problem.js</div>
           </div>
 
           {/* Code content */}
-          <div className="p-4 font-mono text-xs sm:text-sm overflow-hidden relative h-64">
-            <pre className="whitespace-pre-wrap text-green-400 transition-opacity duration-1000">
+          <div className="p-5 font-mono text-xs sm:text-sm overflow-hidden relative h-64 text-left bg-base-300">
+            <pre className="whitespace-pre-wrap text-primary/80 transition-opacity duration-1000 leading-relaxed">
               {codeSnippets[activeIndex]}
             </pre>
 
             {/* Blinking cursor */}
-            <div className="absolute bottom-4 right-4 w-2 h-4 bg-white animate-blink"></div>
+            <div className="absolute bottom-5 right-5 w-2 h-4 bg-primary animate-pulse"></div>
           </div>
         </div>
 
         {/* Logo */}
         <div className="flex items-center justify-center mb-6">
-          <div className="w-12 h-12 rounded-xl bg-primary/10  flex items-center justify-center">
-            <Code className="w-6 h-6 text-primary" />
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20 shadow-lg shadow-primary/10">
+            <Code className="w-8 h-8 text-primary" />
           </div>
         </div>
 
         {/* Text content */}
-        <h2 className="text-2xl font-bold mb-4 text-center">{title}</h2>
-        <p className="text-slate-300 text-center">{subtitle}</p>
+        <h2 className="text-3xl font-black mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          {title}
+        </h2>
+        <p className="text-base-content/60 text-lg leading-relaxed">
+          {subtitle}
+        </p>
       </div>
     </div>
   );

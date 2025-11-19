@@ -1,12 +1,7 @@
 import React, { Suspense, lazy } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
-import {
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/useAuthStore";
 import { Loader } from "lucide-react";
@@ -55,7 +50,10 @@ function AppContent() {
   }
 
   return (
-    <div className="App min-h-screen bg-base-100">
+    <div
+      className="App min-h-screen bg-base-100 text-base-content font-sans"
+      data-theme="night"
+    >
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public Routes */}

@@ -1,2 +1,27 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+:root {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+body {
+  @apply bg-base-100 text-base-content;
+  background-image: radial-gradient(circle at center top, oklch(var(--p) / 0.05) 0%, transparent 40%),
+                    radial-gradient(circle at center bottom, oklch(var(--s) / 0.05) 0%, transparent 40%);
+  background-attachment: fixed;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-base-200;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-base-content/20 rounded-full hover:bg-base-content/30 transition-colors;
+}

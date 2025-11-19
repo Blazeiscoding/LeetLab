@@ -10,6 +10,12 @@ import {
   Lightbulb,
   Eye,
   EyeOff,
+  Code2,
+  FileText,
+  Terminal,
+  ChevronRight,
+  Maximize2,
+  Minimize2
 } from "lucide-react";
 import { axiosInstance } from "../util/axios";
 import toast from "react-hot-toast";
@@ -18,10 +24,10 @@ import toast from "react-hot-toast";
 const Editor = lazy(() => import("@monaco-editor/react"));
 
 const EditorLoader = () => (
-  <div className="flex items-center justify-center h-full bg-gray-900">
+  <div className="flex items-center justify-center h-full bg-base-300/50 backdrop-blur-sm">
     <div className="text-center">
       <div className="loading loading-spinner loading-lg text-primary mb-2"></div>
-      <p className="text-gray-400">Loading editor...</p>
+      <p className="text-base-content/60 font-medium">Loading editor...</p>
     </div>
   </div>
 );
@@ -38,7 +44,7 @@ const ProblemDetailPage = () => {
   const [activeTab, setActiveTab] = useState("description");
   const [hints, setHints] = useState([]);
   const [revealedHints, setRevealedHints] = useState(new Set());
-
+  
   // Cooldown states
   const [runCooldown, setRunCooldown] = useState(0);
   const [submitCooldown, setSubmitCooldown] = useState(0);
@@ -266,114 +272,186 @@ const ProblemDetailPage = () => {
 
   const getDifficultyColor = useCallback((difficulty) => {
     switch (difficulty) {
-      case "EASY": return "badge-success";
-      case "MEDIUM": return "badge-warning";
-      case "HARD": return "badge-error";
-      default: return "badge-ghost";
+      case "EASY": return "bg-success/10 text-success border-success/20";
+      case "MEDIUM": return "bg-warning/10 text-warning border-warning/20";
+      case "HARD": return "bg-error/10 text-error border-error/20";
+      default: return "bg-base-200 text-base-content/60";
     }
   }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="loading loading-spinner loading-lg"></div>
+      <div className="flex items-center justify-center min-h-screen bg-base-100">
+        <div className="loading loading-spinner loading-lg text-primary"></div>
       </div>
     );
   }
 
   if (!problem) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
+      <div className="flex items-center justify-center min-h-screen bg-base-100">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="w-16 h-16 bg-base-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <XCircle className="w-8 h-8 text-base-content/40" />
+          </div>
           <h2 className="text-2xl font-bold mb-2">Problem not found</h2>
-          <p className="text-gray-600">The problem you're looking for doesn't exist.</p>
+          <p className="text-base-content/60 mb-6">The problem you're looking for doesn't exist or has been removed.</p>
+          <a href="/problems" className="btn btn-primary">Back to Problems</a>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Header */}
-      <div className="bg-base-100 border-b p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold">{problem.title}</h1>
-            <div className={`badge ${getDifficultyColor(problem.difficulty)}`}>
+    <div className="h-[calc(100vh-64px)] flex flex-col bg-base-100">
+      {/* Header - Compact */}
+      <div className="bg-base-100 border-b border-base-content/5 px-4 py-2 flex items-center justify-between shrink-0 h-14">
+        <div className="flex items-center gap-3 overflow-hidden">
+          <div className="flex items-center gap-2">
+            <div className={`badge badge-sm font-bold h-6 ${getDifficultyColor(problem.difficulty)}`}>
               {problem.difficulty}
             </div>
+            <h1 className="text-lg font-bold truncate max-w-[300px] sm:max-w-md" title={problem.title}>
+              {problem.title}
+            </h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-1.5">
             {problem.tags?.map((tag, index) => (
-              <span key={index} className="badge badge-outline badge-sm">
+              <span key={index} className="badge badge-ghost badge-xs opacity-60">
                 {tag}
               </span>
             ))}
           </div>
         </div>
+
+        <div className="flex items-center gap-2">
+           <select
+                className="select select-bordered select-xs w-32 font-mono bg-base-200/50"
+                value={selectedLanguage}
+                onChange={(e) => setSelectedLanguage(e.target.value)}
+            >
+                {Object.entries(languageMap).map(([key, lang]) => (
+                  <option key={key} value={key}>{lang.name}</option>
+                ))}
+            </select>
+            
+            <div className="join">
+               <button
+                className="btn btn-ghost btn-xs join-item"
+                onClick={resetCode}
+                title="Reset Code"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="flex gap-2 ml-2">
+              <button
+                className="btn btn-ghost btn-xs bg-base-200/50 hover:bg-base-200 gap-1.5 h-8 min-h-0 px-3"
+                onClick={runCode}
+                disabled={isRunning || runCooldown > 0}
+              >
+                {isRunning ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                )}
+                {runCooldown > 0 ? `${runCooldown}s` : "Run"}
+              </button>
+              <button
+                className="btn btn-primary btn-xs gap-1.5 h-8 min-h-0 px-3 shadow-sm shadow-primary/20"
+                onClick={submitCode}
+                disabled={isSubmitting || submitCooldown > 0}
+              >
+                {isSubmitting ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <Send className="w-3.5 h-3.5" />
+                )}
+                {submitCooldown > 0 ? `${submitCooldown}s` : "Submit"}
+              </button>
+            </div>
+        </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex">
-        {/* Left Panel - Problem Description */}
-        <div className="w-1/2 border-r flex flex-col">
+      {/* Main Split Layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Panel - Description & Hints */}
+        <div className="w-1/2 flex flex-col border-r border-base-content/5 bg-base-100">
           {/* Tabs */}
-          <div className="tabs tabs-bordered px-4 pt-4">
+          <div className="flex border-b border-base-content/5 bg-base-100 shrink-0">
             <button
-              className={`tab ${activeTab === "description" ? "tab-active" : ""}`}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
+                activeTab === "description" 
+                  ? "border-primary text-primary" 
+                  : "border-transparent text-base-content/60 hover:text-base-content hover:bg-base-200/30"
+              }`}
               onClick={() => setActiveTab("description")}
             >
+              <FileText className="w-4 h-4" />
               Description
             </button>
             <button
-              className={`tab ${activeTab === "hints" ? "tab-active" : ""}`}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
+                activeTab === "hints" 
+                  ? "border-primary text-primary" 
+                  : "border-transparent text-base-content/60 hover:text-base-content hover:bg-base-200/30"
+              }`}
               onClick={() => setActiveTab("hints")}
             >
-              <Lightbulb className="w-4 h-4 mr-1" />
-              Hints {hints.length > 0 && `(${hints.length})`}
+              <Lightbulb className={`w-4 h-4 ${hints.length > 0 ? "text-warning" : ""}`} />
+              Hints 
+              {hints.length > 0 && (
+                <span className="badge badge-xs badge-ghost">{hints.length}</span>
+              )}
             </button>
             <button
-              className={`tab ${activeTab === "output" ? "tab-active" : ""}`}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
+                activeTab === "output" 
+                  ? "border-primary text-primary" 
+                  : "border-transparent text-base-content/60 hover:text-base-content hover:bg-base-200/30"
+              }`}
               onClick={() => setActiveTab("output")}
             >
+              <Terminal className="w-4 h-4" />
               Output
+              {testResults && (
+                <span className={`w-2 h-2 rounded-full ${
+                    testResults.status === "Accepted" ? "bg-success" : "bg-error"
+                }`}></span>
+              )}
             </button>
           </div>
 
-          {/* Tab Content */}
-          <div className="flex-1 overflow-y-auto p-4">
-            {activeTab === "description" ? (
-              <div className="space-y-6">
+          {/* Content Area */}
+          <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+            {activeTab === "description" && (
+              <div className="space-y-8 max-w-none prose prose-sm prose-slate dark:prose-invert">
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Problem Statement</h3>
-                  <div className="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
+                  <h3 className="text-xl font-bold mb-4 text-base-content">Problem Statement</h3>
+                  <div className="text-base leading-7 text-base-content/80 whitespace-pre-wrap">
                     {problem.description}
                   </div>
                 </div>
 
                 {problem.examples && (
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Examples</h3>
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-bold text-base-content">Examples</h3>
                     {Object.entries(problem.examples).map(([lang, example]) => (
-                      <div key={lang} className="mb-4 p-4 bg-base-200 rounded-lg">
-                        <h4 className="font-medium mb-2">{lang}</h4>
-                        <div className="space-y-2">
-                          <div className="text-sm">
-                            <strong>Input:</strong>
-                            <code className="ml-2 bg-base-300 px-2 py-1 rounded font-mono text-sm">
-                              {example.input}
-                            </code>
+                      <div key={lang} className="bg-base-200/50 rounded-xl p-4 border border-base-content/5">
+                        <div className="space-y-3">
+                          <div className="font-mono text-sm">
+                            <span className="font-bold select-none text-base-content/50 uppercase text-xs tracking-wide block mb-1">Input</span>
+                            <div className="bg-base-300/50 p-2 rounded-lg">{example.input}</div>
                           </div>
-                          <div className="text-sm">
-                            <strong>Output:</strong>
-                            <code className="ml-2 bg-base-300 px-2 py-1 rounded font-mono text-sm">
-                              {example.output}
-                            </code>
+                          <div className="font-mono text-sm">
+                            <span className="font-bold select-none text-base-content/50 uppercase text-xs tracking-wide block mb-1">Output</span>
+                            <div className="bg-base-300/50 p-2 rounded-lg">{example.output}</div>
                           </div>
                           {example.explanation && (
                             <div className="text-sm">
-                              <strong>Explanation:</strong>
-                              <span className="ml-2 text-gray-600">{example.explanation}</span>
+                               <span className="font-bold select-none text-base-content/50 uppercase text-xs tracking-wide block mb-1">Explanation</span>
+                              <div className="text-base-content/80 pl-1">{example.explanation}</div>
                             </div>
                           )}
                         </div>
@@ -384,186 +462,185 @@ const ProblemDetailPage = () => {
 
                 {problem.constraints && (
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">Constraints</h3>
-                    <div className="text-gray-700 font-mono text-sm bg-base-200 p-3 rounded leading-relaxed">
-                      {problem.constraints}
-                    </div>
+                    <h3 className="text-lg font-bold mb-3 text-base-content">Constraints</h3>
+                    <ul className="bg-base-200/50 rounded-xl p-4 border border-base-content/5 space-y-2 font-mono text-sm">
+                      {problem.constraints.split('\n').map((constraint, idx) => (
+                          <li key={idx} className="flex gap-2">
+                              <span className="text-base-content/40 select-none">•</span>
+                              {constraint}
+                          </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
               </div>
-            ) : activeTab === "hints" ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <Lightbulb className="w-5 h-5 text-yellow-500" />
-                  <h3 className="text-lg font-semibold">Hints</h3>
+            )}
+
+            {activeTab === "hints" && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-3 bg-warning/10 rounded-xl text-warning">
+                      <Lightbulb className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold">Need a nudge?</h3>
+                    <p className="text-base-content/60 text-sm">Reveal hints one by one without spoiling the solution.</p>
+                  </div>
                 </div>
                 
                 {hints.length > 0 ? (
                   <div className="space-y-4">
-                    <div className="alert alert-info">
-                      <div className="flex items-start gap-2">
-                        <svg className="w-5 h-5 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                        </svg>
-                        <div className="text-sm">
-                          <div className="font-medium">💡 Stuck on this problem?</div>
-                          <div>Click on a hint below to reveal it. Try to solve the problem step by step!</div>
-                        </div>
-                      </div>
-                    </div>
-
                     {hints.map((hint, index) => (
-                      <div key={index} className="card bg-base-100 border border-base-300 shadow-sm">
+                      <div key={index} className={`card border transition-all duration-300 ${
+                          revealedHints.has(index) 
+                            ? "bg-base-100 border-warning/30 shadow-sm" 
+                            : "bg-base-200/30 border-base-content/5 border-dashed"
+                      }`}>
                         <div className="card-body p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-sm text-gray-600">Hint #{index + 1}</h4>
-                            {revealedHints.has(index) ? (
-                              <button
-                                className="btn btn-ghost btn-xs"
-                                onClick={() => hideHint(index)}
-                                title="Hide hint"
-                              >
-                                <EyeOff className="w-4 h-4" />
-                                Hide
-                              </button>
-                            ) : (
-                              <button
-                                className="btn btn-primary btn-xs"
-                                onClick={() => revealHint(index)}
-                                title="Reveal hint"
-                              >
-                                <Eye className="w-4 h-4" />
-                                Reveal
-                              </button>
-                            )}
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-bold text-sm text-base-content/70">Hint {index + 1}</h4>
+                            <button
+                                className={`btn btn-xs gap-1.5 ${
+                                    revealedHints.has(index) 
+                                        ? "btn-ghost text-base-content/60" 
+                                        : "btn-outline btn-warning"
+                                }`}
+                                onClick={() => revealedHints.has(index) ? hideHint(index) : revealHint(index)}
+                            >
+                                {revealedHints.has(index) ? (
+                                    <>
+                                        <EyeOff className="w-3 h-3" /> Hide
+                                    </>
+                                ) : (
+                                    <>
+                                        <Eye className="w-3 h-3" /> Reveal
+                                    </>
+                                )}
+                            </button>
                           </div>
                           
                           {revealedHints.has(index) ? (
-                            <div className="text-sm text-gray-700 leading-relaxed bg-yellow-50 border-l-4 border-yellow-400 pl-4 py-2">
+                            <div className="mt-3 text-base leading-relaxed animate-fade-in text-base-content/80">
                               {hint}
                             </div>
                           ) : (
-                            <div className="text-center py-4 text-gray-400">
-                              <Lightbulb className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                              <p className="text-sm">Click "Reveal" to see this hint</p>
-                            </div>
+                            <div className="mt-2 h-6 bg-base-content/5 rounded animate-pulse w-3/4"></div>
                           )}
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <div className="text-gray-500">
-                      <Lightbulb className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p>No hints available for this problem</p>
-                      <p className="text-sm mt-1">Try to solve it on your own or check the examples above!</p>
-                    </div>
+                  <div className="text-center py-12 bg-base-200/30 rounded-2xl border border-dashed border-base-content/10">
+                    <Lightbulb className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                    <p className="font-medium opacity-60">No hints available for this problem</p>
                   </div>
                 )}
               </div>
-            ) : (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Test Results</h3>
+            )}
+
+            {activeTab === "output" && (
+              <div className="space-y-4 h-full">
                 {testResults ? (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {testResults.error && (
-                      <div className="alert alert-error">
-                        <div className="flex items-center gap-2">
-                          <XCircle className="w-5 h-5" />
-                          <div>
-                            <div className="font-medium">{testResults.error.message}</div>
-                            <div className="text-sm opacity-75">{testResults.error.details}</div>
+                      <div className="alert alert-error shadow-sm">
+                        <XCircle className="w-5 h-5" />
+                        <div>
+                          <h3 className="font-bold">Execution Error</h3>
+                          <div className="text-xs mt-1 opacity-90 font-mono bg-black/10 p-2 rounded">
+                            {testResults.error.message}
                           </div>
+                          {testResults.error.details && (
+                              <p className="text-xs mt-2 opacity-80">{testResults.error.details}</p>
+                          )}
                         </div>
                       </div>
                     )}
 
                     {testResults.testCases?.length > 0 && (
-                      <div className={`alert ${
-                        testResults.status === "Accepted" ? "alert-success" :
-                        testResults.status === "Error" ? "alert-error" : "alert-warning"
-                      }`}>
-                        <div className="flex items-center gap-2">
-                          {testResults.status === "Accepted" ? (
-                            <CheckCircle className="w-5 h-5" />
-                          ) : (
-                            <XCircle className="w-5 h-5" />
-                          )}
-                          <span className="font-medium">{testResults.status}</span>
-                          <span className="ml-2">
-                            ({testResults.testCases.filter(tc => tc.passed).length}/{testResults.testCases.length} passed)
-                          </span>
-                        </div>
+                      <div className="grid grid-cols-1 gap-4">
+                         {/* Status Summary */}
+                         <div className={`p-4 rounded-xl border flex items-center gap-3 ${
+                             testResults.status === "Accepted" 
+                                ? "bg-success/10 border-success/20 text-success" 
+                                : "bg-error/10 border-error/20 text-error"
+                         }`}>
+                             {testResults.status === "Accepted" ? (
+                                 <CheckCircle className="w-6 h-6" />
+                             ) : (
+                                 <XCircle className="w-6 h-6" />
+                             )}
+                             <div>
+                                 <div className="font-bold text-lg">{testResults.status}</div>
+                                 <div className="text-xs opacity-80 font-medium">
+                                     {testResults.testCases.filter(tc => tc.passed).length}/{testResults.testCases.length} Test Cases Passed
+                                 </div>
+                             </div>
+                         </div>
+
+                        {testResults.testCases.map((testCase, index) => (
+                          <div key={index} className={`collapse collapse-arrow border border-base-content/5 bg-base-100 overflow-hidden ${
+                              testCase.passed ? "hover:border-success/30" : "hover:border-error/30"
+                          }`}>
+                            <input type="checkbox" /> 
+                            <div className="collapse-title flex items-center gap-3 py-3 pr-12 min-h-0">
+                                {testCase.passed ? (
+                                    <CheckCircle className="w-5 h-5 text-success shrink-0" />
+                                ) : (
+                                    <XCircle className="w-5 h-5 text-error shrink-0" />
+                                )}
+                                <span className="font-medium text-sm">Test Case {index + 1}</span>
+                                {testCase.time && <span className="ml-auto text-xs font-mono opacity-50">{testCase.time}</span>}
+                            </div>
+                            <div className="collapse-content text-sm">
+                                <div className="space-y-3 pt-2 pb-2">
+                                    {testCase.compileOutput && (
+                                        <div className="bg-error/5 p-3 rounded-lg border border-error/10">
+                                            <div className="text-xs font-bold text-error uppercase mb-1">Compilation Error</div>
+                                            <pre className="text-xs font-mono overflow-x-auto">{testCase.compileOutput}</pre>
+                                        </div>
+                                    )}
+                                    
+                                    {testCase.stderr && (
+                                        <div className="bg-error/5 p-3 rounded-lg border border-error/10">
+                                            <div className="text-xs font-bold text-error uppercase mb-1">Standard Error</div>
+                                            <pre className="text-xs font-mono overflow-x-auto">{testCase.stderr}</pre>
+                                        </div>
+                                    )}
+
+                                    {!testCase.compileOutput && (
+                                        <>
+                                            <div>
+                                                <div className="text-xs font-bold opacity-50 uppercase mb-1">Input</div>
+                                                <pre className="bg-base-200/50 p-2 rounded-lg font-mono text-xs overflow-x-auto">{testCase.input || "(empty)"}</pre>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <div className="text-xs font-bold opacity-50 uppercase mb-1">Your Output</div>
+                                                    <pre className={`p-2 rounded-lg font-mono text-xs overflow-x-auto ${
+                                                        testCase.passed ? "bg-success/5 text-success" : "bg-error/5 text-error"
+                                                    }`}>{testCase.stdout || "(empty)"}</pre>
+                                                </div>
+                                                <div>
+                                                    <div className="text-xs font-bold opacity-50 uppercase mb-1">Expected</div>
+                                                    <pre className="bg-base-200/50 p-2 rounded-lg font-mono text-xs overflow-x-auto">{testCase.expected || "(empty)"}</pre>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
-
-                    {testResults.testCases?.map((testCase, index) => (
-                      <div key={index} className="card bg-base-100 shadow">
-                        <div className="card-body p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium">Test Case {testCase.testCase || index + 1}</h4>
-                            <div className={`badge ${testCase.passed ? "badge-success" : "badge-error"}`}>
-                              {testCase.passed ? "PASS" : "FAIL"}
-                            </div>
-                          </div>
-
-                          <div className="space-y-2 text-sm">
-                            <div><strong>Status:</strong> {testCase.status}</div>
-
-                            {testCase.compileOutput && (
-                              <div>
-                                <strong>Compilation Error:</strong>
-                                <pre className="bg-red-100 text-red-800 p-2 rounded mt-1 overflow-x-auto">
-                                  {testCase.compileOutput}
-                                </pre>
-                              </div>
-                            )}
-
-                            {testCase.stderr && (
-                              <div>
-                                <strong>Runtime Error:</strong>
-                                <pre className="bg-red-100 text-red-800 p-2 rounded mt-1 overflow-x-auto">
-                                  {testCase.stderr}
-                                </pre>
-                              </div>
-                            )}
-
-                            {!testCase.compileOutput && (
-                              <>
-                                {testCase.stdout !== undefined && (
-                                  <div>
-                                    <strong>Your Output:</strong>
-                                    <pre className="bg-base-200 p-2 rounded mt-1 overflow-x-auto">
-                                      {testCase.stdout || "(empty)"}
-                                    </pre>
-                                  </div>
-                                )}
-
-                                {testCase.expected !== undefined && (
-                                  <div>
-                                    <strong>Expected Output:</strong>
-                                    <pre className="bg-base-200 p-2 rounded mt-1 overflow-x-auto">
-                                      {testCase.expected || "(empty)"}
-                                    </pre>
-                                  </div>
-                                )}
-                              </>
-                            )}
-
-                            <div className="flex gap-4 pt-2">
-                              {testCase.time && <div className="text-xs"><strong>Time:</strong> {testCase.time}</div>}
-                              {testCase.memory && <div className="text-xs"><strong>Memory:</strong> {testCase.memory}</div>}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 ) : (
-                  <div className="text-center text-gray-500">
-                    <Clock className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>Run or submit your code to see results</p>
+                  <div className="h-full flex flex-col items-center justify-center text-base-content/40 p-8 text-center">
+                    <Terminal className="w-16 h-16 mb-4 opacity-20" />
+                    <h3 className="font-bold text-lg mb-2">No output yet</h3>
+                    <p className="text-sm max-w-xs">Run or submit your code to see test results and console output here.</p>
                   </div>
                 )}
               </div>
@@ -572,55 +649,7 @@ const ProblemDetailPage = () => {
         </div>
 
         {/* Right Panel - Code Editor */}
-        <div className="w-1/2 flex flex-col">
-          {/* Editor Header */}
-          <div className="bg-base-100 border-b p-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <select
-                className="select select-bordered select-sm"
-                value={selectedLanguage}
-                onChange={(e) => setSelectedLanguage(e.target.value)}
-              >
-                {Object.entries(languageMap).map(([key, lang]) => (
-                  <option key={key} value={key}>{lang.name}</option>
-                ))}
-              </select>
-              <button className="btn btn-ghost btn-sm" onClick={resetCode} title="Reset to template">
-                <RotateCcw className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                className="btn btn-outline btn-sm"
-                onClick={runCode}
-                disabled={isRunning || runCooldown > 0}
-                title={runCooldown > 0 ? `Wait ${runCooldown}s before running again` : "Run code"}
-              >
-                {isRunning ? (
-                  <span className="loading loading-spinner loading-xs"></span>
-                ) : (
-                  <Play className="w-4 h-4" />
-                )}
-                {runCooldown > 0 ? `Run (${runCooldown}s)` : "Run"}
-              </button>
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={submitCode}
-                disabled={isSubmitting || submitCooldown > 0}
-                title={submitCooldown > 0 ? `Wait ${submitCooldown}s before submitting again` : "Submit code"}
-              >
-                {isSubmitting ? (
-                  <span className="loading loading-spinner loading-xs"></span>
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-                {submitCooldown > 0 ? `Submit (${submitCooldown}s)` : "Submit"}
-              </button>
-            </div>
-          </div>
-
-         
+        <div className="w-1/2 flex flex-col bg-[#1e1e1e]">
           <div className="flex-1">
             <Suspense fallback={<EditorLoader />}>
               <Editor
@@ -638,6 +667,9 @@ const ProblemDetailPage = () => {
                   automaticLayout: true,
                   wordWrap: "on",
                   tabSize: 2,
+                  fontFamily: "'JetBrains Mono', 'Fira Code', Consolas, monospace",
+                  fontLigatures: true,
+                  padding: { top: 16 },
                 }}
               />
             </Suspense>
