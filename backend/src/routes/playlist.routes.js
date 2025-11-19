@@ -7,6 +7,7 @@ import {
   getAllListDetails,
   getPlayListDetails,
   removeProblemFromPlaylist,
+  updatePlaylist,
 } from "../controllers/playlist.contoller.js";
 
 const playlistRoutes = express.Router();
@@ -16,6 +17,8 @@ playlistRoutes.get("/", authMiddleware, getAllListDetails);
 playlistRoutes.get("/:playlistId", authMiddleware, getPlayListDetails);
 
 playlistRoutes.post("/create-playlist", authMiddleware, createPlaylist);
+
+playlistRoutes.put("/:playlistId", authMiddleware, updatePlaylist);
 
 playlistRoutes.post(
   "/:playlistId/add-problem",

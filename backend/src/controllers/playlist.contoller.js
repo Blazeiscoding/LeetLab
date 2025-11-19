@@ -276,3 +276,92 @@ export const removeProblemFromPlaylist = async (req, res) => {
     });
   }
 };
+
+export const updatePlaylist = async (req, res) => {
+  try {
+    const { playlistId } = req.params;
+    const { name, description } = req.body;
+
+    if (!name || name.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Playlist name is required",
+      });
+    }
+
+    if (name.trim().length < 3) {
+      return res.status(400).json({
+        success: false,
+        error: "Playlist name must be at least 3 characters",
+      });
+    }
+
+    if (name.trim().length > 100) {
+      return res.status(400).json({
+        success: false,
+        error: "Playlist name must be less than 100 characters",
+      });
+    }
+
+    if (description && description.length > 500) {
+      return res.status(400).json({
+        success: false,
+        error: "Description must be less than 500 characters",
+      });
+    }
+
+    const playlist = await db.playlist.findUnique({
+      where: {
+        id: playlistId,
+        userId: req.user.id,
+      },
+    });
+
+    if (!playlist) {
+      return res.status(404).json({
+        success: false,
+        error: "Playlist not found",
+      });
+    }
+
+    // Check if name already exists for this user (excluding current playlist)
+    const playlistExists = await db.playlist.findFirst({
+      where: {
+        name: name.trim(),
+        userId: req.user.id,
+        NOT: {
+          id: playlistId,
+        },
+      },
+    });
+
+    if (playlistExists) {
+      return res.status(400).json({
+        success: false,
+        error: "Playlist with this name already exists",
+      });
+    }
+
+    const updatedPlaylist = await db.playlist.update({
+      where: {
+        id: playlistId,
+      },
+      data: {
+        name: name.trim(),
+        description: description?.trim() || null,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: updatedPlaylist,
+      message: "Playlist updated successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      error: "Error While Updating Playlist",
+    });
+  }
+};

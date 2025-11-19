@@ -28,6 +28,7 @@ const ProblemDetailPage = lazy(() => import("./page/ProblemDetailPage"));
 const ProfilePage = lazy(() => import("./page/ProfilePage"));
 const PlaylistsPage = lazy(() => import("./page/PlaylistsPage"));
 const PlaylistDetailPage = lazy(() => import("./page/PlaylistDetailPage"));
+const UpdatePlaylist = lazy(() => import("./page/UpdatePlaylist"));
 const AddProblem = lazy(() => import("./page/AddProblem"));
 const DeleteProblem = lazy(() => import("./page/DeleteProblem"));
 const UpdateProblem = lazy(() => import("./page/UpdateProblem"));
@@ -95,6 +96,7 @@ function AppContent() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/playlists" element={<PlaylistsPage />} />
               <Route path="/playlists/:id" element={<PlaylistDetailPage />} />
+              <Route path="/playlists/:id/edit" element={<UpdatePlaylist />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
 
               {/* Admin Routes */}
