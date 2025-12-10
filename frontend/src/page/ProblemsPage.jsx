@@ -137,7 +137,7 @@ const ProblemsPage = () => {
 
       <div className="container mx-auto px-4 -mt-10 max-w-7xl relative z-10">
         {/* Filters Card */}
-        <div className="card bg-base-100 shadow-xl border border-base-content/5 mb-8 backdrop-blur-xl">
+        <div className="card bg-base-100 shadow-xl border border-base-content/5 mb-8 backdrop-blur-xl overflow-visible">
           <div className="card-body p-4">
             <div className="flex flex-col md:flex-row gap-4 items-center">
               <div className="relative flex-1 w-full">
@@ -150,7 +150,7 @@ const ProblemsPage = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <div className="flex w-full md:w-auto gap-3 overflow-x-auto pb-2 md:pb-0">
+              <div className="flex w-full md:w-auto gap-3 flex-wrap justify-end">
                 {/* Difficulty Filter - Custom Styled */}
                 <div className="dropdown dropdown-end">
                   <label
@@ -186,12 +186,15 @@ const ProblemsPage = () => {
                   </label>
                   <ul
                     tabIndex={0}
-                    className="dropdown-content z-[20] menu p-2 shadow-2xl bg-base-100 rounded-2xl w-52 border border-base-content/10 mt-2"
+                    className="dropdown-content z-[50] menu p-2 shadow-2xl bg-base-100 rounded-2xl w-52 border border-base-content/10 mt-2"
                   >
                     <li>
                       <button
                         className={`flex items-center gap-3 ${difficultyFilter === "ALL" ? "active bg-primary/10 text-primary" : ""}`}
-                        onClick={() => setDifficultyFilter("ALL")}
+                        onClick={() => {
+                          setDifficultyFilter("ALL");
+                          document.activeElement?.blur();
+                        }}
                       >
                         <span className="w-3 h-3 rounded-full bg-gradient-to-r from-success via-warning to-error"></span>
                         All Levels
@@ -201,7 +204,10 @@ const ProblemsPage = () => {
                     <li>
                       <button
                         className={`flex items-center gap-3 ${difficultyFilter === "EASY" ? "active bg-success/10 text-success" : ""}`}
-                        onClick={() => setDifficultyFilter("EASY")}
+                        onClick={() => {
+                          setDifficultyFilter("EASY");
+                          document.activeElement?.blur();
+                        }}
                       >
                         <span className="w-3 h-3 rounded-full bg-success"></span>
                         Easy
@@ -211,7 +217,10 @@ const ProblemsPage = () => {
                     <li>
                       <button
                         className={`flex items-center gap-3 ${difficultyFilter === "MEDIUM" ? "active bg-warning/10 text-warning" : ""}`}
-                        onClick={() => setDifficultyFilter("MEDIUM")}
+                        onClick={() => {
+                          setDifficultyFilter("MEDIUM");
+                          document.activeElement?.blur();
+                        }}
                       >
                         <span className="w-3 h-3 rounded-full bg-warning"></span>
                         Medium
@@ -221,7 +230,10 @@ const ProblemsPage = () => {
                     <li>
                       <button
                         className={`flex items-center gap-3 ${difficultyFilter === "HARD" ? "active bg-error/10 text-error" : ""}`}
-                        onClick={() => setDifficultyFilter("HARD")}
+                        onClick={() => {
+                          setDifficultyFilter("HARD");
+                          document.activeElement?.blur();
+                        }}
                       >
                         <span className="w-3 h-3 rounded-full bg-error"></span>
                         Hard
@@ -261,12 +273,15 @@ const ProblemsPage = () => {
                   </label>
                   <ul
                     tabIndex={0}
-                    className="dropdown-content z-[20] menu p-2 shadow-2xl bg-base-100 rounded-2xl w-48 border border-base-content/10 mt-2"
+                    className="dropdown-content z-[50] menu p-2 shadow-2xl bg-base-100 rounded-2xl w-48 border border-base-content/10 mt-2"
                   >
                     <li>
                       <button
                         className={`flex items-center gap-3 ${statusFilter === "ALL" ? "active bg-primary/10 text-primary" : ""}`}
-                        onClick={() => setStatusFilter("ALL")}
+                        onClick={() => {
+                          setStatusFilter("ALL");
+                          document.activeElement?.blur();
+                        }}
                       >
                         <Clock className="w-4 h-4 opacity-60" />
                         All Status
@@ -276,7 +291,10 @@ const ProblemsPage = () => {
                     <li>
                       <button
                         className={`flex items-center gap-3 ${statusFilter === "SOLVED" ? "active bg-success/10 text-success" : ""}`}
-                        onClick={() => setStatusFilter("SOLVED")}
+                        onClick={() => {
+                          setStatusFilter("SOLVED");
+                          document.activeElement?.blur();
+                        }}
                       >
                         <CheckCircle className="w-4 h-4 text-success" />
                         Solved
@@ -286,7 +304,10 @@ const ProblemsPage = () => {
                     <li>
                       <button
                         className={`flex items-center gap-3 ${statusFilter === "UNSOLVED" ? "active bg-info/10 text-info" : ""}`}
-                        onClick={() => setStatusFilter("UNSOLVED")}
+                        onClick={() => {
+                          setStatusFilter("UNSOLVED");
+                          document.activeElement?.blur();
+                        }}
                       >
                         <Clock className="w-4 h-4 text-info" />
                         Unsolved

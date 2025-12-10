@@ -470,7 +470,7 @@ const ProblemDetailPage = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
-              <ul tabIndex={0} className="dropdown-content z-[20] menu p-2 shadow-xl bg-base-100 rounded-box w-52 border border-base-content/10 mt-1">
+              <ul tabIndex={0} className="dropdown-content z-[50] menu p-2 shadow-xl bg-base-100 rounded-box w-52 border border-base-content/10 mt-1">
                 {Object.entries(languageMap).map(([key, lang]) => (
                   <li key={key}>
                     <button
