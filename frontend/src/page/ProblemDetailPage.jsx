@@ -17,13 +17,15 @@ import {
   Maximize2,
   Minimize2,
   GripVertical,
-  Keyboard
+  Keyboard,
+  FlaskConical
 } from "lucide-react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useHotkeys } from "react-hotkeys-hook";
 import { axiosInstance } from "../util/axios";
 import { useCodePersistence } from "../util/useCodePersistence";
 import KeyboardShortcutsModal from "../components/KeyboardShortcutsModal";
+import CustomTestCasePanel from "../components/CustomTestCasePanel";
 import toast from "react-hot-toast";
 
 // ✅ Lazy load Monaco Editor - Only loads when needed
@@ -287,6 +289,65 @@ const ProblemDetailPage = () => {
     }
   }, [code, submitCooldown, problem, languageMap, selectedLanguage, id]);
 
+  // Run custom test cases
+  const runCustomTest = useCallback(async (customTests) => {
+    if (!code.trim()) {
+      toast.error("Please write some code first");
+      return;
+    }
+
+    setIsRunning(true);
+    try {
+      const inputs = customTests.map((t) => t.input);
+      const outputs = customTests.map((t) => t.expectedOutput || "");
+
+      const payload = {
+        source_code: code,
+        language_id: languageMap[selectedLanguage].id,
+        stdin: inputs,
+        expected_outputs: outputs,
+        problem_id: id,
+      };
+
+      const response = await axiosInstance.post("/execute-code/run", payload);
+      const responseData = response.data.results;
+      
+      const formattedResults = {
+        status: responseData.status,
+        testCases: responseData.testCases || [],
+        error: null,
+        isCustom: true, // Mark as custom test
+      };
+
+      setTestResults(formattedResults);
+      setActiveTab("output");
+
+      const passedCount = formattedResults.testCases.filter(tc => tc.passed).length;
+      const totalCount = formattedResults.testCases.length;
+
+      toast.success(`Custom tests complete: ${passedCount}/${totalCount} passed`, {
+        icon: "🧪",
+      });
+
+    } catch (error) {
+      console.error("Error running custom tests:", error);
+      const errorResults = {
+        status: "Error",
+        testCases: [],
+        error: {
+          message: error.response?.data?.error || error.message || "Unknown error occurred",
+          details: error.response?.data?.message || "Failed to execute code",
+        },
+        isCustom: true,
+      };
+      setTestResults(errorResults);
+      setActiveTab("output");
+      toast.error("Error running custom tests");
+    } finally {
+      setIsRunning(false);
+    }
+  }, [code, languageMap, selectedLanguage, id]);
+
   // Reset code with confirmation
   const handleResetCode = useCallback(() => {
     setShowResetModal(true);
@@ -492,6 +553,17 @@ const ProblemDetailPage = () => {
                     testResults.status === "Accepted" ? "bg-success" : "bg-error"
                 }`}></span>
               )}
+            </button>
+            <button
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
+                activeTab === "custom" 
+                  ? "border-primary text-primary" 
+                  : "border-transparent text-base-content/60 hover:text-base-content hover:bg-base-200/30"
+              }`}
+              onClick={() => setActiveTab("custom")}
+            >
+              <FlaskConical className="w-4 h-4 text-accent" />
+              Custom
             </button>
           </div>
 
@@ -716,6 +788,13 @@ const ProblemDetailPage = () => {
                   </div>
                 )}
               </div>
+            )}
+
+            {activeTab === "custom" && (
+              <CustomTestCasePanel 
+                onRunCustomTest={runCustomTest}
+                isRunning={isRunning}
+              />
             )}
           </div>
         </Panel>
