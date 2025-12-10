@@ -5,8 +5,8 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/useAuthStore";
 import { useThemeStore } from "./store/useThemeStore";
-import { Loader } from "lucide-react";
 import CommandPalette from "./components/CommandPalette";
+import Loader from "./components/Loader";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 // Layout
@@ -15,10 +15,7 @@ import Layout from "./layout/Layout";
 // Loading component
 const PageLoader = () => (
   <div className="flex items-center justify-center h-screen bg-base-100">
-    <div className="text-center">
-      <Loader className="size-12 animate-spin text-primary mx-auto mb-4" />
-      <p className="text-base-content/60">Loading...</p>
-    </div>
+    <Loader size="xl" />
   </div>
 );
 

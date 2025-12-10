@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
+import Loader from "../components/Loader";
 import { axiosInstance } from "../util/axios";
 import {
   Trophy,
   User,
-  Loader,
   Medal,
   TrendingUp,
   Calendar,
@@ -139,8 +139,7 @@ const LeaderboardPage = () => {
           animate={{ opacity: 1 }}
           className="flex flex-col justify-center items-center h-64"
         >
-          <Loader className="w-12 h-12 animate-spin text-primary mb-4" />
-          <p className="text-base-content/60">Loading leaderboard...</p>
+          <Loader />
         </motion.div>
       ) : error ? (
         <motion.div

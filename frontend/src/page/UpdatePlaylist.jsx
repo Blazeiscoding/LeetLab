@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
+import Loader from "../components/Loader";
 import {
   ArrowLeft,
   Save,
-  Loader,
   Edit,
   BookOpen,
   AlertCircle,
@@ -115,8 +115,7 @@ const UpdatePlaylist = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <Loader className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-base-content/60">Loading playlist...</p>
+          <Loader />
         </div>
       </div>
     );
@@ -291,7 +290,7 @@ const UpdatePlaylist = () => {
               >
                 {updating ? (
                   <>
-                    <Loader className="w-4 h-4 animate-spin" />
+                    <span className="loading loading-spinner loading-xs"></span>
                     Updating...
                   </>
                 ) : (

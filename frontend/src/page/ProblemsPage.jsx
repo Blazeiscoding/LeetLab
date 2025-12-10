@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Search, CheckCircle, Clock, Zap, ArrowRight } from "lucide-react";
 import { axiosInstance } from "../util/axios";
 import toast from "react-hot-toast";
+import Loader from "../components/Loader";
 
 const ProblemsPage = () => {
   const [problems, setProblems] = useState([]);
@@ -324,8 +325,8 @@ const ProblemsPage = () => {
         {/* Problems List */}
         <div className="space-y-4">
           {loading ? (
-            <div className="text-center py-20">
-              <span className="loading loading-spinner loading-lg text-primary"></span>
+            <div className="flex justify-center py-20">
+              <Loader />
             </div>
           ) : filteredProblems.length === 0 ? (
             <div className="text-center py-20 bg-base-100 rounded-3xl border border-dashed border-base-content/20">

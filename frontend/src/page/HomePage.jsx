@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import Loader from "../components/Loader";
 import { Link } from "react-router-dom";
 import {
   Code,
@@ -126,8 +127,7 @@ const HomePage = () => {
     return (
       <div className="flex items-center justify-center min-h-screen bg-base-100">
         <div className="text-center">
-          <div className="loading loading-spinner loading-lg text-primary mb-4"></div>
-          <p className="text-base-content/70">Loading your dashboard...</p>
+          <Loader />
         </div>
       </div>
     );

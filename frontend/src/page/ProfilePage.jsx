@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Loader from "../components/Loader";
 import {
   Trophy,
   Code,
@@ -252,7 +253,7 @@ const ProfilePage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-base-100">
-        <div className="loading loading-spinner loading-lg text-primary"></div>
+        <Loader />
       </div>
     );
   }

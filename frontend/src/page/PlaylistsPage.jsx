@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Loader from "../components/Loader";
 import { Plus, BookOpen, Trash2, Edit, Play, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { axiosInstance } from "../util/axios";
@@ -108,7 +109,7 @@ const PlaylistsPage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="loading loading-spinner loading-lg"></div>
+        <Loader />
       </div>
     );
   }

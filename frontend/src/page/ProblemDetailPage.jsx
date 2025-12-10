@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
+import Loader from "../components/Loader";
 import {
   Play,
   Send,
@@ -34,10 +35,7 @@ const Editor = lazy(() => import("@monaco-editor/react"));
 
 const EditorLoader = () => (
   <div className="flex items-center justify-center h-full bg-base-300/50 backdrop-blur-sm">
-    <div className="text-center">
-      <div className="loading loading-spinner loading-lg text-primary mb-2"></div>
-      <p className="text-base-content/60 font-medium">Loading editor...</p>
-    </div>
+      <Loader size="md" />
   </div>
 );
 
@@ -412,7 +410,7 @@ const ProblemDetailPage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-base-100">
-        <div className="loading loading-spinner loading-lg text-primary"></div>
+        <Loader />
       </div>
     );
   }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Loader from "../components/Loader";
 import {
   ArrowLeft,
   Plus,
@@ -143,7 +144,7 @@ const PlaylistDetailPage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="loading loading-spinner loading-lg"></div>
+        <Loader />
       </div>
     );
   }
