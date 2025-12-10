@@ -16,11 +16,14 @@ import {
   ChevronRight,
   Maximize2,
   Minimize2,
-  GripVertical
+  GripVertical,
+  Keyboard
 } from "lucide-react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { useHotkeys } from "react-hotkeys-hook";
 import { axiosInstance } from "../util/axios";
 import { useCodePersistence } from "../util/useCodePersistence";
+import KeyboardShortcutsModal from "../components/KeyboardShortcutsModal";
 import toast from "react-hot-toast";
 
 // ✅ Lazy load Monaco Editor - Only loads when needed
@@ -47,6 +50,7 @@ const ProblemDetailPage = () => {
   const [hints, setHints] = useState([]);
   const [revealedHints, setRevealedHints] = useState(new Set());
   const [showResetModal, setShowResetModal] = useState(false);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   
   // Cooldown states
   const [runCooldown, setRunCooldown] = useState(0);
@@ -294,6 +298,41 @@ const ProblemDetailPage = () => {
     toast.success("Code reset to default");
   }, [resetPersistedCode]);
 
+  // ✅ Keyboard Shortcuts
+  // Run code: Ctrl/Cmd + Enter
+  useHotkeys("ctrl+enter, meta+enter", (e) => {
+    e.preventDefault();
+    if (!isRunning && runCooldown === 0) {
+      runCode();
+    }
+  }, { enableOnFormTags: true }, [runCode, isRunning, runCooldown]);
+
+  // Submit code: Ctrl/Cmd + Shift + Enter
+  useHotkeys("ctrl+shift+enter, meta+shift+enter", (e) => {
+    e.preventDefault();
+    if (!isSubmitting && submitCooldown === 0) {
+      submitCode();
+    }
+  }, { enableOnFormTags: true }, [submitCode, isSubmitting, submitCooldown]);
+
+  // Reset code: Ctrl/Cmd + Shift + R
+  useHotkeys("ctrl+shift+r, meta+shift+r", (e) => {
+    e.preventDefault();
+    handleResetCode();
+  }, { enableOnFormTags: true }, [handleResetCode]);
+
+  // Show shortcuts modal: ?
+  useHotkeys("shift+/", (e) => {
+    e.preventDefault();
+    setShowShortcutsModal(true);
+  }, []);
+
+  // Close modals: Escape
+  useHotkeys("escape", () => {
+    setShowResetModal(false);
+    setShowShortcutsModal(false);
+  }, []);
+
   const getDifficultyColor = useCallback((difficulty) => {
     switch (difficulty) {
       case "EASY": return "bg-success/10 text-success border-success/20";
@@ -374,6 +413,7 @@ const ProblemDetailPage = () => {
                 className="btn btn-ghost btn-xs bg-base-200/50 hover:bg-base-200 gap-1.5 h-8 min-h-0 px-3"
                 onClick={runCode}
                 disabled={isRunning || runCooldown > 0}
+                title="Run Code (Ctrl+Enter)"
               >
                 {isRunning ? (
                   <span className="loading loading-spinner loading-xs"></span>
@@ -386,6 +426,7 @@ const ProblemDetailPage = () => {
                 className="btn btn-primary btn-xs gap-1.5 h-8 min-h-0 px-3 shadow-sm shadow-primary/20"
                 onClick={submitCode}
                 disabled={isSubmitting || submitCooldown > 0}
+                title="Submit Code (Ctrl+Shift+Enter)"
               >
                 {isSubmitting ? (
                   <span className="loading loading-spinner loading-xs"></span>
@@ -393,6 +434,13 @@ const ProblemDetailPage = () => {
                   <Send className="w-3.5 h-3.5" />
                 )}
                 {submitCooldown > 0 ? `${submitCooldown}s` : "Submit"}
+              </button>
+              <button
+                className="btn btn-ghost btn-xs h-8 min-h-0 px-2"
+                onClick={() => setShowShortcutsModal(true)}
+                title="Keyboard Shortcuts (?)"
+              >
+                <Keyboard className="w-4 h-4" />
               </button>
             </div>
         </div>
@@ -736,6 +784,12 @@ const ProblemDetailPage = () => {
           />
         </div>
       )}
+
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal 
+        isOpen={showShortcutsModal} 
+        onClose={() => setShowShortcutsModal(false)} 
+      />
     </div>
   );
 };
