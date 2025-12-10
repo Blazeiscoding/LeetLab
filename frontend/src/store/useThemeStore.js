@@ -8,10 +8,10 @@ import { persist } from "zustand/middleware";
 export const useThemeStore = create(
   persist(
     (set, get) => ({
-      // Available DaisyUI themes
-      themes: ["night", "dark", "light", "cupcake", "dracula", "synthwave", "forest"],
+      // Available themes: just light and dark
+      themes: ["light", "night"],
       
-      // Current theme (default: night)
+      // Current theme (default: night/dark)
       theme: "night",
       
       // Set a specific theme
@@ -24,15 +24,13 @@ export const useThemeStore = create(
       // Toggle between light and dark mode
       toggleTheme: () => {
         const currentTheme = get().theme;
-        const isDark = ["night", "dark", "dracula", "synthwave", "forest"].includes(currentTheme);
-        const newTheme = isDark ? "light" : "night";
+        const newTheme = currentTheme === "night" ? "light" : "night";
         get().setTheme(newTheme);
       },
       
       // Check if current theme is dark
       isDarkTheme: () => {
-        const currentTheme = get().theme;
-        return ["night", "dark", "dracula", "synthwave", "forest"].includes(currentTheme);
+        return get().theme === "night";
       },
       
       // Initialize theme on app load

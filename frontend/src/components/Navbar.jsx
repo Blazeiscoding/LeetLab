@@ -20,7 +20,7 @@ import LogoutButton from "./LogoutButton";
 
 const Navbar = () => {
   const { authUser } = useAuthStore();
-  const { theme, toggleTheme, isDarkTheme, themes, setTheme } = useThemeStore();
+  const { toggleTheme, isDarkTheme } = useThemeStore();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -87,60 +87,18 @@ const Navbar = () => {
 
         {/* Right Side - Theme Toggle, User Profile and Mobile Menu */}
         <div className="flex items-center gap-2">
-          {/* Theme Toggle Button */}
-          <div className="dropdown dropdown-end">
-            <label
-              tabIndex={0}
-              className="btn btn-ghost btn-circle hover:bg-base-content/5 transition-all duration-300"
-              title="Toggle Theme"
-            >
-              {isDarkTheme() ? (
-                <Sun className="w-5 h-5 text-warning" />
-              ) : (
-                <Moon className="w-5 h-5 text-primary" />
-              )}
-            </label>
-            <ul
-              tabIndex={0}
-              className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-2xl bg-base-100/95 backdrop-blur-xl rounded-2xl w-52 space-y-1 border border-base-content/10"
-            >
-              <li className="menu-title px-2 pt-1 pb-2">
-                <span className="text-xs font-bold uppercase tracking-wider opacity-60">Select Theme</span>
-              </li>
-              {themes.map((t) => (
-                <li key={t}>
-                  <button
-                    className={`flex items-center gap-3 p-3 rounded-xl font-semibold transition-all duration-300 capitalize ${
-                      theme === t
-                        ? "bg-primary/10 text-primary"
-                        : "hover:bg-base-content/5"
-                    }`}
-                    onClick={() => setTheme(t)}
-                  >
-                    <span
-                      className="w-4 h-4 rounded-full border-2"
-                      style={{
-                        backgroundColor:
-                          t === "light" ? "#f5f5f4" :
-                          t === "dark" ? "#1f2937" :
-                          t === "night" ? "#0f172a" :
-                          t === "cupcake" ? "#fae8e8" :
-                          t === "dracula" ? "#282a36" :
-                          t === "synthwave" ? "#1a103d" :
-                          t === "forest" ? "#171212" : "#1f2937",
-                        borderColor:
-                          theme === t ? "var(--p)" : "transparent"
-                      }}
-                    />
-                    {t}
-                    {theme === t && (
-                      <span className="ml-auto text-primary">✓</span>
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Theme Toggle Button - Simple Light/Dark switch */}
+          <button
+            onClick={toggleTheme}
+            className="btn btn-ghost btn-circle hover:bg-base-content/5 transition-all duration-300"
+            title={isDarkTheme() ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {isDarkTheme() ? (
+              <Sun className="w-5 h-5 text-warning" />
+            ) : (
+              <Moon className="w-5 h-5 text-primary" />
+            )}
+          </button>
 
           {/* User Profile Dropdown */}
           <div className="dropdown dropdown-end">
