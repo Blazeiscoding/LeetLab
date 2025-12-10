@@ -1,9 +1,10 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/useAuthStore";
+import { useThemeStore } from "./store/useThemeStore";
 import { Loader } from "lucide-react";
 
 // Layout
@@ -40,7 +41,13 @@ const AdminRoute = lazy(() => import("./components/AdminRoute"));
 
 function AppContent() {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
+  const { theme, initTheme } = useThemeStore();
   const location = useLocation();
+
+  // Initialize theme on mount
+  useEffect(() => {
+    initTheme();
+  }, [initTheme]);
 
   React.useEffect(() => {
     checkAuth();
@@ -52,8 +59,8 @@ function AppContent() {
 
   return (
     <div
-      className="App min-h-screen bg-base-100 text-base-content font-sans"
-      data-theme="night"
+      className="App min-h-screen bg-base-100 text-base-content font-sans transition-colors duration-300"
+      data-theme={theme}
     >
       <Suspense fallback={<PageLoader />}>
         <Routes>
