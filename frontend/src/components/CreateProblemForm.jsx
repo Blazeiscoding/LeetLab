@@ -665,14 +665,98 @@ const CreateProblemForm = () => {
                     Difficulty
                   </span>
                 </label>
-                <select
-                  className="select select-bordered w-full text-base md:text-lg"
-                  {...register("difficulty")}
-                >
-                  <option value="EASY">Easy</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HARD">Hard</option>
-                </select>
+                <Controller
+                  name="difficulty"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="dropdown w-full">
+                      <div
+                        tabIndex={0}
+                        role="button"
+                        className={`btn w-full justify-between bg-base-100 border-base-content/20 hover:border-primary font-normal text-base md:text-lg h-12 ${
+                          field.value === "EASY"
+                            ? "text-success"
+                            : field.value === "MEDIUM"
+                            ? "text-warning"
+                            : "text-error"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          {field.value === "EASY" && (
+                            <span className="w-2 h-2 rounded-full bg-success"></span>
+                          )}
+                          {field.value === "MEDIUM" && (
+                            <span className="w-2 h-2 rounded-full bg-warning"></span>
+                          )}
+                          {field.value === "HARD" && (
+                            <span className="w-2 h-2 rounded-full bg-error"></span>
+                          )}
+                          {field.value
+                            ? field.value.charAt(0) +
+                              field.value.slice(1).toLowerCase()
+                            : "Select Difficulty"}
+                        </span>
+                        <svg
+                          className="w-5 h-5 opacity-50"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </div>
+                      <ul
+                        tabIndex={0}
+                        className="dropdown-content z-[20] menu p-2 shadow-xl bg-base-100 rounded-box w-full border border-base-content/10 mt-1"
+                      >
+                        <li>
+                          <button
+                            type="button"
+                            className="text-success hover:bg-success/10"
+                            onClick={() => {
+                              field.onChange("EASY");
+                              document.activeElement?.blur();
+                            }}
+                          >
+                            <span className="w-2 h-2 rounded-full bg-success"></span>
+                            Easy
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            type="button"
+                            className="text-warning hover:bg-warning/10"
+                            onClick={() => {
+                              field.onChange("MEDIUM");
+                              document.activeElement?.blur();
+                            }}
+                          >
+                            <span className="w-2 h-2 rounded-full bg-warning"></span>
+                            Medium
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            type="button"
+                            className="text-error hover:bg-error/10"
+                            onClick={() => {
+                              field.onChange("HARD");
+                              document.activeElement?.blur();
+                            }}
+                          >
+                            <span className="w-2 h-2 rounded-full bg-error"></span>
+                            Hard
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  )}
+                />
                 {errors.difficulty && (
                   <label className="label">
                     <span className="label-text-alt text-error">
