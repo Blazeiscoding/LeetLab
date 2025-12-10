@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { axiosInstance } from "../util/axios";
+import { useCodePersistence } from "../util/useCodePersistence";
 import toast from "react-hot-toast";
 
 // ✅ Lazy load Monaco Editor - Only loads when needed
@@ -39,13 +40,13 @@ const ProblemDetailPage = () => {
   const [problem, setProblem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState("JAVASCRIPT");
-  const [code, setCode] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [testResults, setTestResults] = useState(null);
   const [activeTab, setActiveTab] = useState("description");
   const [hints, setHints] = useState([]);
   const [revealedHints, setRevealedHints] = useState(new Set());
+  const [showResetModal, setShowResetModal] = useState(false);
   
   // Cooldown states
   const [runCooldown, setRunCooldown] = useState(0);
@@ -58,15 +59,31 @@ const ProblemDetailPage = () => {
     JAVA: { id: 62, name: "Java", extension: "java" },
   }), []);
 
+  // Get default code snippet for current language
+  const defaultCodeSnippet = useMemo(() => {
+    return problem?.codeSnippet?.[selectedLanguage] || "";
+  }, [problem, selectedLanguage]);
+
+  // ✅ Use code persistence hook - auto-saves to localStorage
+  const { code, setCode, resetCode: resetPersistedCode, hasPersistedCode } = useCodePersistence(
+    id,
+    selectedLanguage,
+    defaultCodeSnippet
+  );
+
+  // Show toast when code is restored from localStorage
+  useEffect(() => {
+    if (hasPersistedCode && problem) {
+      toast.success("Your previous code has been restored", {
+        icon: "💾",
+        duration: 3000,
+      });
+    }
+  }, [hasPersistedCode, problem, selectedLanguage]);
+
   useEffect(() => {
     fetchProblem();
   }, [id]);
-
-  useEffect(() => {
-    if (problem?.codeSnippet) {
-      setCode(problem.codeSnippet[selectedLanguage] || "");
-    }
-  }, [selectedLanguage, problem]);
 
   // ✅ Memoize processed hints
   const processedHints = useMemo(() => {
@@ -266,11 +283,16 @@ const ProblemDetailPage = () => {
     }
   }, [code, submitCooldown, problem, languageMap, selectedLanguage, id]);
 
-  const resetCode = useCallback(() => {
-    if (problem?.codeSnippet) {
-      setCode(problem.codeSnippet[selectedLanguage] || "");
-    }
-  }, [problem, selectedLanguage]);
+  // Reset code with confirmation
+  const handleResetCode = useCallback(() => {
+    setShowResetModal(true);
+  }, []);
+
+  const confirmResetCode = useCallback(() => {
+    resetPersistedCode();
+    setShowResetModal(false);
+    toast.success("Code reset to default");
+  }, [resetPersistedCode]);
 
   const getDifficultyColor = useCallback((difficulty) => {
     switch (difficulty) {
@@ -340,8 +362,8 @@ const ProblemDetailPage = () => {
             <div className="join">
                <button
                 className="btn btn-ghost btn-xs join-item"
-                onClick={resetCode}
-                title="Reset Code"
+                onClick={handleResetCode}
+                title="Reset Code to Default"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
@@ -683,6 +705,37 @@ const ProblemDetailPage = () => {
           </div>
         </Panel>
       </PanelGroup>
+
+      {/* Reset Code Confirmation Modal */}
+      {showResetModal && (
+        <div className="modal modal-open">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">Reset Code?</h3>
+            <p className="py-4 text-base-content/70">
+              This will discard your current code and restore the default template. 
+              This action cannot be undone.
+            </p>
+            <div className="modal-action">
+              <button 
+                className="btn btn-ghost" 
+                onClick={() => setShowResetModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn btn-error" 
+                onClick={confirmResetCode}
+              >
+                Reset Code
+              </button>
+            </div>
+          </div>
+          <div 
+            className="modal-backdrop bg-black/50" 
+            onClick={() => setShowResetModal(false)}
+          />
+        </div>
+      )}
     </div>
   );
 };
