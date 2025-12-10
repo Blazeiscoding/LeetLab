@@ -7,6 +7,7 @@ import { useAuthStore } from "./store/useAuthStore";
 import { useThemeStore } from "./store/useThemeStore";
 import { Loader } from "lucide-react";
 import CommandPalette from "./components/CommandPalette";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Layout
 import Layout from "./layout/Layout";
@@ -100,10 +101,14 @@ function AppContent() {
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
-            <Route element={<Layout />}>
+            <Route element={<ErrorBoundary><Layout /></ErrorBoundary>}>
               <Route path="/" element={<HomePage />} />
               <Route path="/problems" element={<ProblemsPage />} />
-              <Route path="/problems/:id" element={<ProblemDetailPage />} />
+              <Route path="/problems/:id" element={
+                <ErrorBoundary minimal>
+                  <ProblemDetailPage />
+                </ErrorBoundary>
+              } />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/playlists" element={<PlaylistsPage />} />
               <Route path="/playlists/:id" element={<PlaylistDetailPage />} />
