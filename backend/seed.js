@@ -1,11 +1,11 @@
-const { PrismaClient } = require('./src/generated/prisma');
+import { PrismaClient } from './src/generated/prisma/index.js';
 const prisma = new PrismaClient();
 
 // Import all problem batches
-const batch2 = require('./problems-batch2');
-const batch3 = require('./problems-batch3');
-const batch4 = require('./problems-batch4');
-const batch5 = require('./problems-batch5');
+import batch2 from './problems-batch2.js';
+import batch3 from './problems-batch3.js';
+import batch4 from './problems-batch4.js';
+import batch5 from './problems-batch5.js';
 
 // Get admin user ID (first admin in database)
 async function getAdminUserId() {

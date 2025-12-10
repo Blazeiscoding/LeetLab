@@ -1,5 +1,5 @@
 // Additional problems - Part 4 (problems 31-45)
-module.exports = [
+export default [
   {
     title: "Valid Palindrome",
     description: "A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward. Alphanumeric characters include letters and numbers.\n\nGiven a string s, return true if it is a palindrome, or false otherwise.",

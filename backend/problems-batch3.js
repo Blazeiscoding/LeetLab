@@ -1,5 +1,5 @@
 // Additional problems - Part 3 (problems 16-30)
-module.exports = [
+export default [
   {
     title: "Same Tree",
     description: "Given the roots of two binary trees p and q, write a function to check if they are the same or not.\n\nTwo binary trees are considered the same if they are structurally identical, and the nodes have the same value.",

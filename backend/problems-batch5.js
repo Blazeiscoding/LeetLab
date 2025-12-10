@@ -1,5 +1,5 @@
 // Additional problems - Part 5 (problems 46-55)
-module.exports = [
+export default [
   {
     title: "Lowest Common Ancestor of BST",
     description: "Given a binary search tree (BST), find the lowest common ancestor (LCA) node of two given nodes in the BST.\n\nThe lowest common ancestor is defined between two nodes p and q as the lowest node in T that has both p and q as descendants.",
