@@ -455,15 +455,44 @@ const ProblemDetailPage = () => {
         </div>
 
         <div className="flex items-center gap-2">
-           <select
-                className="select select-bordered select-xs w-32 font-mono bg-base-200/50"
-                value={selectedLanguage}
-                onChange={(e) => setSelectedLanguage(e.target.value)}
-            >
+            {/* Language Selector Dropdown */}
+            <div className="dropdown dropdown-end">
+              <div 
+                tabIndex={0} 
+                role="button" 
+                className="btn btn-sm bg-base-200/50 hover:bg-base-200 border-0 font-mono gap-2 min-w-[130px] justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <Code2 className="w-4 h-4 text-primary" />
+                  {languageMap[selectedLanguage]?.name || selectedLanguage}
+                </div>
+                <svg className="w-3 h-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+              <ul tabIndex={0} className="dropdown-content z-[20] menu p-2 shadow-xl bg-base-100 rounded-box w-52 border border-base-content/10 mt-1">
                 {Object.entries(languageMap).map(([key, lang]) => (
-                  <option key={key} value={key}>{lang.name}</option>
+                  <li key={key}>
+                    <button
+                      className={`flex justify-between ${selectedLanguage === key ? "active font-bold" : ""}`}
+                      onClick={() => {
+                        setSelectedLanguage(key);
+                        const elem = document.activeElement;
+                        if (elem) elem.blur(); // Close dropdown after selection
+                      }}
+                    >
+                      <span className="flex items-center gap-2">
+                        {key === 'JAVASCRIPT' && <span className="text-warning">JS</span>}
+                        {key === 'PYTHON' && <span className="text-info">Py</span>}
+                        {key === 'JAVA' && <span className="text-error">Java</span>}
+                        {lang.name}
+                      </span>
+                      {selectedLanguage === key && <CheckCircle className="w-3.5 h-3.5" />}
+                    </button>
+                  </li>
                 ))}
-            </select>
+              </ul>
+            </div>
             
             <div className="join">
                <button
