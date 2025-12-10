@@ -24,6 +24,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useHotkeys } from "react-hotkeys-hook";
 import { axiosInstance } from "../util/axios";
 import { useCodePersistence } from "../util/useCodePersistence";
+import { useConfetti } from "../util/useConfetti";
 import KeyboardShortcutsModal from "../components/KeyboardShortcutsModal";
 import CustomTestCasePanel from "../components/CustomTestCasePanel";
 import toast from "react-hot-toast";
@@ -76,6 +77,9 @@ const ProblemDetailPage = () => {
     selectedLanguage,
     defaultCodeSnippet
   );
+
+  // ✅ Confetti for celebrations
+  const { fireCanons } = useConfetti();
 
   // Show toast when code is restored from localStorage
   useEffect(() => {
@@ -262,7 +266,9 @@ const ProblemDetailPage = () => {
       setActiveTab("output");
 
       if (formattedResults.status === "Accepted") {
-        toast.success("All test cases passed! Problem solved!");
+        toast.success("🎉 All test cases passed! Problem solved!");
+        // Trigger confetti celebration!
+        fireCanons();
       } else {
         const passedCount = formattedResults.testCases.filter(tc => tc.passed).length;
         const totalCount = formattedResults.testCases.length;

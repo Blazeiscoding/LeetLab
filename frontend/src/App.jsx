@@ -6,6 +6,7 @@ import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/useAuthStore";
 import { useThemeStore } from "./store/useThemeStore";
 import { Loader } from "lucide-react";
+import CommandPalette from "./components/CommandPalette";
 
 // Layout
 import Layout from "./layout/Layout";
@@ -62,6 +63,9 @@ function AppContent() {
       className="App min-h-screen bg-base-100 text-base-content font-sans transition-colors duration-300"
       data-theme={theme}
     >
+      {/* Global Command Palette */}
+      <CommandPalette />
+      
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public Routes */}
