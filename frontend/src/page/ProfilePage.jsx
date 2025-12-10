@@ -13,10 +13,12 @@ import {
   Star,
   Layout,
   Hash,
-  Terminal
+  Terminal,
+  Activity
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { axiosInstance } from "../util/axios";
+import StreakCalendar from "../components/StreakCalendar";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 
@@ -372,7 +374,24 @@ const ProfilePage = () => {
 
         {/* Tab Content */}
         {activeTab === "overview" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-8">
+            {/* Activity Streak Calendar */}
+            <div className="card bg-base-100 shadow-xl border border-base-content/5">
+              <div className="card-body">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-3 bg-base-200 rounded-xl">
+                    <Activity className="w-6 h-6 text-success" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold">Activity Calendar</h2>
+                    <p className="text-sm text-base-content/60">Your submission history over the past year</p>
+                  </div>
+                </div>
+                <StreakCalendar submissions={submissions} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Difficulty Breakdown */}
             <div className="card bg-base-100 shadow-xl border border-base-content/5">
               <div className="card-body">
@@ -478,6 +497,7 @@ const ProfilePage = () => {
                   )}
                 </div>
               </div>
+            </div>
             </div>
           </div>
         )}

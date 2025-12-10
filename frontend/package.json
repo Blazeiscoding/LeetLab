@@ -23,6 +23,7 @@
     "lucide-react": "^0.510.0",
     "monaco-editor": "^0.52.2",
     "react": "^19.1.0",
+    "react-activity-calendar": "^3.0.1",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.56.3",
     "react-hot-toast": "^2.5.2",
