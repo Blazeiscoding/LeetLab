@@ -15,8 +15,10 @@ import {
   Terminal,
   ChevronRight,
   Maximize2,
-  Minimize2
+  Minimize2,
+  GripVertical
 } from "lucide-react";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { axiosInstance } from "../util/axios";
 import toast from "react-hot-toast";
 
@@ -374,10 +376,10 @@ const ProblemDetailPage = () => {
         </div>
       </div>
 
-      {/* Main Split Layout */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Main Split Layout - Resizable Panels */}
+      <PanelGroup direction="horizontal" autoSaveId="problem-page-layout">
         {/* Left Panel - Description & Hints */}
-        <div className="w-1/2 flex flex-col border-r border-base-content/5 bg-base-100">
+        <Panel defaultSize={50} minSize={25} className="flex flex-col bg-base-100">
           {/* Tabs */}
           <div className="flex border-b border-base-content/5 bg-base-100 shrink-0">
             <button
@@ -646,10 +648,15 @@ const ProblemDetailPage = () => {
               </div>
             )}
           </div>
-        </div>
+        </Panel>
+
+        {/* Resize Handle */}
+        <PanelResizeHandle className="w-2 bg-base-200 hover:bg-primary/30 transition-colors duration-200 flex items-center justify-center group cursor-col-resize">
+          <GripVertical className="w-4 h-4 text-base-content/30 group-hover:text-primary transition-colors" />
+        </PanelResizeHandle>
 
         {/* Right Panel - Code Editor */}
-        <div className="w-1/2 flex flex-col bg-[#1e1e1e]">
+        <Panel defaultSize={50} minSize={25} className="flex flex-col bg-[#1e1e1e]">
           <div className="flex-1">
             <Suspense fallback={<EditorLoader />}>
               <Editor
@@ -674,8 +681,8 @@ const ProblemDetailPage = () => {
               />
             </Suspense>
           </div>
-        </div>
-      </div>
+        </Panel>
+      </PanelGroup>
     </div>
   );
 };
