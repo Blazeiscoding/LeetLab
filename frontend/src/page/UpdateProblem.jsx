@@ -305,61 +305,61 @@ const UpdateProblem = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 py-8">
+    <div className="min-h-screen bg-base-200/50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-4">
             Update Problems
           </h1>
-          <p className="text-gray-400 text-lg">
+          <p className="text-base-content/60 text-lg">
             Modify existing coding problems
           </p>
         </div>
 
-        <div className="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-2xl p-6 mb-8">
-          <div className="flex flex-col md:flex-row gap-4">
+        <div className="card bg-base-100 shadow-xl border border-base-content/5 mb-8 backdrop-blur-xl overflow-visible relative z-30">
+          <div className="card-body p-6 flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/40 w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search problems by title or description..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white"
+                className="input input-bordered w-full pl-10 focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
             </div>
             <div className="relative dropdown dropdown-end">
               <div
                 tabIndex={0}
                 role="button"
-                className="btn bg-gray-700/50 border-gray-600 hover:bg-gray-700 text-white gap-2 min-w-[160px] justify-between font-medium capitalize h-[52px]"
+                className="btn bg-base-100 border-base-content/20 hover:border-primary text-base-content gap-2 min-w-[160px] justify-between font-medium capitalize h-[52px]"
               >
                 <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-gray-400" />
+                  <Filter className="w-4 h-4 text-base-content/50" />
                   {difficultyFilter === "all" ? "All Difficulties" : difficultyFilter}
                 </div>
                 <svg className="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
-              <ul tabIndex={0} className="dropdown-content z-[20] menu p-2 shadow-xl bg-gray-800 border border-gray-700 rounded-xl w-52 mt-2">
+              <ul tabIndex={0} className="dropdown-content z-[20] menu p-2 shadow-xl bg-base-100 border border-base-content/10 rounded-xl w-52 mt-2">
                 {[
-                  { value: "all", label: "All Difficulties", color: "text-white" },
-                  { value: "easy", label: "Easy", color: "text-green-400" },
-                  { value: "medium", label: "Medium", color: "text-yellow-400" },
-                  { value: "hard", label: "Hard", color: "text-red-400" }
+                  { value: "all", label: "All Difficulties", color: "text-base-content" },
+                  { value: "easy", label: "Easy", color: "text-success" },
+                  { value: "medium", label: "Medium", color: "text-warning" },
+                  { value: "hard", label: "Hard", color: "text-error" }
                 ].map((option) => (
                   <li key={option.value}>
                     <button
-                      className={`flex items-center gap-2 ${difficultyFilter === option.value ? "bg-gray-700 active" : ""}`}
+                      className={`flex items-center gap-2 ${difficultyFilter === option.value ? "bg-base-200 active" : ""}`}
                       onClick={() => {
                         setDifficultyFilter(option.value);
                         document.activeElement?.blur();
                       }}
                     >
-                      <span className={`w-2 h-2 rounded-full ${option.value === "all" ? "bg-gradient-to-r from-green-400 via-yellow-400 to-red-400" : `bg-current ${option.color}`}`}></span>
+                      <span className={`w-2 h-2 rounded-full ${option.value === "all" ? "bg-gradient-to-r from-success via-warning to-error" : `bg-current ${option.color}`}`}></span>
                       <span className={option.color}>{option.label}</span>
-                      {difficultyFilter === option.value && <CheckCircle className="w-4 h-4 ml-auto text-blue-400" />}
+                      {difficultyFilter === option.value && <CheckCircle className="w-4 h-4 ml-auto text-primary" />}
                     </button>
                   </li>
                 ))}
@@ -372,59 +372,61 @@ const UpdateProblem = () => {
           {filteredProblems.map((problem) => (
             <div
               key={problem.id || problem._id}
-              className="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-2xl p-6 hover:border-blue-500/30 transition-all duration-300 group"
+              className="card bg-base-100 shadow-lg hover:shadow-2xl transition-all duration-300 border border-base-content/5 group"
             >
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors duration-300 line-clamp-2">
-                  {problem.title}
-                </h3>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold border ${getDifficultyColor(
-                    problem.difficulty
-                  )}`}
-                >
-                  {problem.difficulty}
-                </span>
-              </div>
-
-              <p className="text-gray-400 text-sm mb-4 line-clamp-3">
-                {problem.description}
-              </p>
-
-              <div className="flex flex-wrap gap-2 mb-4">
-                {problem.tags?.slice(0, 3).map((tag, index) => (
+              <div className="card-body p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="card-title text-xl font-bold text-base-content group-hover:text-primary transition-colors duration-300 line-clamp-2">
+                    {problem.title}
+                  </h3>
                   <span
-                    key={index}
-                    className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-lg border border-blue-500/30"
+                    className={`px-3 py-1 rounded-full text-xs font-semibold border ${getDifficultyColor(
+                      problem.difficulty
+                    )}`}
                   >
-                    {tag}
+                    {problem.difficulty}
                   </span>
-                ))}
-                {problem.tags?.length > 3 && (
-                  <span className="px-2 py-1 bg-gray-600/20 text-gray-400 text-xs rounded-lg">
-                    +{problem.tags.length - 3} more
-                  </span>
-                )}
-              </div>
+                </div>
 
-              <button
-                onClick={() => openUpdateModal(problem)}
-                className="w-full bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30 rounded-xl py-3 font-semibold transition-all duration-300 flex items-center justify-center gap-2 group-hover:scale-105"
-              >
-                <Edit className="w-4 h-4" />
-                Update Problem
-              </button>
+                <p className="text-base-content/70 text-sm mb-4 line-clamp-3">
+                  {problem.description}
+                </p>
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {problem.tags?.slice(0, 3).map((tag, index) => (
+                    <span
+                      key={index}
+                      className="badge badge-ghost badge-sm"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                  {problem.tags?.length > 3 && (
+                    <span className="badge badge-ghost badge-sm opacity-60">
+                      +{problem.tags.length - 3} more
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => openUpdateModal(problem)}
+                  className="btn btn-primary btn-outline w-full gap-2 group-hover:scale-105"
+                >
+                  <Edit className="w-4 h-4" />
+                  Update Problem
+                </button>
+              </div>
             </div>
           ))}
         </div>
 
         {filteredProblems.length === 0 && (
           <div className="text-center py-12">
-            <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-400 mb-2">
+            <AlertCircle className="w-16 h-16 text-base-content/40 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-base-content/60 mb-2">
               No Problems Found
             </h3>
-            <p className="text-gray-500">
+            <p className="text-base-content/50">
               Try adjusting your search or filter criteria.
             </p>
           </div>
@@ -433,23 +435,23 @@ const UpdateProblem = () => {
 
       {showUpdateModal && problemToUpdate && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-900/95 backdrop-blur-xl border border-gray-700 rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex justify-between items-center p-6 border-b border-gray-700">
-              <h2 className="text-2xl font-bold text-white">Update Problem</h2>
+          <div className="modal-box w-11/12 max-w-6xl bg-base-100 border border-base-content/10 max-h-[90vh] overflow-hidden flex flex-col p-0">
+            <div className="flex justify-between items-center p-6 border-b border-base-content/10">
+              <h2 className="text-2xl font-bold text-base-content">Update Problem</h2>
               <button
                 onClick={closeUpdateModal}
-                className="text-gray-400 hover:text-white transition-colors duration-300"
+                className="btn btn-ghost btn-sm btn-circle"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto flex-grow">
+            <div className="p-6 overflow-y-auto flex-grow bg-base-100">
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
-                      Title *
+                    <label className="label">
+                      <span className="label-text font-semibold">Title *</span>
                     </label>
                     <input
                       type="text"
@@ -457,30 +459,30 @@ const UpdateProblem = () => {
                       onChange={(e) =>
                         handleInputChange("title", e.target.value)
                       }
-                      className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white"
+                      className="input input-bordered w-full bg-base-200 focus:bg-base-100"
                       placeholder="Enter problem title"
                     />
                     {errors.title && (
-                      <p className="text-red-400 text-sm mt-1">
-                        {errors.title}
-                      </p>
+                      <label className="label">
+                        <span className="label-text-alt text-error">{errors.title}</span>
+                      </label>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
-                      Difficulty *
+                    <label className="label">
+                      <span className="label-text font-semibold">Difficulty *</span>
                     </label>
                     <div className="dropdown w-full">
                       <div
                         tabIndex={0}
                         role="button"
-                        className={`btn w-full justify-between bg-gray-700/50 border-gray-600 hover:bg-gray-600 font-normal text-base h-[50px] ${
+                        className={`btn w-full justify-between bg-base-200 border-base-content/20 hover:border-primary font-normal text-base h-[50px] ${
                           updateForm.difficulty === "EASY"
-                            ? "text-green-400"
+                            ? "text-success"
                             : updateForm.difficulty === "MEDIUM"
-                            ? "text-yellow-400"
-                            : "text-red-400"
+                            ? "text-warning"
+                            : "text-error"
                         }`}
                       >
                         <span className="flex items-center gap-2 capitalize">
@@ -495,16 +497,16 @@ const UpdateProblem = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                       </div>
-                      <ul tabIndex={0} className="dropdown-content z-[20] menu p-2 shadow-xl bg-gray-800 border border-gray-700 rounded-xl w-full mt-1">
+                      <ul tabIndex={0} className="dropdown-content z-[20] menu p-2 shadow-xl bg-base-100 border border-base-content/10 rounded-xl w-full mt-1">
                         {[
-                          { value: "EASY", label: "Easy", color: "text-green-400" },
-                          { value: "MEDIUM", label: "Medium", color: "text-yellow-400" },
-                          { value: "HARD", label: "Hard", color: "text-red-400" }
+                          { value: "EASY", label: "Easy", color: "text-success" },
+                          { value: "MEDIUM", label: "Medium", color: "text-warning" },
+                          { value: "HARD", label: "Hard", color: "text-error" }
                         ].map((option) => (
                           <li key={option.value}>
                             <button
                               type="button"
-                              className={`flex items-center gap-2 ${option.color} hover:bg-gray-700`}
+                              className={`flex items-center gap-2 ${option.color} hover:bg-base-200`}
                               onClick={() => {
                                 handleInputChange("difficulty", option.value);
                                 document.activeElement?.blur();
@@ -519,16 +521,16 @@ const UpdateProblem = () => {
                       </ul>
                     </div>
                     {errors.difficulty && (
-                      <p className="text-red-400 text-sm mt-1">
-                        {errors.difficulty}
-                      </p>
+                      <label className="label">
+                        <span className="label-text-alt text-error">{errors.difficulty}</span>
+                      </label>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Description *
+                  <label className="label">
+                    <span className="label-text font-semibold">Description *</span>
                   </label>
                   <textarea
                     value={updateForm.description || ""}
@@ -536,19 +538,19 @@ const UpdateProblem = () => {
                       handleInputChange("description", e.target.value)
                     }
                     rows={4}
-                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white resize-none"
+                    className="textarea textarea-bordered w-full bg-base-200 focus:bg-base-100 resize-none text-base"
                     placeholder="Enter problem description"
                   />
                   {errors.description && (
-                    <p className="text-red-400 text-sm mt-1">
-                      {errors.description}
-                    </p>
+                    <label className="label">
+                      <span className="label-text-alt text-error">{errors.description}</span>
+                    </label>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Tags * (comma-separated)
+                  <label className="label">
+                    <span className="label-text font-semibold">Tags * (comma-separated)</span>
                   </label>
                   <input
                     type="text"
@@ -562,17 +564,19 @@ const UpdateProblem = () => {
                           .filter((tag) => tag)
                       )
                     }
-                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white"
+                    className="input input-bordered w-full bg-base-200 focus:bg-base-100"
                     placeholder="array, sorting, dynamic-programming"
                   />
                   {errors.tags && (
-                    <p className="text-red-400 text-sm mt-1">{errors.tags}</p>
+                    <label className="label">
+                      <span className="label-text-alt text-error">{errors.tags}</span>
+                    </label>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Constraints *
+                  <label className="label">
+                    <span className="label-text font-semibold">Constraints *</span>
                   </label>
                   <textarea
                     value={updateForm.constraints || ""}
@@ -580,35 +584,37 @@ const UpdateProblem = () => {
                       handleInputChange("constraints", e.target.value)
                     }
                     rows={3}
-                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white resize-none"
+                    className="textarea textarea-bordered w-full bg-base-200 focus:bg-base-100 resize-none"
                     placeholder="Enter problem constraints"
                   />
                   {errors.constraints && (
-                    <p className="text-red-400 text-sm mt-1">
-                      {errors.constraints}
-                    </p>
+                    <label className="label">
+                      <span className="label-text-alt text-error">{errors.constraints}</span>
+                    </label>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Hints (Optional)
+                  <label className="label">
+                    <span className="label-text font-semibold">Hints (Optional)</span>
                   </label>
                   <textarea
                     value={updateForm.hints || ""}
                     onChange={(e) => handleInputChange("hints", e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white resize-none"
+                    className="textarea textarea-bordered w-full bg-base-200 focus:bg-base-100 resize-none"
                     placeholder="Enter helpful hints for solving the problem"
                   />
                   {errors.hints && (
-                    <p className="text-red-400 text-sm mt-1">{errors.hints}</p>
+                    <label className="label">
+                      <span className="label-text-alt text-error">{errors.hints}</span>
+                    </label>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Editorial (Optional)
+                  <label className="label">
+                    <span className="label-text font-semibold">Editorial (Optional)</span>
                   </label>
                   <textarea
                     value={updateForm.editorial || ""}
@@ -616,32 +622,32 @@ const UpdateProblem = () => {
                       handleInputChange("editorial", e.target.value)
                     }
                     rows={4}
-                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white resize-none"
+                    className="textarea textarea-bordered w-full bg-base-200 focus:bg-base-100 resize-none"
                     placeholder="Enter detailed editorial explanation"
                   />
                   {errors.editorial && (
-                    <p className="text-red-400 text-sm mt-1">
-                      {errors.editorial}
-                    </p>
+                    <label className="label">
+                      <span className="label-text-alt text-error">{errors.editorial}</span>
+                    </label>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-4">
-                    Examples *
+                  <label className="label">
+                    <span className="label-text font-semibold text-lg">Examples *</span>
                   </label>
                   {["JAVASCRIPT", "PYTHON", "JAVA"].map((lang) => (
                     <div
                       key={lang}
-                      className="mb-6 p-4 bg-gray-800/30 rounded-xl"
+                      className="mb-6 p-4 bg-base-200/50 rounded-xl border border-base-content/5"
                     >
-                      <h4 className="text-lg font-semibold text-white mb-3">
+                      <h4 className="text-lg font-semibold text-base-content mb-3">
                         {lang}
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs text-gray-400 mb-1">
-                            Input *
+                          <label className="label pb-0">
+                            <span className="label-text-alt">Input *</span>
                           </label>
                           <textarea
                             value={updateForm.examples?.[lang]?.input || ""}
@@ -649,18 +655,18 @@ const UpdateProblem = () => {
                               handleExampleChange(lang, "input", e.target.value)
                             }
                             rows={2}
-                            className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white text-sm resize-none"
+                            className="textarea textarea-bordered w-full bg-base-100 text-sm resize-none font-mono"
                             placeholder="Enter example input"
                           />
                           {errors[`examples.${lang}.input`] && (
-                            <p className="text-red-400 text-xs mt-1">
+                            <span className="text-error text-xs mt-1 block">
                               {errors[`examples.${lang}.input`]}
-                            </p>
+                            </span>
                           )}
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-400 mb-1">
-                            Output *
+                          <label className="label pb-0">
+                            <span className="label-text-alt">Output *</span>
                           </label>
                           <textarea
                             value={updateForm.examples?.[lang]?.output || ""}
@@ -672,18 +678,18 @@ const UpdateProblem = () => {
                               )
                             }
                             rows={2}
-                            className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white text-sm resize-none"
+                            className="textarea textarea-bordered w-full bg-base-100 text-sm resize-none font-mono"
                             placeholder="Enter example output"
                           />
                           {errors[`examples.${lang}.output`] && (
-                            <p className="text-red-400 text-xs mt-1">
+                            <span className="text-error text-xs mt-1 block">
                               {errors[`examples.${lang}.output`]}
-                            </p>
+                            </span>
                           )}
                         </div>
                         <div className="md:col-span-2">
-                          <label className="block text-xs text-gray-400 mb-1">
-                            Explanation (Optional)
+                          <label className="label pb-0">
+                            <span className="label-text-alt">Explanation (Optional)</span>
                           </label>
                           <textarea
                             value={
@@ -697,7 +703,7 @@ const UpdateProblem = () => {
                               )
                             }
                             rows={2}
-                            className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white text-sm resize-none"
+                            className="textarea textarea-bordered w-full bg-base-100 text-sm resize-none"
                             placeholder="Enter explanation"
                           />
                         </div>
@@ -707,13 +713,13 @@ const UpdateProblem = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-4">
-                    Code Snippets *
+                  <label className="label">
+                    <span className="label-text font-semibold text-lg">Code Snippets *</span>
                   </label>
                   {["JAVASCRIPT", "PYTHON", "JAVA"].map((lang) => (
                     <div key={lang} className="mb-4">
-                      <label className="block text-xs text-gray-400 mb-1">
-                        {lang} *
+                      <label className="label pb-0">
+                        <span className="label-text-alt">{lang} *</span>
                       </label>
                       <textarea
                         value={updateForm.codeSnippet?.[lang] || ""}
@@ -725,26 +731,26 @@ const UpdateProblem = () => {
                           )
                         }
                         rows={4}
-                        className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white text-sm resize-none font-mono"
+                        className="textarea textarea-bordered w-full bg-base-200 focus:bg-base-100 text-sm resize-none font-mono"
                         placeholder={`Enter ${lang} code snippet`}
                       />
                       {errors[`codeSnippet.${lang}`] && (
-                        <p className="text-red-400 text-sm mt-1">
+                        <span className="text-error text-xs mt-1 block">
                           {errors[`codeSnippet.${lang}`]}
-                        </p>
+                        </span>
                       )}
                     </div>
                   ))}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-4">
-                    Reference Solutions *
+                  <label className="label">
+                    <span className="label-text font-semibold text-lg">Reference Solutions *</span>
                   </label>
                   {["JAVASCRIPT", "PYTHON", "JAVA"].map((lang) => (
                     <div key={lang} className="mb-4">
-                      <label className="block text-xs text-gray-400 mb-1">
-                        {lang} *
+                      <label className="label pb-0">
+                        <span className="label-text-alt">{lang} *</span>
                       </label>
                       <textarea
                         value={updateForm.referenceSolution?.[lang] || ""}
@@ -756,13 +762,13 @@ const UpdateProblem = () => {
                           )
                         }
                         rows={6}
-                        className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white text-sm resize-none font-mono"
+                        className="textarea textarea-bordered w-full bg-base-200 focus:bg-base-100 text-sm resize-none font-mono"
                         placeholder={`Enter ${lang} reference solution`}
                       />
                       {errors[`referenceSolution.${lang}`] && (
-                        <p className="text-red-400 text-sm mt-1">
+                        <span className="text-error text-xs mt-1 block">
                           {errors[`referenceSolution.${lang}`]}
-                        </p>
+                        </span>
                       )}
                     </div>
                   ))}
@@ -770,12 +776,12 @@ const UpdateProblem = () => {
 
                 <div>
                   <div className="flex justify-between items-center mb-4">
-                    <label className="block text-sm font-semibold text-gray-300">
-                      Test Cases *
+                    <label className="label">
+                      <span className="label-text font-semibold text-lg">Test Cases *</span>
                     </label>
                     <button
                       onClick={addTestCase}
-                      className="flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm transition-colors duration-300"
+                      className="btn btn-sm btn-ghost text-primary"
                     >
                       <Plus className="w-4 h-4" />
                       Add Test Case
@@ -784,19 +790,19 @@ const UpdateProblem = () => {
                   {updateForm.testCases?.map((testCase, index) => (
                     <div
                       key={index}
-                      className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-gray-800/30 rounded-xl relative"
+                      className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-base-200/50 rounded-xl relative border border-base-content/5"
                     >
                       {updateForm.testCases.length > 1 && (
                         <button
                           onClick={() => removeTestCase(index)}
-                          className="absolute top-2 right-2 text-red-400 hover:text-red-300 transition-colors duration-300"
+                          className="absolute top-2 right-2 btn btn-ghost btn-xs text-error"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
                       <div>
-                        <label className="block text-xs text-gray-400 mb-1">
-                          Input *
+                        <label className="label pb-0">
+                          <span className="label-text-alt">Input *</span>
                         </label>
                         <textarea
                           value={testCase.input}
@@ -804,18 +810,18 @@ const UpdateProblem = () => {
                             handleTestCaseChange(index, "input", e.target.value)
                           }
                           rows={2}
-                          className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white text-sm resize-none font-mono"
+                          className="textarea textarea-bordered w-full bg-base-100 text-sm resize-none font-mono"
                           placeholder="Enter test case input"
                         />
                         {errors[`testCases.${index}.input`] && (
-                          <p className="text-red-400 text-xs mt-1">
+                          <span className="text-error text-xs mt-1 block">
                             {errors[`testCases.${index}.input`]}
-                          </p>
+                          </span>
                         )}
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-400 mb-1">
-                          Output *
+                        <label className="label pb-0">
+                          <span className="label-text-alt">Output *</span>
                         </label>
                         <textarea
                           value={testCase.output}
@@ -827,13 +833,13 @@ const UpdateProblem = () => {
                             )
                           }
                           rows={2}
-                          className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white text-sm resize-none font-mono"
+                          className="textarea textarea-bordered w-full bg-base-100 text-sm resize-none font-mono"
                           placeholder="Enter expected output"
                         />
                         {errors[`testCases.${index}.output`] && (
-                          <p className="text-red-400 text-xs mt-1">
+                          <span className="text-error text-xs mt-1 block">
                             {errors[`testCases.${index}.output`]}
-                          </p>
+                          </span>
                         )}
                       </div>
                     </div>
@@ -842,21 +848,21 @@ const UpdateProblem = () => {
               </div>
             </div>
 
-            <div className="flex justify-end gap-4 p-6 border-t border-gray-700">
+            <div className="flex justify-end gap-4 p-6 border-t border-base-content/10 bg-base-100">
               <button
                 onClick={closeUpdateModal}
-                className="px-6 py-3 text-gray-400 hover:text-white border border-gray-600 rounded-xl transition-colors duration-300"
+                className="btn btn-ghost"
               >
                 Cancel
               </button>
               <button
                 onClick={handleUpdateProblem}
                 disabled={updating}
-                className="px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 text-white rounded-xl transition-colors duration-300 flex items-center gap-2"
+                className="btn btn-primary gap-2"
               >
                 {updating ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span className="loading loading-spinner loading-sm"></span>
                     Updating...
                   </>
                 ) : (
