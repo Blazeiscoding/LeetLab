@@ -137,7 +137,7 @@ const ProblemsPage = () => {
 
       <div className="container mx-auto px-4 -mt-10 max-w-7xl relative z-10">
         {/* Filters Card */}
-        <div className="card bg-base-100 shadow-xl border border-base-content/5 mb-8 backdrop-blur-xl overflow-visible">
+        <div className="card bg-base-100 shadow-xl border border-base-content/5 mb-8 backdrop-blur-xl overflow-visible relative z-30">
           <div className="card-body p-4">
             <div className="flex flex-col md:flex-row gap-4 items-center">
               <div className="relative flex-1 w-full">
