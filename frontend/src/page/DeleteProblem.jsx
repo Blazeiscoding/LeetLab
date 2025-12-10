@@ -1,5 +1,7 @@
 import  { useState, useEffect } from "react";
-import { Trash2, AlertTriangle, Search, Filter, X } from "lucide-react";
+import { Trash2, AlertTriangle, Search, Filter, X, CheckCircle, Clock } from "lucide-react";
+
+
 import { axiosInstance } from "../util/axios.js";
 
 const DeleteProblem = () => {
@@ -169,18 +171,42 @@ const DeleteProblem = () => {
           </div>
 
           {/* Difficulty Filter */}
-          <div className="relative">
-            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <select
-              value={difficultyFilter}
-              onChange={(e) => setDifficultyFilter(e.target.value)}
-              className="pl-10 pr-8 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-300 appearance-none cursor-pointer"
+          <div className="relative dropdown dropdown-end">
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn bg-gray-800/50 border-gray-700/50 hover:bg-gray-700 hover:border-gray-600 text-white gap-2 min-w-[160px] justify-between font-medium capitalize h-[52px]"
             >
-              <option value="all">All Difficulties</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-gray-400" />
+                {difficultyFilter === "all" ? "All Difficulties" : difficultyFilter}
+              </div>
+              <svg className="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            <ul tabIndex={0} className="dropdown-content z-[20] menu p-2 shadow-xl bg-gray-800 border border-gray-700 rounded-xl w-52 mt-2">
+              {[
+                { value: "all", label: "All Difficulties", color: "text-white" },
+                { value: "easy", label: "Easy", color: "text-green-400" },
+                { value: "medium", label: "Medium", color: "text-yellow-400" },
+                { value: "hard", label: "Hard", color: "text-red-400" }
+              ].map((option) => (
+                <li key={option.value}>
+                  <button
+                    className={`flex items-center gap-2 ${difficultyFilter === option.value ? "bg-gray-700 active" : ""}`}
+                    onClick={() => {
+                      setDifficultyFilter(option.value);
+                      document.activeElement?.blur();
+                    }}
+                  >
+                    <span className={`w-2 h-2 rounded-full ${option.value === "all" ? "bg-gradient-to-r from-green-400 via-yellow-400 to-red-400" : `bg-current ${option.color}`}`}></span>
+                    <span className={option.color}>{option.label}</span>
+                    {difficultyFilter === option.value && <CheckCircle className="w-4 h-4 ml-auto text-blue-400" />}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
