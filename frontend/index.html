@@ -8,10 +8,28 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <title>Coding Shastra</title>
+    <!-- Prevent flash of wrong theme -->
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('leetlab-theme');
+          if (stored) {
+            var parsed = JSON.parse(stored);
+            var theme = parsed.state && parsed.state.theme ? parsed.state.theme : 'night';
+            document.documentElement.setAttribute('data-theme', theme);
+          } else {
+            document.documentElement.setAttribute('data-theme', 'night');
+          }
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'night');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
+
   
