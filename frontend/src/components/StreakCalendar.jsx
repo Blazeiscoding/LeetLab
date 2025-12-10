@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import ActivityCalendar from "react-activity-calendar";
+import { ActivityCalendar } from "react-activity-calendar";
 import { Flame, Calendar, TrendingUp } from "lucide-react";
 
 /**
