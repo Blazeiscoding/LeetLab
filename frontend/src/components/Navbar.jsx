@@ -20,7 +20,8 @@ import LogoutButton from "./LogoutButton";
 
 const Navbar = () => {
   const { authUser } = useAuthStore();
-  const { toggleTheme, isDarkTheme } = useThemeStore();
+  const theme = useThemeStore((state) => state.theme);
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -91,9 +92,9 @@ const Navbar = () => {
           <button
             onClick={toggleTheme}
             className="btn btn-ghost btn-circle hover:bg-base-content/5 transition-all duration-300"
-            title={isDarkTheme() ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            title={theme === "night" ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
-            {isDarkTheme() ? (
+            {theme === "night" ? (
               <Sun className="w-5 h-5 text-warning" />
             ) : (
               <Moon className="w-5 h-5 text-primary" />

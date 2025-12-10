@@ -62,7 +62,6 @@ function AppContent() {
   return (
     <div
       className="App min-h-screen bg-base-100 text-base-content font-sans transition-colors duration-300"
-      data-theme={theme}
     >
       {/* Global Command Palette */}
       <CommandPalette />
