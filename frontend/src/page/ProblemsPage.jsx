@@ -151,25 +151,150 @@ const ProblemsPage = () => {
                 />
               </div>
               <div className="flex w-full md:w-auto gap-3 overflow-x-auto pb-2 md:pb-0">
-                <select
-                  className="select select-bordered bg-base-200/50 focus:bg-base-100 border-transparent focus:border-primary"
-                  value={difficultyFilter}
-                  onChange={(e) => setDifficultyFilter(e.target.value)}
-                >
-                  <option value="ALL">Difficulty: All</option>
-                  <option value="EASY">Easy</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HARD">Hard</option>
-                </select>
-                <select
-                  className="select select-bordered bg-base-200/50 focus:bg-base-100 border-transparent focus:border-primary"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <option value="ALL">Status: All</option>
-                  <option value="SOLVED">Solved</option>
-                  <option value="UNSOLVED">Unsolved</option>
-                </select>
+                {/* Difficulty Filter - Custom Styled */}
+                <div className="dropdown dropdown-end">
+                  <label
+                    tabIndex={0}
+                    className="btn bg-base-200/70 hover:bg-base-200 border-0 gap-2 min-w-[140px] justify-between font-medium shadow-sm"
+                  >
+                    <span className="flex items-center gap-2">
+                      {difficultyFilter === "ALL" ? (
+                        <>
+                          <span className="w-2 h-2 rounded-full bg-gradient-to-r from-success via-warning to-error"></span>
+                          All Levels
+                        </>
+                      ) : difficultyFilter === "EASY" ? (
+                        <>
+                          <span className="w-2 h-2 rounded-full bg-success"></span>
+                          <span className="text-success">Easy</span>
+                        </>
+                      ) : difficultyFilter === "MEDIUM" ? (
+                        <>
+                          <span className="w-2 h-2 rounded-full bg-warning"></span>
+                          <span className="text-warning">Medium</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="w-2 h-2 rounded-full bg-error"></span>
+                          <span className="text-error">Hard</span>
+                        </>
+                      )}
+                    </span>
+                    <svg className="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </label>
+                  <ul
+                    tabIndex={0}
+                    className="dropdown-content z-[20] menu p-2 shadow-2xl bg-base-100 rounded-2xl w-52 border border-base-content/10 mt-2"
+                  >
+                    <li>
+                      <button
+                        className={`flex items-center gap-3 ${difficultyFilter === "ALL" ? "active bg-primary/10 text-primary" : ""}`}
+                        onClick={() => setDifficultyFilter("ALL")}
+                      >
+                        <span className="w-3 h-3 rounded-full bg-gradient-to-r from-success via-warning to-error"></span>
+                        All Levels
+                        {difficultyFilter === "ALL" && <CheckCircle className="w-4 h-4 ml-auto" />}
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        className={`flex items-center gap-3 ${difficultyFilter === "EASY" ? "active bg-success/10 text-success" : ""}`}
+                        onClick={() => setDifficultyFilter("EASY")}
+                      >
+                        <span className="w-3 h-3 rounded-full bg-success"></span>
+                        Easy
+                        {difficultyFilter === "EASY" && <CheckCircle className="w-4 h-4 ml-auto text-success" />}
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        className={`flex items-center gap-3 ${difficultyFilter === "MEDIUM" ? "active bg-warning/10 text-warning" : ""}`}
+                        onClick={() => setDifficultyFilter("MEDIUM")}
+                      >
+                        <span className="w-3 h-3 rounded-full bg-warning"></span>
+                        Medium
+                        {difficultyFilter === "MEDIUM" && <CheckCircle className="w-4 h-4 ml-auto text-warning" />}
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        className={`flex items-center gap-3 ${difficultyFilter === "HARD" ? "active bg-error/10 text-error" : ""}`}
+                        onClick={() => setDifficultyFilter("HARD")}
+                      >
+                        <span className="w-3 h-3 rounded-full bg-error"></span>
+                        Hard
+                        {difficultyFilter === "HARD" && <CheckCircle className="w-4 h-4 ml-auto text-error" />}
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Status Filter - Custom Styled */}
+                <div className="dropdown dropdown-end">
+                  <label
+                    tabIndex={0}
+                    className="btn bg-base-200/70 hover:bg-base-200 border-0 gap-2 min-w-[130px] justify-between font-medium shadow-sm"
+                  >
+                    <span className="flex items-center gap-2">
+                      {statusFilter === "ALL" ? (
+                        <>
+                          <Clock className="w-4 h-4 opacity-60" />
+                          All Status
+                        </>
+                      ) : statusFilter === "SOLVED" ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 text-success" />
+                          <span className="text-success">Solved</span>
+                        </>
+                      ) : (
+                        <>
+                          <Clock className="w-4 h-4 text-info" />
+                          <span className="text-info">Unsolved</span>
+                        </>
+                      )}
+                    </span>
+                    <svg className="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </label>
+                  <ul
+                    tabIndex={0}
+                    className="dropdown-content z-[20] menu p-2 shadow-2xl bg-base-100 rounded-2xl w-48 border border-base-content/10 mt-2"
+                  >
+                    <li>
+                      <button
+                        className={`flex items-center gap-3 ${statusFilter === "ALL" ? "active bg-primary/10 text-primary" : ""}`}
+                        onClick={() => setStatusFilter("ALL")}
+                      >
+                        <Clock className="w-4 h-4 opacity-60" />
+                        All Status
+                        {statusFilter === "ALL" && <CheckCircle className="w-4 h-4 ml-auto" />}
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        className={`flex items-center gap-3 ${statusFilter === "SOLVED" ? "active bg-success/10 text-success" : ""}`}
+                        onClick={() => setStatusFilter("SOLVED")}
+                      >
+                        <CheckCircle className="w-4 h-4 text-success" />
+                        Solved
+                        {statusFilter === "SOLVED" && <CheckCircle className="w-4 h-4 ml-auto text-success" />}
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        className={`flex items-center gap-3 ${statusFilter === "UNSOLVED" ? "active bg-info/10 text-info" : ""}`}
+                        onClick={() => setStatusFilter("UNSOLVED")}
+                      >
+                        <Clock className="w-4 h-4 text-info" />
+                        Unsolved
+                        {statusFilter === "UNSOLVED" && <CheckCircle className="w-4 h-4 ml-auto text-info" />}
+                      </button>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
