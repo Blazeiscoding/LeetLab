@@ -1,47 +1,44 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
- * Custom hook to detect scroll position and direction
- * Returns scroll state useful for navbar styling
+ * Custom hook to detect scroll position
+ * Uses hysteresis to prevent flickering at the threshold
  */
 export const useScrollPosition = (threshold = 10) => {
-  const [scrollState, setScrollState] = useState({
-    isScrolled: false,
-    scrollY: 0,
-    scrollDirection: 'up',
-  });
-
-  const handleScroll = useCallback(() => {
-    const currentScrollY = window.scrollY;
-    
-    setScrollState((prev) => ({
-      isScrolled: currentScrollY > threshold,
-      scrollY: currentScrollY,
-      scrollDirection: currentScrollY > prev.scrollY ? 'down' : 'up',
-    }));
-  }, [threshold]);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     // Set initial state
-    handleScroll();
+    setIsScrolled(window.scrollY > threshold);
 
-    // Throttle scroll events for performance
     let ticking = false;
-    const onScroll = () => {
+    
+    const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          handleScroll();
+          const currentScrollY = window.scrollY;
+          
+          // Use hysteresis to prevent flickering
+          // Only change state if we've crossed the threshold by a margin
+          if (isScrolled && currentScrollY < threshold - 5) {
+            setIsScrolled(false);
+          } else if (!isScrolled && currentScrollY > threshold + 5) {
+            setIsScrolled(true);
+          }
+          
+          lastScrollY.current = currentScrollY;
           ticking = false;
         });
         ticking = true;
       }
     };
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [handleScroll]);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [threshold, isScrolled]);
 
-  return scrollState;
+  return { isScrolled };
 };
 
 export default useScrollPosition;
