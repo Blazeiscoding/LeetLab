@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Home,
@@ -15,10 +15,9 @@ import {
   LogOut,
   ChevronDown,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useThemeStore } from '../store/useThemeStore';
-import useScrollPosition from '../hooks/useScrollPosition';
 import { getUserAvatar } from '../utils/avatar';
 import LogoutButton from './LogoutButton';
 
@@ -37,7 +36,38 @@ const ADMIN_LINKS = [
 ];
 
 /**
- * Clean navigation link
+ * Simple scroll detection hook with debounce
+ */
+const useScrolled = (threshold = 20) => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    let timeoutId = null;
+    
+    const handleScroll = () => {
+      if (timeoutId) return;
+      
+      timeoutId = setTimeout(() => {
+        setIsScrolled(window.scrollY > threshold);
+        timeoutId = null;
+      }, 50); // 50ms debounce
+    };
+
+    // Initial check
+    setIsScrolled(window.scrollY > threshold);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [threshold]);
+
+  return isScrolled;
+};
+
+/**
+ * Navigation link component
  */
 const NavLink = ({ to, label, icon: Icon }) => {
   const location = useLocation();
@@ -52,7 +82,7 @@ const NavLink = ({ to, label, icon: Icon }) => {
   return (
     <Link
       to={to}
-      className={`relative flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
         active
           ? 'text-primary bg-primary/10'
           : 'text-base-content/70 hover:text-base-content hover:bg-base-content/5'
@@ -60,13 +90,6 @@ const NavLink = ({ to, label, icon: Icon }) => {
     >
       <Icon className="w-4 h-4" />
       <span>{label}</span>
-      {active && (
-        <motion.div
-          layoutId="activeTab"
-          className="absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full"
-          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-        />
-      )}
     </Link>
   );
 };
@@ -176,7 +199,8 @@ const MobileMenu = ({ isOpen, onClose, authUser }) => {
 };
 
 /**
- * Main Navbar
+ * Main Navbar with scroll-based styling
+ * Uses CSS-only transitions with will-change for smooth performance
  */
 const Navbar = () => {
   const { authUser } = useAuthStore();
@@ -184,34 +208,50 @@ const Navbar = () => {
   const toggleTheme = useThemeStore((state) => state.toggleTheme);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  const { isScrolled } = useScrollPosition(10);
+  const isScrolled = useScrolled(30);
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   return (
     <>
-      <nav className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-        isScrolled ? 'py-2' : 'py-3 md:py-4'
-      }`}>
-        <div className={`flex items-center justify-between mx-auto max-w-7xl px-4 transition-all duration-300 ${
-          isScrolled
-            ? 'bg-base-100/95 backdrop-blur-lg shadow-sm border border-base-content/5 rounded-xl py-2 px-4'
-            : 'bg-base-100/80 backdrop-blur-md border border-base-content/5 rounded-2xl py-3 px-5'
-        }`}>
+      <nav 
+        className="sticky top-0 z-50 w-full py-3 md:py-4"
+        style={{ willChange: 'auto' }}
+      >
+        <div 
+          className={`
+            flex items-center justify-between mx-auto max-w-7xl px-4
+            bg-base-100/90 backdrop-blur-lg border border-base-content/5
+            transition-[padding,border-radius,box-shadow] duration-300 ease-out
+            ${isScrolled 
+              ? 'py-2 px-4 rounded-xl shadow-md' 
+              : 'py-3 px-5 rounded-2xl shadow-sm'
+            }
+          `}
+          style={{ willChange: 'padding, border-radius, box-shadow' }}
+        >
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 group" onClick={closeMobileMenu}>
-            <div className={`bg-primary/10 rounded-lg flex items-center justify-center transition-all ${
-              isScrolled ? 'p-1.5' : 'p-2'
-            }`}>
+          <Link to="/" className="flex items-center gap-2.5" onClick={closeMobileMenu}>
+            <div 
+              className={`
+                bg-primary/10 rounded-lg flex items-center justify-center
+                transition-[padding] duration-300 ease-out
+                ${isScrolled ? 'p-1.5' : 'p-2'}
+              `}
+            >
               <img
                 src="/CodingShastra.svg"
-                className={`transition-all ${isScrolled ? 'h-5 w-5' : 'h-6 w-6'}`}
+                className={`transition-[width,height] duration-300 ease-out ${isScrolled ? 'h-5 w-5' : 'h-6 w-6'}`}
                 alt="CodingShastra"
               />
             </div>
-            <span className={`font-bold hidden sm:block transition-all ${
-              isScrolled ? 'text-base' : 'text-lg'
-            }`}>
+            <span 
+              className={`
+                font-bold hidden sm:block
+                transition-[font-size] duration-300 ease-out
+                ${isScrolled ? 'text-base' : 'text-lg'}
+              `}
+            >
               CodingShastra
             </span>
           </Link>
@@ -228,7 +268,7 @@ const Navbar = () => {
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              className={`btn btn-ghost btn-circle ${isScrolled ? 'btn-sm' : ''}`}
+              className="btn btn-ghost btn-circle btn-sm"
               title={theme === 'night' ? 'Light mode' : 'Dark mode'}
             >
               {theme === 'night' ? (
@@ -241,10 +281,8 @@ const Navbar = () => {
             {/* User dropdown - Desktop */}
             <div className="dropdown dropdown-end hidden md:block">
               <label tabIndex={0} className="cursor-pointer">
-                <div className={`flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-base-200/50 hover:bg-base-200 transition-colors border border-base-content/5 ${
-                  isScrolled ? 'py-0.5 pr-2' : ''
-                }`}>
-                  <div className={`rounded-full overflow-hidden ${isScrolled ? 'w-7 h-7' : 'w-8 h-8'}`}>
+                <div className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-base-200/50 hover:bg-base-200 transition-colors border border-base-content/5">
+                  <div className="w-8 h-8 rounded-full overflow-hidden">
                     <img
                       src={getUserAvatar(authUser)}
                       alt="User"
@@ -308,7 +346,7 @@ const Navbar = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`btn btn-ghost btn-circle lg:hidden ${isScrolled ? 'btn-sm' : ''}`}
+              className="btn btn-ghost btn-circle btn-sm lg:hidden"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
