@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import Loader from "../components/Loader";
 import { Link } from "react-router-dom";
 import {
@@ -9,119 +9,71 @@ import {
   Play,
   TrendingUp,
   Star,
-  ChevronDown,
   ArrowRight,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { axiosInstance } from "../util/axios";
 import { useAuthStore } from "../store/useAuthStore";
-import toast from "react-hot-toast";
+
+// Hooks
+import { useProblems, useSolvedProblems, useProblemsByDifficulty } from "../hooks/useProblems";
+import { useRecentSubmissions } from "../hooks/useSubmissions";
+import { useTopLeaderboard } from "../hooks/useLeaderboard";
+
+// Utils
+import { getDifficultyColor, getDifficultyBgColor } from "../utils/difficulty";
+
+// Components
+import StatCard from "../components/ui/StatCard";
+import SubmissionCard, { NoSubmissions } from "../components/ui/SubmissionCard";
 
 const HomePage = () => {
   const { authUser } = useAuthStore();
-  const [stats, setStats] = useState({
-    totalProblems: 0,
-    solvedProblems: 0,
-    recentSubmissions: [],
-    problemsByDifficulty: { EASY: 0, MEDIUM: 0, HARD: 0 },
-  });
-  const [loading, setLoading] = useState(true);
-  const [topLeaderboard, setTopLeaderboard] = useState([]);
+  
+  // Data fetching with React Query hooks
+  const { data: problems = [], isLoading: problemsLoading } = useProblems();
+  const { data: solvedProblems = [], isLoading: solvedLoading } = useSolvedProblems();
+  const { data: submissions = [], isLoading: submissionsLoading } = useRecentSubmissions(5);
+  const { data: topLeaderboard = [] } = useTopLeaderboard(3);
+  const { data: problemsByDifficulty } = useProblemsByDifficulty();
 
-  useEffect(() => {
-    fetchDashboardData();
-    fetchTopLeaderboard();
-  }, []);
+  // Loading state
+  const loading = problemsLoading || solvedLoading || submissionsLoading;
 
-  const fetchDashboardData = async () => {
-    try {
-      const [problemsRes, solvedRes, submissionsRes] = await Promise.all([
-        axiosInstance.get("/problems/get-all-problems"),
-        axiosInstance
-          .get("/problems/get-solved-problems")
-          .catch(() => ({ data: { data: [] } })),
-        axiosInstance
-          .get("/submission/get-all-submission")
-          .catch(() => ({ data: { data: [] } })),
-      ]);
+  // Create problem map for enriching submissions
+  const problemMap = useMemo(() => {
+    return problems.reduce((acc, problem) => {
+      const problemId = problem._id || problem.id;
+      acc[problemId] = {
+        title: problem.title || problem.name || `Problem #${problemId}`,
+        difficulty: problem.difficulty,
+      };
+      return acc;
+    }, {});
+  }, [problems]);
 
-      const allProblems = problemsRes.data.data || [];
-      const solvedProblems = solvedRes.data.data || [];
-      const submissions = submissionsRes.data.data || [];
+  // Enrich submissions with problem details
+  const enrichedSubmissions = useMemo(() => {
+    return submissions.map((submission) => ({
+      ...submission,
+      problemTitle:
+        problemMap[submission.problemId]?.title ||
+        `Problem #${submission.problemId}`,
+      problemDifficulty: problemMap[submission.problemId]?.difficulty,
+    }));
+  }, [submissions, problemMap]);
 
-      const problemMap = allProblems.reduce((acc, problem) => {
-        const problemId = problem._id || problem.id;
-        acc[problemId] = {
-          title: problem.title || problem.name || `Problem #${problemId}`,
-          difficulty: problem.difficulty,
-        };
-        return acc;
-      }, {});
-
-      const submissionsWithNames = submissions.map((submission) => ({
-        ...submission,
-        problemTitle:
-          problemMap[submission.problemId]?.title ||
-          `Problem #${submission.problemId}`,
-        problemDifficulty: problemMap[submission.problemId]?.difficulty,
-      }));
-
-      const problemsByDifficulty = allProblems.reduce(
-        (acc, problem) => {
-          acc[problem.difficulty] = (acc[problem.difficulty] || 0) + 1;
-          return acc;
-        },
-        { EASY: 0, MEDIUM: 0, HARD: 0 }
-      );
-
-      setStats({
-        totalProblems: allProblems.length,
-        solvedProblems: solvedProblems.length,
-        recentSubmissions: submissionsWithNames.slice(0, 5),
-        problemsByDifficulty,
-      });
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchTopLeaderboard = async () => {
-    try {
-      const res = await axiosInstance.get("/leaderboard/monthly");
-      setTopLeaderboard((res.data.data.leaderboard || []).slice(0, 3));
-    } catch (err) {
-      setTopLeaderboard([]);
-    }
-  };
-
-  // Memoize computed stats
+  // Computed stats
   const computedStats = useMemo(
     () => ({
-      totalProblems: stats.totalProblems,
-      solvedProblems: stats.solvedProblems,
+      totalProblems: problems.length,
+      solvedProblems: solvedProblems.length,
       progressPercent:
-        stats.totalProblems > 0
-          ? Math.round((stats.solvedProblems / stats.totalProblems) * 100)
+        problems.length > 0
+          ? Math.round((solvedProblems.length / problems.length) * 100)
           : 0,
-      recentCount: stats.recentSubmissions.length,
+      recentCount: submissions.length,
     }),
-    [stats.totalProblems, stats.solvedProblems, stats.recentSubmissions.length]
+    [problems.length, solvedProblems.length, submissions.length]
   );
-
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case "EASY":
-        return "text-success";
-      case "MEDIUM":
-        return "text-warning";
-      case "HARD":
-        return "text-error";
-      default:
-        return "text-base-content/60";
-    }
-  };
 
   if (loading) {
     return (
@@ -188,40 +140,26 @@ const HomePage = () => {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-              {[
-                {
-                  label: "Total Problems",
-                  value: computedStats.totalProblems,
-                  color: "text-primary",
-                },
-                {
-                  label: "Solved",
-                  value: computedStats.solvedProblems,
-                  color: "text-success",
-                },
-                {
-                  label: "Completion",
-                  value: `${computedStats.progressPercent}%`,
-                  color: "text-info",
-                },
-                {
-                  label: "Recent Activity",
-                  value: computedStats.recentCount,
-                  color: "text-secondary",
-                },
-              ].map((stat, idx) => (
-                <div
-                  key={idx}
-                  className="bg-base-100/80 backdrop-blur-md rounded-2xl p-4 border border-base-content/5 shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <div className={`text-3xl font-black ${stat.color} mb-1`}>
-                    {stat.value}
-                  </div>
-                  <div className="text-xs font-bold text-base-content/50 uppercase tracking-wider">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
+              <StatCard
+                label="Total Problems"
+                value={computedStats.totalProblems}
+                color="text-primary"
+              />
+              <StatCard
+                label="Solved"
+                value={computedStats.solvedProblems}
+                color="text-success"
+              />
+              <StatCard
+                label="Completion"
+                value={`${computedStats.progressPercent}%`}
+                color="text-info"
+              />
+              <StatCard
+                label="Recent Activity"
+                value={computedStats.recentCount}
+                color="text-secondary"
+              />
             </div>
           </div>
         </div>
@@ -248,24 +186,18 @@ const HomePage = () => {
                 </div>
 
                 <div className="space-y-6">
-                  {Object.entries(stats.problemsByDifficulty).map(
+                  {Object.entries(problemsByDifficulty || { EASY: 0, MEDIUM: 0, HARD: 0 }).map(
                     ([difficulty, count]) => {
                       const percentage =
-                        stats.totalProblems > 0
-                          ? Math.round((count / stats.totalProblems) * 100)
+                        problems.length > 0
+                          ? Math.round((count / problems.length) * 100)
                           : 0;
                       return (
                         <div key={difficulty} className="space-y-3">
                           <div className="flex items-center justify-between text-sm">
                             <div className="flex items-center gap-3">
                               <span
-                                className={`w-2 h-2 rounded-full ${
-                                  difficulty === "EASY"
-                                    ? "bg-success"
-                                    : difficulty === "MEDIUM"
-                                    ? "bg-warning"
-                                    : "bg-error"
-                                }`}
+                                className={`w-2 h-2 rounded-full ${getDifficultyBgColor(difficulty)}`}
                               ></span>
                               <span className="font-bold opacity-80">
                                 {difficulty}
@@ -275,19 +207,13 @@ const HomePage = () => {
                               <span className="font-black">{count}</span>
                               <span className="text-base-content/40">/</span>
                               <span className="text-base-content/40">
-                                {stats.totalProblems}
+                                {problems.length}
                               </span>
                             </div>
                           </div>
                           <div className="w-full bg-base-200 rounded-full h-2.5 overflow-hidden">
                             <div
-                              className={`h-full rounded-full transition-all duration-1000 ${
-                                difficulty === "EASY"
-                                  ? "bg-success"
-                                  : difficulty === "MEDIUM"
-                                  ? "bg-warning"
-                                  : "bg-error"
-                              }`}
+                              className={`h-full rounded-full transition-all duration-1000 ${getDifficultyBgColor(difficulty)}`}
                               style={{ width: `${percentage}%` }}
                             ></div>
                           </div>
@@ -326,71 +252,12 @@ const HomePage = () => {
                   </div>
                 </div>
 
-                {stats.recentSubmissions.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center flex-1 text-center py-8">
-                    <div className="p-4 bg-base-200/50 rounded-full mb-4">
-                      <Code className="w-8 h-8 text-base-content/30" />
-                    </div>
-                    <h4 className="font-bold mb-2">No activity yet</h4>
-                    <p className="text-sm text-base-content/60 mb-6 max-w-[200px]">
-                      Start solving problems to see your history here
-                    </p>
-                    <Link to="/problems" className="btn btn-primary btn-sm">
-                      Start Now
-                    </Link>
-                  </div>
+                {enrichedSubmissions.length === 0 ? (
+                  <NoSubmissions onStartCoding={() => window.location.href = '/problems'} />
                 ) : (
                   <div className="space-y-4">
-                    {stats.recentSubmissions.map((submission, index) => (
-                      <div
-                        key={index}
-                        className="group p-4 bg-base-200/30 rounded-xl border border-base-content/5 hover:bg-base-200/60 transition-colors"
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <h5 className="font-bold text-sm truncate mb-1 group-hover:text-primary transition-colors">
-                              {submission.problemTitle}
-                            </h5>
-                            <div className="flex items-center gap-2 text-xs">
-                              <span className="badge badge-sm badge-ghost font-mono">
-                                {submission.language}
-                              </span>
-                              {submission.problemDifficulty && (
-                                <span
-                                  className={`font-bold ${getDifficultyColor(
-                                    submission.problemDifficulty
-                                  )}`}
-                                >
-                                  {submission.problemDifficulty}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div
-                              className={`badge badge-sm font-semibold mb-1 ${
-                                submission.status === "Accepted"
-                                  ? "badge-success gap-1"
-                                  : "badge-error gap-1"
-                              }`}
-                            >
-                              {submission.status === "Accepted" ? (
-                                <>
-                                  <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-                                  AC
-                                </>
-                              ) : (
-                                "WA"
-                              )}
-                            </div>
-                            <p className="text-[10px] text-base-content/40 font-medium">
-                              {new Date(
-                                submission.createdAt
-                              ).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                    {enrichedSubmissions.map((submission, index) => (
+                      <SubmissionCard key={index} submission={submission} />
                     ))}
                     <Link
                       to="/profile"

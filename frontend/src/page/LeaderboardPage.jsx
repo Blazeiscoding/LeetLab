@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Loader from "../components/Loader";
-import { axiosInstance } from "../util/axios";
 import {
   Trophy,
-  User,
   Medal,
   TrendingUp,
   Calendar,
@@ -11,36 +9,21 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Hooks
+import { useLeaderboardWithRefresh } from "../hooks/useLeaderboard";
+
+// Utils
+import { formatMonthYear } from "../utils/formatters";
+
 const LeaderboardPage = () => {
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [period, setPeriod] = useState({ month: null, year: null });
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetchLeaderboard();
-  }, []);
-
-  const fetchLeaderboard = async (isRefresh = false) => {
-    if (isRefresh) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-    setError(null);
-    try {
-      const res = await axiosInstance.get("/leaderboard/monthly");
-      setLeaderboard(res.data.data.leaderboard || []);
-      setPeriod({ month: res.data.data.month, year: res.data.data.year });
-    } catch (err) {
-      setError("Failed to load leaderboard");
-      console.error("Error fetching leaderboard:", err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+  const {
+    leaderboard,
+    period,
+    isLoading: loading,
+    refresh,
+    isRefreshing: refreshing,
+    error,
+  } = useLeaderboardWithRefresh();
 
   const getRankBadge = (rank) => {
     if (rank === 1) {
@@ -99,7 +82,7 @@ const LeaderboardPage = () => {
           </h1>
         </div>
 
-        {period.month && period.year && (
+        {period?.month && period?.year && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -108,10 +91,7 @@ const LeaderboardPage = () => {
           >
             <Calendar className="w-4 h-4 text-primary" />
             <span className="text-sm font-semibold text-base-content/80">
-              {new Date(period.year, period.month - 1).toLocaleString("default", {
-                month: "long",
-                year: "numeric",
-              })}
+              {formatMonthYear(period.year, period.month)}
             </span>
           </motion.div>
         )}
@@ -121,7 +101,7 @@ const LeaderboardPage = () => {
         </p>
 
         <button
-          onClick={() => fetchLeaderboard(true)}
+          onClick={() => refresh()}
           disabled={refreshing || loading}
           className="mt-4 btn btn-ghost btn-sm gap-2 hover:scale-105 transition-transform"
         >
@@ -161,7 +141,7 @@ const LeaderboardPage = () => {
                 d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span>{error}</span>
+            <span>Failed to load leaderboard</span>
           </div>
         </motion.div>
       ) : leaderboard.length === 0 ? (

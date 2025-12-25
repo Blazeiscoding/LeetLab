@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Loader from "../components/Loader";
 import {
   ArrowLeft,
@@ -11,64 +11,60 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { axiosInstance } from "../util/axios";
-import toast from "react-hot-toast";
+
+// Hooks
+import {
+  usePlaylist,
+  useAddProblemsToPlaylist,
+  useRemoveProblemFromPlaylist,
+} from "../hooks/usePlaylists";
+import { useProblems } from "../hooks/useProblems";
+
+// Utils
+import { getDifficultyBadgeClass } from "../utils/difficulty";
 
 const PlaylistDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [playlist, setPlaylist] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [showAddProblemModal, setShowAddProblemModal] = useState(false);
-  const [availableProblems, setAvailableProblems] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProblems, setSelectedProblems] = useState([]);
-  const [addingProblems, setAddingProblems] = useState(false);
-  const [fetchingProblems, setFetchingProblems] = useState(false);
 
-  useEffect(() => {
-    fetchPlaylistDetails();
-  }, [id]);
+  // Data fetching with React Query hooks
+  const {
+    data: playlist,
+    isLoading: loading,
+    error: playlistError,
+    refetch: refetchPlaylist,
+  } = usePlaylist(id);
 
-  const fetchPlaylistDetails = async () => {
-    try {
-      const response = await axiosInstance.get(`/playlist/${id}`);
-      setPlaylist(response.data.data);
-    } catch (error) {
-      toast.error("Failed to fetch playlist details");
-      console.error("Error fetching playlist:", error);
-      navigate("/playlists");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: allProblems = [], isLoading: fetchingProblems } = useProblems();
 
-  const fetchAvailableProblems = async () => {
-    setFetchingProblems(true);
-    try {
-      const response = await axiosInstance.get("/problems/get-all-problems");
-      const allProblems = response.data.data || [];
+  // Mutations
+  const addProblemsMutation = useAddProblemsToPlaylist();
+  const removeProblemMutation = useRemoveProblemFromPlaylist();
 
-      const playlistProblemIds =
-        playlist?.problems?.map((p) => p.problem.id) || [];
-      const available = allProblems.filter(
-        (problem) => !playlistProblemIds.includes(problem.id)
-      );
+  // Navigate away if playlist fetch fails
+  if (playlistError) {
+    navigate("/playlists");
+    return null;
+  }
 
-      setAvailableProblems(available);
-    } catch (error) {
-      toast.error("Failed to fetch available problems");
-      console.error("Error fetching problems:", error);
-    } finally {
-      setFetchingProblems(false);
-    }
-  };
+  // Available problems (not already in playlist)
+  const availableProblems = useMemo(() => {
+    const playlistProblemIds = playlist?.problems?.map((p) => p.problem.id) || [];
+    return allProblems.filter((problem) => !playlistProblemIds.includes(problem.id));
+  }, [allProblems, playlist?.problems]);
 
-  const handleAddProblemsClick = () => {
-    setShowAddProblemModal(true);
-    fetchAvailableProblems();
-  };
+  // Filtered problems for modal
+  const filteredProblems = useMemo(() => {
+    return availableProblems.filter(
+      (problem) =>
+        problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        problem.difficulty?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [availableProblems, searchTerm]);
 
   const toggleProblemSelection = (problemId) => {
     setSelectedProblems((prev) =>
@@ -78,54 +74,39 @@ const PlaylistDetailPage = () => {
     );
   };
 
-  const addProblemsToPlaylist = async () => {
-    if (selectedProblems.length === 0) {
-      toast.error("Please select at least one problem");
-      return;
-    }
+  const handleAddProblems = async () => {
+    if (selectedProblems.length === 0) return;
 
-    setAddingProblems(true);
-    try {
-      // Fixed: Use the correct endpoint from backend routes
-      await axiosInstance.post(`/playlist/${id}/add-problem`, {
-        problemIds: selectedProblems,
-      });
-
-      toast.success(`Added ${selectedProblems.length} problem(s) to playlist`);
-      setShowAddProblemModal(false);
-      setSelectedProblems([]);
-      fetchPlaylistDetails(); // Refresh playlist data
-    } catch (error) {
-      toast.error(error.response?.data?.error || "Failed to add problems");
-    } finally {
-      setAddingProblems(false);
-    }
+    addProblemsMutation.mutate(
+      { playlistId: id, problemIds: selectedProblems },
+      {
+        onSuccess: () => {
+          setShowAddProblemModal(false);
+          setSelectedProblems([]);
+          refetchPlaylist();
+        },
+      }
+    );
   };
 
-  const removeProblemFromPlaylist = async (problemId) => {
-    if (
-      !confirm(
-        "Are you sure you want to remove this problem from the playlist?"
-      )
-    )
+  const handleRemoveProblem = async (problemId) => {
+    if (!confirm("Are you sure you want to remove this problem from the playlist?")) {
       return;
-
-    try {
-      // Fixed: Use the correct endpoint from backend routes
-      await axiosInstance.delete(`/playlist/${id}/remove-problem`, {
-        data: { problemIds: [problemId] },
-      });
-      toast.success("Problem removed from playlist");
-      fetchPlaylistDetails(); // Refresh playlist data
-    } catch (error) {
-      toast.error("Failed to remove problem");
     }
+
+    removeProblemMutation.mutate(
+      { playlistId: id, problemId },
+      {
+        onSuccess: () => {
+          refetchPlaylist();
+        },
+      }
+    );
   };
 
   const getProgressPercentage = () => {
     if (!playlist?.problems || playlist.problems.length === 0) return 0;
 
-    // Fixed: Check solvedBy array from the nested problem structure
     const solvedCount = playlist.problems.filter(
       (problemInPlaylist) =>
         problemInPlaylist.problem?.solvedBy &&
@@ -134,12 +115,6 @@ const PlaylistDetailPage = () => {
 
     return Math.round((solvedCount / playlist.problems.length) * 100);
   };
-
-  const filteredProblems = availableProblems.filter(
-    (problem) =>
-      problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      problem.difficulty?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   if (loading) {
     return (
@@ -177,7 +152,7 @@ const PlaylistDetailPage = () => {
         </div>
         <button
           className="btn btn-primary gap-2"
-          onClick={handleAddProblemsClick}
+          onClick={() => setShowAddProblemModal(true)}
         >
           <Plus className="w-4 h-4" />
           Add Problems
@@ -255,7 +230,7 @@ const PlaylistDetailPage = () => {
               </p>
               <button
                 className="btn btn-primary gap-2"
-                onClick={handleAddProblemsClick}
+                onClick={() => setShowAddProblemModal(true)}
               >
                 <Plus className="w-4 h-4" />
                 Add Problems
@@ -297,13 +272,7 @@ const PlaylistDetailPage = () => {
                         </td>
                         <td>
                           <span
-                            className={`badge ${
-                              problem.difficulty === "Easy"
-                                ? "badge-success"
-                                : problem.difficulty === "Medium"
-                                ? "badge-warning"
-                                : "badge-error"
-                            }`}
+                            className={`badge ${getDifficultyBadgeClass(problem.difficulty)}`}
                           >
                             {problem.difficulty}
                           </span>
@@ -327,9 +296,8 @@ const PlaylistDetailPage = () => {
                             </Link>
                             <button
                               className="btn btn-ghost btn-xs text-error"
-                              onClick={() =>
-                                removeProblemFromPlaylist(problem.id)
-                              }
+                              onClick={() => handleRemoveProblem(problem.id)}
+                              disabled={removeProblemMutation.isPending}
                             >
                               <Trash2 className="w-3 h-3" />
                             </button>
@@ -396,13 +364,7 @@ const PlaylistDetailPage = () => {
                         <div className="font-medium">{problem.title}</div>
                         <div className="flex items-center gap-2 mt-1">
                           <span
-                            className={`badge badge-xs ${
-                              problem.difficulty === "Easy"
-                                ? "badge-success"
-                                : problem.difficulty === "Medium"
-                                ? "badge-warning"
-                                : "badge-error"
-                            }`}
+                            className={`badge badge-xs ${getDifficultyBadgeClass(problem.difficulty)}`}
                           >
                             {problem.difficulty}
                           </span>
@@ -443,10 +405,10 @@ const PlaylistDetailPage = () => {
               </button>
               <button
                 className="btn btn-primary"
-                onClick={addProblemsToPlaylist}
-                disabled={addingProblems || selectedProblems.length === 0}
+                onClick={handleAddProblems}
+                disabled={addProblemsMutation.isPending || selectedProblems.length === 0}
               >
-                {addingProblems ? (
+                {addProblemsMutation.isPending ? (
                   <span className="loading loading-spinner loading-sm"></span>
                 ) : (
                   `Add ${selectedProblems.length} Problem(s)`

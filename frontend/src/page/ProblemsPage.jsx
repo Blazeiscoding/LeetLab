@@ -1,44 +1,31 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Search, CheckCircle, Clock, Zap, ArrowRight } from "lucide-react";
-import { axiosInstance } from "../util/axios";
-import toast from "react-hot-toast";
+import { Search, CheckCircle, ArrowRight } from "lucide-react";
 import Loader from "../components/Loader";
 
+// Hooks
+import { useProblems, useSolvedProblems } from "../hooks/useProblems";
+
+// Utils
+import { getDifficultyColor, getDifficultyIcon, getDifficultyBgColor } from "../utils/difficulty";
+
+// Components
+import DifficultyBadge from "../components/ui/DifficultyBadge";
+
 const ProblemsPage = () => {
-  const [problems, setProblems] = useState([]);
-  const [solvedProblems, setSolvedProblems] = useState(new Set());
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  useEffect(() => {
-    fetchProblems();
-    fetchSolvedProblems();
-  }, []);
+  // Data fetching with React Query hooks
+  const { data: problems = [], isLoading: loading } = useProblems();
+  const { data: solvedProblemsData = [] } = useSolvedProblems();
 
-  const fetchProblems = async () => {
-    try {
-      const response = await axiosInstance.get("/problems/get-all-problems");
-      setProblems(response.data.data || []);
-    } catch (error) {
-      toast.error("Failed to fetch problems");
-      console.error("Error fetching problems:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchSolvedProblems = async () => {
-    try {
-      const response = await axiosInstance.get("/problems/get-solved-problems");
-      const solved = new Set(response.data.data.map((problem) => problem.id));
-      setSolvedProblems(solved);
-    } catch (error) {
-      console.error("Error fetching solved problems:", error);
-    }
-  };
+  // Convert solved problems to Set for efficient lookup
+  const solvedProblems = useMemo(
+    () => new Set(solvedProblemsData.map((problem) => problem.id)),
+    [solvedProblemsData]
+  );
 
   const filteredProblems = useMemo(() => {
     let filtered = problems;
@@ -72,32 +59,6 @@ const ProblemsPage = () => {
 
     return filtered;
   }, [problems, searchTerm, difficultyFilter, statusFilter, solvedProblems]);
-
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case "EASY":
-        return "text-success";
-      case "MEDIUM":
-        return "text-warning";
-      case "HARD":
-        return "text-error";
-      default:
-        return "text-base-content/60";
-    }
-  };
-
-  const getDifficultyIcon = (difficulty) => {
-    switch (difficulty) {
-      case "EASY":
-        return <CheckCircle className="w-4 h-4" />;
-      case "MEDIUM":
-        return <Clock className="w-4 h-4" />;
-      case "HARD":
-        return <Zap className="w-4 h-4" />;
-      default:
-        return null;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-base-200/50 pb-12">
@@ -253,7 +214,7 @@ const ProblemsPage = () => {
                     <span className="flex items-center gap-2">
                       {statusFilter === "ALL" ? (
                         <>
-                          <Clock className="w-4 h-4 opacity-60" />
+                          <CheckCircle className="w-4 h-4 opacity-60" />
                           All Status
                         </>
                       ) : statusFilter === "SOLVED" ? (
@@ -263,7 +224,7 @@ const ProblemsPage = () => {
                         </>
                       ) : (
                         <>
-                          <Clock className="w-4 h-4 text-info" />
+                          <CheckCircle className="w-4 h-4 text-info" />
                           <span className="text-info">Unsolved</span>
                         </>
                       )}
@@ -284,7 +245,7 @@ const ProblemsPage = () => {
                           document.activeElement?.blur();
                         }}
                       >
-                        <Clock className="w-4 h-4 opacity-60" />
+                        <CheckCircle className="w-4 h-4 opacity-60" />
                         All Status
                         {statusFilter === "ALL" && <CheckCircle className="w-4 h-4 ml-auto" />}
                       </button>
@@ -310,7 +271,7 @@ const ProblemsPage = () => {
                           document.activeElement?.blur();
                         }}
                       >
-                        <Clock className="w-4 h-4 text-info" />
+                        <CheckCircle className="w-4 h-4 text-info" />
                         Unsolved
                         {statusFilter === "UNSOLVED" && <CheckCircle className="w-4 h-4 ml-auto text-info" />}
                       </button>
@@ -349,13 +310,7 @@ const ProblemsPage = () => {
               >
                 <div className="card-body p-5 sm:p-6 flex-row items-center gap-6">
                   <div
-                    className={`w-1.5 self-stretch rounded-full ${
-                      problem.difficulty === "EASY"
-                        ? "bg-success"
-                        : problem.difficulty === "MEDIUM"
-                        ? "bg-warning"
-                        : "bg-error"
-                    }`}
+                    className={`w-1.5 self-stretch rounded-full ${getDifficultyBgColor(problem.difficulty)}`}
                   ></div>
 
                   <div className="flex-1 min-w-0">
@@ -371,14 +326,10 @@ const ProblemsPage = () => {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-4 text-sm text-base-content/70">
-                      <div
-                        className={`flex items-center gap-1.5 font-semibold ${getDifficultyColor(
-                          problem.difficulty
-                        )}`}
-                      >
-                        {getDifficultyIcon(problem.difficulty)}
-                        {problem.difficulty}
-                      </div>
+                      <DifficultyBadge
+                        difficulty={problem.difficulty}
+                        showIcon={true}
+                      />
                       <div className="hidden sm:block w-1 h-1 bg-base-content/20 rounded-full"></div>
                       <div className="flex items-center gap-2">
                         {problem.tags?.slice(0, 3).map((tag, i) => (
