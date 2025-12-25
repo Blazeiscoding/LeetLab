@@ -22,6 +22,7 @@ import { axiosInstance } from "../util/axios";
 import StreakCalendar from "../components/StreakCalendar";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
+import { getUserAvatar } from "../utils/avatar";
 
 const ProfilePage = () => {
   const { authUser } = useAuthStore();
@@ -277,10 +278,7 @@ const ProfilePage = () => {
                 <div className="relative group">
                   <div className="w-32 h-32 rounded-full ring-4 ring-base-100 shadow-2xl overflow-hidden">
                     <img
-                      src={
-                        authUser?.image ||
-                        "https://avatar.iran.liara.run/public/boy"
-                      }
+                      src={getUserAvatar(authUser)}
                       alt="Profile"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
