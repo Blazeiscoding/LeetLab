@@ -46,8 +46,10 @@ const HomePage = () => {
   // Computed stats
   const stats = useMemo(() => {
     const totalProblems = problems.length;
-    const solvedCount = solvedProblems.length;
-    const solvedSet = new Set(solvedProblems.map((p) => p.id));
+    // Ensure solvedProblems is an array (API might return object with difficulty keys)
+    const solvedArray = Array.isArray(solvedProblems) ? solvedProblems : [];
+    const solvedCount = solvedArray.length;
+    const solvedSet = new Set(solvedArray.map((p) => p.id));
 
     const byDifficulty = {
       EASY: { total: 0, solved: 0 },
@@ -400,7 +402,9 @@ const HomePage = () => {
                       {user.score} pts
                     </p>
                     <p className="text-sm text-base-content/60 mt-2">
-                      {user.problemsSolved} problems solved
+                      {typeof user.problemsSolved === 'object' 
+                        ? (user.problemsSolved.EASY || 0) + (user.problemsSolved.MEDIUM || 0) + (user.problemsSolved.HARD || 0)
+                        : user.problemsSolved || 0} problems solved
                     </p>
                   </div>
                 </motion.div>

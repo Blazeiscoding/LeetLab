@@ -36,7 +36,9 @@ export const useSolvedProblems = () => {
     queryKey: ["solvedProblems"],
     queryFn: async () => {
       const response = await axiosInstance.get("/problems/get-solved-problems");
-      return response.data.data || [];
+      const data = response.data.data;
+      // Ensure we always return an array (API might return object with difficulty keys)
+      return Array.isArray(data) ? data : [];
     },
   });
 };

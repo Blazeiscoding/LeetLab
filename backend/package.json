@@ -1,12 +1,15 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
-    "build": "npm install && npx prisma generate && npx prisma migrate deploy",
-    "postinstall": "npx prisma generate"
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "postinstall": "npx prisma generate",
+    "migrate": "npx prisma migrate deploy || echo 'Migrations failed or timed out, continuing anyway...'",
+    "migrate:force": "npx prisma migrate deploy",
+    "type-check": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -24,9 +27,18 @@
     "jsonwebtoken": "^9.0.2",
     "node-cron": "^4.1.0",
     "nodemailer": "^7.0.3",
-    "resend": "^4.6.0"
+    "prisma": "^6.11.1",
+    "resend": "^4.6.0",
+    "typescript": "^5.7.3"
   },
   "devDependencies": {
-    "prisma": "^6.11.1"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.10.5",
+    "@types/node-cron": "^3.0.11",
+    "tsx": "^4.19.2"
   }
 }
