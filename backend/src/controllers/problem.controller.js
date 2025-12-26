@@ -4,6 +4,9 @@ import {
   pollBatchResults,
   submitBatch,
 } from "../libs/rapidapi.lib.js";
+import { errorResponse } from "../utils/errorHandler.js";
+import { STATUS_CODES } from "../utils/constants.js";
+import { getPaginationParams, createPaginatedResponse } from "../utils/pagination.js";
 
 export const createProblem = async (req, res) => {
   const {
@@ -48,12 +51,12 @@ export const createProblem = async (req, res) => {
 
       for (let i = 0; i < results.length; i++) {
         const result = results[i];
-        if (result.status.id !== 3) {
-          return res.status(400).json({
-            error: `Reference solution for ${language} failed on test case ${
-              i + 1
-            }`,
-          });
+        if (result.status.id !== STATUS_CODES.ACCEPTED) {
+          return errorResponse(
+            res,
+            400,
+            `Reference solution for ${language} failed on test case ${i + 1}`
+          );
         }
       }
     }
@@ -81,27 +84,42 @@ export const createProblem = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Error While Creating Problem" });
+    console.error("Error creating problem:", error);
+    return errorResponse(res, 500, "Error While Creating Problem", error);
   }
 };
 
 export const getAllProblems = async (req, res) => {
   try {
-    const problems = await db.problem.findMany();
+    const { page, limit, skip } = getPaginationParams(req);
 
-    if (!problems) {
-      return res.status(404).json({ error: "No problems found" });
+    const [problems, total] = await Promise.all([
+      db.problem.findMany({
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: "desc",
+        },
+      }),
+      db.problem.count(),
+    ]);
+
+    if (total === 0) {
+      return res.status(200).json({
+        ...createPaginatedResponse([], 0, page, limit),
+        success: true,
+        message: "No problems found",
+      });
     }
 
     res.status(200).json({
-      data: problems,
+      ...createPaginatedResponse(problems, total, page, limit),
       success: true,
       message: "Problems fetched successfully",
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Error While Fetching Problems" });
+    console.error("Error fetching problems:", error);
+    return errorResponse(res, 500, "Error While Fetching Problems", error);
   }
 };
 
@@ -125,10 +143,8 @@ export const getProblemById = async (req, res) => {
       message: "Problem fetched successfully",
     });
   } catch (error) {
-    console.log(error);
-    return res
-      .status(500)
-      .json({ error: "Error While Fetching Problem by Id" });
+    console.error("Error fetching problem by id:", error);
+    return errorResponse(res, 500, "Error While Fetching Problem by Id", error);
   }
 };
 
@@ -175,8 +191,8 @@ export const updateProblem = async (req, res) => {
       message: "Problem updated successfully",
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Error While Updating Problem" });
+    console.error("Error updating problem:", error);
+    return errorResponse(res, 500, "Error While Updating Problem", error);
   }
 };
 
@@ -204,8 +220,8 @@ export const deleteProblem = async (req, res) => {
       message: "Problem deleted successfully",
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Error While Deleting Problem" });
+    console.error("Error deleting problem:", error);
+    return errorResponse(res, 500, "Error While Deleting Problem", error);
   }
 };
 
@@ -234,7 +250,7 @@ export const getAllSolvedProblemsByUser = async (req, res) => {
       message: "Problems fetched successfully",
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Error While Fetching Problems" });
+    console.error("Error fetching solved problems:", error);
+    return errorResponse(res, 500, "Error While Fetching Problems", error);
   }
 };

@@ -11,23 +11,33 @@ import submissionRoute from "./routes/submission.routes.js";
 import playlistRoutes from "./routes/playlist.routes.js";
 import healthRoutes from "./routes/health.routes.js";
 import leaderboardRoutes from "./routes/leaderboard.routes.js";
+import { globalErrorHandler } from "./utils/errorHandler.js";
 
 dotenv.config();
 
+// Validate required environment variables
+if (!process.env.JWT_SECRET) {
+  console.error("❌ ERROR: JWT_SECRET is not set in environment variables");
+  process.exit(1);
+}
+
 const app = express();
+
+// Allowed origins for CORS - can be extended via environment variables
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://www.codingshastra.codes",
+  "https://codingshastra.codes",
+  "https://coding-shastra.vercel.app",
+  ...(process.env.ALLOWED_ORIGINS?.split(",") || []),
+];
 
 app.use(
   cors({
     origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps, Postman, etc.)
       if (!origin) return callback(null, true);
-
-      const allowedOrigins = [
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "https://www.codingshastra.codes",
-        "https://codingshastra.codes",
-        "https://coding-shastra.vercel.app",
-      ];
 
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
@@ -54,39 +64,6 @@ app.use(
   })
 );
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  const allowedOrigins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "https://www.codingshastra.codes",
-    "https://codingshastra.codes",
-    "https://coding-shastra.vercel.app",
-  ];
-
-  if (allowedOrigins.includes(origin)) {
-    res.header("Access-Control-Allow-Origin", origin);
-  }
-
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-  );
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, Cookie, Set-Cookie"
-  );
-
-  // Handle preflight requests
-  if (req.method === "OPTIONS") {
-    res.sendStatus(200);
-    return;
-  }
-
-  next();
-});
-
 app.use(express.json());
 app.use(cookieParser());
 
@@ -102,19 +79,22 @@ app.use("/api/v1/playlist", playlistRoutes);
 app.use("/api/v1/leaderboard", leaderboardRoutes);
 app.use("/api/v1", healthRoutes);
 
+// Global error handler (must be last)
+app.use(globalErrorHandler);
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log("Server is running on port ", PORT);
+  console.log(`Server is running on port ${PORT}`);
 
   if (process.env.NODE_ENV === "production") {
     let consecutiveFailures = 0;
     const maxFailures = 3;
+    const serverUrl =
+      process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
 
     cron.schedule("0 9 * * *", async () => {
       try {
-        const serverUrl =
-          process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
         console.log("🏃 Daily keep-alive ping at:", new Date().toISOString());
 
         const response = await axios.get(`${serverUrl}/api/v1/ping`, {
@@ -125,16 +105,20 @@ app.listen(PORT, () => {
         });
 
         console.log("✅ Daily keep-alive ping successful:", response.data);
-        consecutiveFailures = 0; // Reset failure count on success
+        consecutiveFailures = 0;
       } catch (error) {
         consecutiveFailures++;
+        const errorMessage =
+          error.response?.data || error.message || "Unknown error";
         console.error(
           `❌ Daily keep-alive ping failed (${consecutiveFailures}/${maxFailures}):`,
-          error.message
+          errorMessage
         );
 
         if (consecutiveFailures >= maxFailures) {
-          console.log("⚠️ Too many daily failures, requires investigation");
+          console.warn(
+            "⚠️ Too many consecutive daily failures, requires investigation"
+          );
         }
       }
     });

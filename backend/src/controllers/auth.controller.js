@@ -4,6 +4,9 @@ import { UserRole } from "../generated/prisma/index.js";
 import jwt from "jsonwebtoken";
 import emailService from "../services/email.service.js";
 import otpService from "../services/otp.service.js";
+import { isValidEmail } from "../utils/validators.js";
+import { errorResponse } from "../utils/errorHandler.js";
+import { JWT_CONFIG, OTP_CONFIG } from "../utils/constants.js";
 
 const getCookieOptions = () => {
   const isProduction = process.env.NODE_ENV === "production";
@@ -12,7 +15,7 @@ const getCookieOptions = () => {
     httpOnly: true,
     sameSite: isProduction ? "None" : "lax",
     secure: isProduction,
-    maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+    maxAge: JWT_CONFIG.COOKIE_MAX_AGE,
     path: "/",
     ...(isProduction && { domain: process.env.COOKIE_DOMAIN || undefined }),
   };
@@ -68,7 +71,7 @@ export const register = async (req, res) => {
     });
   } catch (error) {
     console.error("Register error:", error);
-    res.status(500).json({ message: "User Registration Failed" });
+    return errorResponse(res, 500, "User Registration Failed", error);
   }
 };
 
@@ -97,7 +100,7 @@ export const login = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
+      expiresIn: JWT_CONFIG.EXPIRES_IN,
     });
 
     // Set cookie
@@ -117,7 +120,7 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error);
-    return res.status(500).json({ message: "Login Failed" });
+    return errorResponse(res, 500, "Login Failed", error);
   }
 };
 
@@ -127,9 +130,8 @@ export const sendOTP = async (req, res) => {
 
   try {
     // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: "Invalid email format" });
+    if (!isValidEmail(email)) {
+      return errorResponse(res, 400, "Invalid email format");
     }
 
     // Check if user exists
@@ -167,7 +169,7 @@ export const sendOTP = async (req, res) => {
     });
   } catch (error) {
     console.error("Send OTP error:", error);
-    return res.status(500).json({ message: "Failed to send OTP" });
+    return errorResponse(res, 500, "Failed to send OTP", error);
   }
 };
 
@@ -197,7 +199,7 @@ export const verifyOTP = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign({ id: otpResult.user.id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
+      expiresIn: JWT_CONFIG.EXPIRES_IN,
     });
 
     // Set cookie
@@ -213,7 +215,7 @@ export const verifyOTP = async (req, res) => {
     });
   } catch (error) {
     console.error("Verify OTP error:", error);
-    return res.status(500).json({ message: "Failed to verify OTP" });
+    return errorResponse(res, 500, "Failed to verify OTP", error);
   }
 };
 
@@ -228,6 +230,7 @@ export const logout = async (req, res) => {
     res.status(200).json({ message: "Logout successful" });
   } catch (error) {
     console.error("Logout error:", error);
+    return errorResponse(res, 500, "Logout failed", error);
   }
 };
 

@@ -1,22 +1,38 @@
 import { db } from "../libs/db.js";
+import { errorResponse } from "../utils/errorHandler.js";
+import { getPaginationParams, createPaginatedResponse } from "../utils/pagination.js";
 
 export const getAllSubmission = async (req, res) => {
   try {
     const userId = req.user.id;
-    const submission = await db.submission.findMany({
-      where: {
-        userId: userId,
-      },
-    });
+    const { page, limit, skip } = getPaginationParams(req);
+
+    const [submissions, total] = await Promise.all([
+      db.submission.findMany({
+        where: {
+          userId: userId,
+        },
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: "desc",
+        },
+      }),
+      db.submission.count({
+        where: {
+          userId: userId,
+        },
+      }),
+    ]);
 
     res.status(200).json({
-      data: submission,
+      ...createPaginatedResponse(submissions, total, page, limit),
       success: true,
       message: "Submission fetched successfully",
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Error While Fetching Submission" });
+    console.error("Error fetching submissions:", error);
+    return errorResponse(res, 500, "Error While Fetching Submission", error);
   }
 };
 
@@ -37,8 +53,8 @@ export const getSubmissionsForProblem = async (req, res) => {
       message: "Submission fetched successfully",
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Error While Fetching Submission" });
+    console.error("Error fetching submissions:", error);
+    return errorResponse(res, 500, "Error While Fetching Submission", error);
   }
 };
 
@@ -57,7 +73,7 @@ export const getAllTheSubmissionsForProblem = async (req, res) => {
       message: "Submission fetched successfully",
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Error While Fetching Submission" });
+    console.error("Error fetching submissions:", error);
+    return errorResponse(res, 500, "Error While Fetching Submission", error);
   }
 };

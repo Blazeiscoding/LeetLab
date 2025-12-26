@@ -1,10 +1,13 @@
 // backend/src/services/otp.service.js
 import crypto from "crypto";
 import { db } from "../libs/db.js";
+import { OTP_CONFIG } from "../utils/constants.js";
 
 class OTPService {
   generateOTP() {
-    return crypto.randomInt(100000, 999999).toString();
+    return crypto
+      .randomInt(OTP_CONFIG.MIN_VALUE, OTP_CONFIG.MAX_VALUE)
+      .toString();
   }
 
   async createOTP(userId, email) {
@@ -12,7 +15,7 @@ class OTPService {
       await this.cleanupExpiredOTPs(email);
 
       const otpCode = this.generateOTP();
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+      const expiresAt = new Date(Date.now() + OTP_CONFIG.EXPIRY_MS);
       const otp = await db.oTP.create({
         data: {
           userId,
@@ -111,7 +114,7 @@ class OTPService {
         },
       });
 
-      const maxAttempts = 5;
+      const maxAttempts = OTP_CONFIG.MAX_ATTEMPTS;
       return Math.max(0, maxAttempts - recentOTPs);
     } catch (error) {
       console.error("Error getting remaining attempts:", error);

@@ -1,12 +1,8 @@
 import axios from "axios";
+import { LANGUAGE_IDS, LANGUAGE_NAMES, STATUS_CODES, POLLING_CONFIG } from "../utils/constants.js";
 
 export const getJudge0LanguageId = (language) => {
-  const languageMap = {
-    PYTHON: 71,
-    JAVA: 62,
-    JAVASCRIPT: 63,
-  };
-  return languageMap[language.toUpperCase()];
+  return LANGUAGE_IDS[language.toUpperCase()];
 };
 
 export const submitBatch = async (submissions) => {
@@ -40,7 +36,7 @@ export const submitBatch = async (submissions) => {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const pollBatchResults = async (tokens) => {
-  const maxAttempts = 30; // Prevent infinite loops
+  const maxAttempts = POLLING_CONFIG.MAX_ATTEMPTS;
   let attempts = 0;
 
   while (attempts < maxAttempts) {
@@ -62,16 +58,17 @@ export const pollBatchResults = async (tokens) => {
       const results = data.submissions;
 
       // Check if all submissions are done processing
-      // Status IDs: 1 = In Queue, 2 = Processing
       const isAllDone = results.every(
-        (result) => result.status.id !== 1 && result.status.id !== 2
+        (result) =>
+          result.status.id !== STATUS_CODES.IN_QUEUE &&
+          result.status.id !== STATUS_CODES.PROCESSING
       );
 
       if (isAllDone) {
         return results;
       }
 
-      await sleep(1000);
+      await sleep(POLLING_CONFIG.INTERVAL_MS);
       attempts++;
     } catch (error) {
       console.error(
@@ -86,11 +83,6 @@ export const pollBatchResults = async (tokens) => {
 };
 
 export function getLanguageName(languageId) {
-  const LANGUAGE_NAMES = {
-    71: "PYTHON",
-    62: "JAVA",
-    63: "JAVASCRIPT",
-  };
   return LANGUAGE_NAMES[languageId];
 }
 

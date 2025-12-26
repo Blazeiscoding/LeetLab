@@ -3,52 +3,66 @@ import {
   pollBatchResults,
   submitBatch,
 } from "../libs/rapidapi.lib.js";
-
 import { db } from "../libs/db.js";
+import { validateTestCases } from "../utils/validators.js";
+import { errorResponse } from "../utils/errorHandler.js";
+
+/**
+ * Executes code and returns test case results
+ */
+const executeTestCases = async (source_code, language_id, stdin, expected_outputs) => {
+  const submissions = stdin.map((input) => ({
+    source_code,
+    language_id,
+    stdin: input,
+  }));
+
+  const submitResponse = await submitBatch(submissions);
+  const tokens = submitResponse.map((res) => res.token);
+  const results = await pollBatchResults(tokens);
+
+  let allPassed = true;
+
+  const detailedResults = results.map((result, index) => {
+    const stdout = result.stdout?.trim() || "";
+    const expected_output = (expected_outputs[index] || "").trim();
+    const passed = stdout === expected_output;
+    if (!passed) allPassed = false;
+
+    return {
+      testCase: index + 1,
+      passed,
+      stdout,
+      expected: expected_output || null,
+      stderr: result.stderr || null,
+      compileOutput: result.compile_output || null,
+      status: result.status.description,
+      memory: result.memory ? `${result.memory} KB` : undefined,
+      time: result.time ? `${result.time} s` : undefined,
+    };
+  });
+
+  return {
+    allPassed,
+    detailedResults,
+  };
+};
 
 export const runCode = async (req, res) => {
   try {
     const { source_code, language_id, stdin, expected_outputs } = req.body;
 
-    if (
-      !Array.isArray(stdin) ||
-      stdin.length === 0 ||
-      !Array.isArray(expected_outputs) ||
-      expected_outputs.length !== stdin.length
-    ) {
-      return res.status(400).json({ error: "Invalid testCases array" });
+    const validation = validateTestCases(stdin, expected_outputs);
+    if (!validation.isValid) {
+      return errorResponse(res, 400, validation.error);
     }
 
-    const submissions = stdin.map((input) => ({
+    const { allPassed, detailedResults } = await executeTestCases(
       source_code,
       language_id,
-      stdin: input,
-    }));
-
-    const submitResponse = await submitBatch(submissions);
-    const tokens = submitResponse.map((res) => res.token);
-    const results = await pollBatchResults(tokens);
-
-    let allPassed = true;
-
-    const detailedResults = results.map((result, index) => {
-      const stdout = result.stdout?.trim();
-      const expected_output = expected_outputs[index].trim();
-      const passed = stdout === expected_output;
-      if (!passed) allPassed = false;
-
-      return {
-        testCase: index + 1,
-        passed,
-        stdout,
-        expected: expected_output || null,
-        stderr: result.stderr,
-        compileOutput: result.compile_output || null,
-        status: result.status.description,
-        memory: result.memory ? `${result.memory} KB` : undefined,
-        time: result.time ? `${result.time} s` : undefined,
-      };
-    });
+      stdin,
+      expected_outputs
+    );
 
     return res.status(200).json({
       message: "Code Executed Successfully",
@@ -59,8 +73,8 @@ export const runCode = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Error While Running Code" });
+    console.error("Error executing code:", error);
+    return errorResponse(res, 500, "Error While Executing Code", error);
   }
 };
 
@@ -71,45 +85,17 @@ export const executeCode = async (req, res) => {
 
     const userId = req.user.id;
 
-    if (
-      !Array.isArray(stdin) ||
-      stdin.length === 0 ||
-      !Array.isArray(expected_outputs) ||
-      expected_outputs.length !== stdin.length
-    ) {
-      return res.status(400).json({ error: "Invalid testCases array" });
+    const validation = validateTestCases(stdin, expected_outputs);
+    if (!validation.isValid) {
+      return errorResponse(res, 400, validation.error);
     }
 
-    const submissions = stdin.map((input) => ({
+    const { allPassed, detailedResults } = await executeTestCases(
       source_code,
       language_id,
-      stdin: input,
-    }));
-
-    const submitResponse = await submitBatch(submissions);
-    const tokens = submitResponse.map((res) => res.token);
-    const results = await pollBatchResults(tokens);
-
-    let allPassed = true;
-
-    const detailedResults = results.map((result, index) => {
-      const stdout = result.stdout?.trim();
-      const expected_output = expected_outputs[index].trim();
-      const passed = stdout === expected_output;
-      if (!passed) allPassed = false;
-
-      return {
-        testCase: index + 1,
-        passed,
-        stdout,
-        expected: expected_output || null,
-        stderr: result.stderr,
-        compileOutput: result.compile_output || null,
-        status: result.status.description,
-        memory: result.memory ? `${result.memory} KB` : undefined,
-        time: result.time ? `${result.time} s` : undefined,
-      };
-    });
+      stdin,
+      expected_outputs
+    );
 
     const submission = await db.submission.create({
       data: {
@@ -179,7 +165,7 @@ export const executeCode = async (req, res) => {
       submission: submissionWithTestCase,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Error While Executing Code" });
+    console.error("Error executing code:", error);
+    return errorResponse(res, 500, "Error While Executing Code", error);
   }
 };

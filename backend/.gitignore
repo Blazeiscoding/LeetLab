@@ -1,22 +1,3 @@
-node_modules/
-dist/
+node_modules
+# Keep environment variables out of version control
 .env
-*.log
-.DS_Store
-
-# Prisma
-*.db
-*.db-journal
-
-# Environment files
-.env.local
-.env.*.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-Thumbs.db
