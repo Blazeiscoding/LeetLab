@@ -14,6 +14,7 @@ import { useLeaderboardWithRefresh } from "../hooks/useLeaderboard";
 
 // Utils
 import { formatMonthYear } from "../utils/formatters";
+import { getUserAvatar } from "../utils/avatar";
 
 const LeaderboardPage = () => {
   const {
@@ -176,10 +177,17 @@ const LeaderboardPage = () => {
                 className="flex flex-col items-center"
               >
                 <div className="relative mb-2">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 border-4 border-gray-200 flex items-center justify-center shadow-lg">
-                    <Medal className="w-8 h-8 text-white" />
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 p-1 shadow-lg">
+                    <img 
+                      src={getUserAvatar(leaderboard[1]?.user)}
+                      alt={leaderboard[1]?.user?.name || 'User'}
+                      className="w-full h-full rounded-full object-cover bg-base-100"
+                      onError={(e) => {
+                        e.target.src = getUserAvatar({ name: leaderboard[1]?.user?.name || 'U' });
+                      }}
+                    />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-white">
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-white shadow">
                     2
                   </div>
                 </div>
@@ -201,11 +209,18 @@ const LeaderboardPage = () => {
                 className="flex flex-col items-center -mt-4"
               >
                 <div className="relative mb-2">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 border-4 border-yellow-300 flex items-center justify-center shadow-xl">
-                    <Trophy className="w-10 h-10 text-white" />
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 p-1 shadow-xl ring-4 ring-yellow-300/50">
+                    <img 
+                      src={getUserAvatar(leaderboard[0]?.user)}
+                      alt={leaderboard[0]?.user?.name || 'User'}
+                      className="w-full h-full rounded-full object-cover bg-base-100"
+                      onError={(e) => {
+                        e.target.src = getUserAvatar({ name: leaderboard[0]?.user?.name || 'U' });
+                      }}
+                    />
                   </div>
                   <div className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-yellow-400 flex items-center justify-center text-sm font-bold text-white shadow-lg">
-                    1
+                    <Trophy className="w-4 h-4" />
                   </div>
                 </div>
                 <div className="text-center">
@@ -226,10 +241,17 @@ const LeaderboardPage = () => {
                 className="flex flex-col items-center"
               >
                 <div className="relative mb-2">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-600 to-amber-700 border-4 border-amber-500 flex items-center justify-center shadow-lg">
-                    <Medal className="w-8 h-8 text-white" />
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-600 to-amber-700 p-1 shadow-lg">
+                    <img 
+                      src={getUserAvatar(leaderboard[2]?.user)}
+                      alt={leaderboard[2]?.user?.name || 'User'}
+                      className="w-full h-full rounded-full object-cover bg-base-100"
+                      onError={(e) => {
+                        e.target.src = getUserAvatar({ name: leaderboard[2]?.user?.name || 'U' });
+                      }}
+                    />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center text-xs font-bold text-white">
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center text-xs font-bold text-white shadow">
                     3
                   </div>
                 </div>
@@ -289,13 +311,16 @@ const LeaderboardPage = () => {
                           </td>
                           <td className="py-4">
                             <div className="flex items-center gap-3">
-                              <div className="avatar placeholder">
-                                <div className="bg-primary text-primary-content rounded-full w-10 h-10">
-                                  <span className="text-sm font-bold">
-                                    {(entry.user.name || entry.user.email)
-                                      .charAt(0)
-                                      .toUpperCase()}
-                                  </span>
+                              <div className="avatar">
+                                <div className="w-10 h-10 rounded-full">
+                                  <img 
+                                    src={getUserAvatar(entry.user)}
+                                    alt={entry.user.name || entry.user.email}
+                                    className="object-cover"
+                                    onError={(e) => {
+                                      e.target.src = getUserAvatar({ name: entry.user.name || 'U' });
+                                    }}
+                                  />
                                 </div>
                               </div>
                               <div>
