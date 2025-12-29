@@ -91,31 +91,16 @@ export const createProblem = async (req, res) => {
 
 export const getAllProblems = async (req, res) => {
   try {
-    const { page, limit, skip } = getPaginationParams(req);
-
-    const [problems, total] = await Promise.all([
-      db.problem.findMany({
-        skip,
-        take: limit,
-        orderBy: {
-          createdAt: "desc",
-        },
-      }),
-      db.problem.count(),
-    ]);
-
-    if (total === 0) {
-      return res.status(200).json({
-        ...createPaginatedResponse([], 0, page, limit),
-        success: true,
-        message: "No problems found",
-      });
-    }
+    const problems = await db.problem.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
     res.status(200).json({
-      ...createPaginatedResponse(problems, total, page, limit),
       success: true,
       message: "Problems fetched successfully",
+      data: problems,
     });
   } catch (error) {
     console.error("Error fetching problems:", error);
