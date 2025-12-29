@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
   Plus,
   Trash2,
@@ -11,16 +10,37 @@ import {
   BookOpen,
   CheckCircle2,
   Download,
+  Save,
+  RotateCcw,
+  ChevronDown,
+  AlertCircle,
 } from "lucide-react";
 import Editor from "@monaco-editor/react";
 import { axiosInstance } from "../util/axios";
 import toast from "react-hot-toast";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { problemSchema } from "../util/zodSchema";
+import { motion, AnimatePresence } from "framer-motion";
 
+// Components
+import FormWizard from "./form/FormWizard";
+import WizardStep, { CollapsibleSection } from "./form/WizardStep";
+import { useFormDraft } from "../hooks/useFormDraft";
+import { SkeletonCodeEditor } from "./ui/Skeleton";
+
+// Form step definitions
+const FORM_STEPS = [
+  { id: 'basic', title: 'Basic Info', icon: FileText },
+  { id: 'metadata', title: 'Tags & Constraints', icon: BookOpen },
+  { id: 'testcases', title: 'Test Cases', icon: CheckCircle2 },
+  { id: 'code', title: 'Code Templates', icon: Code2 },
+  { id: 'solutions', title: 'Solutions', icon: Lightbulb },
+];
+
+// Sample data for quick loading
 const sampledData = {
   title: "Climbing Stairs",
-  category: "dp", // Dynamic Programming
+  category: "dp",
   description:
     "You are climbing a staircase. It takes n steps to reach the top. Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?",
   difficulty: "EASY",
@@ -31,471 +51,118 @@ const sampledData = {
   editorial:
     "This is a classic dynamic programming problem. The number of ways to reach the nth step is the sum of the number of ways to reach the (n-1)th step and the (n-2)th step, forming a Fibonacci-like sequence.",
   testCases: [
-    {
-      input: "2",
-      output: "2",
-    },
-    {
-      input: "3",
-      output: "3",
-    },
-    {
-      input: "4",
-      output: "5",
-    },
+    { input: "2", output: "2" },
+    { input: "3", output: "3" },
+    { input: "4", output: "5" },
   ],
   examples: {
     JAVASCRIPT: {
       input: "n = 2",
       output: "2",
-      explanation:
-        "There are two ways to climb to the top:\n1. 1 step + 1 step\n2. 2 steps",
+      explanation: "There are two ways to climb to the top:\n1. 1 step + 1 step\n2. 2 steps",
     },
     PYTHON: {
       input: "n = 3",
       output: "3",
-      explanation:
-        "There are three ways to climb to the top:\n1. 1 step + 1 step + 1 step\n2. 1 step + 2 steps\n3. 2 steps + 1 step",
+      explanation: "There are three ways to climb to the top:\n1. 1 step + 1 step + 1 step\n2. 1 step + 2 steps\n3. 2 steps + 1 step",
     },
     JAVA: {
       input: "n = 4",
       output: "5",
-      explanation:
-        "There are five ways to climb to the top:\n1. 1 step + 1 step + 1 step + 1 step\n2. 1 step + 1 step + 2 steps\n3. 1 step + 2 steps + 1 step\n4. 2 steps + 1 step + 1 step\n5. 2 steps + 2 steps",
+      explanation: "There are five ways to climb to the top.",
     },
   },
   codeSnippets: {
-    JAVASCRIPT: `/**
-* @param {number} n
-* @return {number}
-*/
-function climbStairs(n) {
-// Write your code here
-}
-
-// Parse input and execute
-const readline = require('readline');
-const rl = readline.createInterface({
-input: process.stdin,
-output: process.stdout,
-terminal: false
-});
-
-rl.on('line', (line) => {
-const n = parseInt(line.trim());
-const result = climbStairs(n);
-
-console.log(result);
-rl.close();
-});`,
-    PYTHON: `class Solution:
-  def climbStairs(self, n: int) -> int:
-      # Write your code here
-      pass
-
-# Input parsing
-if __name__ == "__main__":
-  import sys
-  
-  # Parse input
-  n = int(sys.stdin.readline().strip())
-  
-  # Solve
-  sol = Solution()
-  result = sol.climbStairs(n)
-  
-  # Print result
-  print(result)`,
-    JAVA: `import java.util.Scanner;
-
-class Main {
-  public int climbStairs(int n) {
-      // Write your code here
-      return 0;
-  }
-  
-  public static void main(String[] args) {
-      Scanner scanner = new Scanner(System.in);
-      int n = Integer.parseInt(scanner.nextLine().trim());
-      
-      // Use Main class instead of Solution
-      Main main = new Main();
-      int result = main.climbStairs(n);
-      
-      System.out.println(result);
-      scanner.close();
-  }
-}`,
+    JAVASCRIPT: `function climbStairs(n) {\n  // Write your code here\n}\n\nconst readline = require('readline');\nconst rl = readline.createInterface({\n  input: process.stdin,\n  output: process.stdout,\n  terminal: false\n});\n\nrl.on('line', (line) => {\n  const n = parseInt(line.trim());\n  const result = climbStairs(n);\n  console.log(result);\n  rl.close();\n});`,
+    PYTHON: `class Solution:\n    def climbStairs(self, n: int) -> int:\n        # Write your code here\n        pass\n\nif __name__ == "__main__":\n    import sys\n    n = int(sys.stdin.readline().strip())\n    sol = Solution()\n    result = sol.climbStairs(n)\n    print(result)`,
+    JAVA: `import java.util.Scanner;\n\nclass Main {\n    public int climbStairs(int n) {\n        // Write your code here\n        return 0;\n    }\n    \n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = Integer.parseInt(scanner.nextLine().trim());\n        Main main = new Main();\n        int result = main.climbStairs(n);\n        System.out.println(result);\n        scanner.close();\n    }\n}`,
   },
   referenceSolutions: {
-    JAVASCRIPT: `/**
-* @param {number} n
-* @return {number}
-*/
-function climbStairs(n) {
-// Base cases
-if (n <= 2) {
-  return n;
-}
-
-// Dynamic programming approach
-let dp = new Array(n + 1);
-dp[1] = 1;
-dp[2] = 2;
-
-for (let i = 3; i <= n; i++) {
-  dp[i] = dp[i - 1] + dp[i - 2];
-}
-
-return dp[n];
-
-/* Alternative approach with O(1) space
-let a = 1; // ways to climb 1 step
-let b = 2; // ways to climb 2 steps
-
-for (let i = 3; i <= n; i++) {
-  let temp = a + b;
-  a = b;
-  b = temp;
-}
-
-return n === 1 ? a : b;
-*/
-}
-
-// Parse input and execute
-const readline = require('readline');
-const rl = readline.createInterface({
-input: process.stdin,
-output: process.stdout,
-terminal: false
-});
-
-rl.on('line', (line) => {
-const n = parseInt(line.trim());
-const result = climbStairs(n);
-
-console.log(result);
-rl.close();
-});`,
-    PYTHON: `class Solution:
-  def climbStairs(self, n: int) -> int:
-      # Base cases
-      if n <= 2:
-          return n
-      
-      # Dynamic programming approach
-      dp = [0] * (n + 1)
-      dp[1] = 1
-      dp[2] = 2
-      
-      for i in range(3, n + 1):
-          dp[i] = dp[i - 1] + dp[i - 2]
-      
-      return dp[n]
-      
-      # Alternative approach with O(1) space
-      # a, b = 1, 2
-      # 
-      # for i in range(3, n + 1):
-      #     a, b = b, a + b
-      # 
-      # return a if n == 1 else b
-
-# Input parsing
-if __name__ == "__main__":
-  import sys
-  
-  # Parse input
-  n = int(sys.stdin.readline().strip())
-  
-  # Solve
-  sol = Solution()
-  result = sol.climbStairs(n)
-  
-  # Print result
-  print(result)`,
-    JAVA: `import java.util.Scanner;
-
-class Main {
-  public int climbStairs(int n) {
-      // Base cases
-      if (n <= 2) {
-          return n;
-      }
-      
-      // Dynamic programming approach
-      int[] dp = new int[n + 1];
-      dp[1] = 1;
-      dp[2] = 2;
-      
-      for (int i = 3; i <= n; i++) {
-          dp[i] = dp[i - 1] + dp[i - 2];
-      }
-      
-      return dp[n];
-      
-      /* Alternative approach with O(1) space
-      int a = 1; // ways to climb 1 step
-      int b = 2; // ways to climb 2 steps
-      
-      for (int i = 3; i <= n; i++) {
-          int temp = a + b;
-          a = b;
-          b = temp;
-      }
-      
-      return n == 1 ? a : b;
-      */
-  }
-  
-  public static void main(String[] args) {
-      Scanner scanner = new Scanner(System.in);
-      int n = Integer.parseInt(scanner.nextLine().trim());
-      
-      // Use Main class instead of Solution
-      Main main = new Main();
-      int result = main.climbStairs(n);
-      
-      System.out.println(result);
-      scanner.close();
-  }
-}`,
+    JAVASCRIPT: `function climbStairs(n) {\n  if (n <= 2) return n;\n  let dp = new Array(n + 1);\n  dp[1] = 1;\n  dp[2] = 2;\n  for (let i = 3; i <= n; i++) {\n    dp[i] = dp[i - 1] + dp[i - 2];\n  }\n  return dp[n];\n}`,
+    PYTHON: `class Solution:\n    def climbStairs(self, n: int) -> int:\n        if n <= 2:\n            return n\n        dp = [0] * (n + 1)\n        dp[1] = 1\n        dp[2] = 2\n        for i in range(3, n + 1):\n            dp[i] = dp[i - 1] + dp[i - 2]\n        return dp[n]`,
+    JAVA: `public int climbStairs(int n) {\n    if (n <= 2) return n;\n    int[] dp = new int[n + 1];\n    dp[1] = 1;\n    dp[2] = 2;\n    for (int i = 3; i <= n; i++) {\n        dp[i] = dp[i - 1] + dp[i - 2];\n    }\n    return dp[n];\n}`,
   },
 };
 
-// Sample problem data for another type of question
 const sampleStringProblem = {
   title: "Valid Palindrome",
   description:
-    "A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward. Alphanumeric characters include letters and numbers. Given a string s, return true if it is a palindrome, or false otherwise.",
+    "A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward.",
   difficulty: "EASY",
   tags: ["String", "Two Pointers"],
-  constraints:
-    "1 <= s.length <= 2 * 10^5\ns consists only of printable ASCII characters.",
-  hints:
-    "Consider using two pointers, one from the start and one from the end, moving towards the center.",
-  editorial:
-    "We can use two pointers approach to check if the string is a palindrome. One pointer starts from the beginning and the other from the end, moving towards each other.",
+  constraints: "1 <= s.length <= 2 * 10^5\ns consists only of printable ASCII characters.",
+  hints: "Consider using two pointers, one from the start and one from the end.",
+  editorial: "We can use two pointers approach to check if the string is a palindrome.",
   testCases: [
-    {
-      input: "A man, a plan, a canal: Panama",
-      output: "true",
-    },
-    {
-      input: "race a car",
-      output: "false",
-    },
-    {
-      input: " ",
-      output: "true",
-    },
+    { input: "A man, a plan, a canal: Panama", output: "true" },
+    { input: "race a car", output: "false" },
   ],
   examples: {
-    JAVASCRIPT: {
-      input: 's = "A man, a plan, a canal: Panama"',
-      output: "true",
-      explanation: '"amanaplanacanalpanama" is a palindrome.',
-    },
-    PYTHON: {
-      input: 's = "A man, a plan, a canal: Panama"',
-      output: "true",
-      explanation: '"amanaplanacanalpanama" is a palindrome.',
-    },
-    JAVA: {
-      input: 's = "A man, a plan, a canal: Panama"',
-      output: "true",
-      explanation: '"amanaplanacanalpanama" is a palindrome.',
-    },
+    JAVASCRIPT: { input: 's = "A man, a plan, a canal: Panama"', output: "true", explanation: '"amanaplanacanalpanama" is a palindrome.' },
+    PYTHON: { input: 's = "A man, a plan, a canal: Panama"', output: "true", explanation: '"amanaplanacanalpanama" is a palindrome.' },
+    JAVA: { input: 's = "A man, a plan, a canal: Panama"', output: "true", explanation: '"amanaplanacanalpanama" is a palindrome.' },
   },
   codeSnippets: {
-    JAVASCRIPT: `/**
-   * @param {string} s
-   * @return {boolean}
-   */
-  function isPalindrome(s) {
-    // Write your code here
-  }
-  
-  // Add readline for dynamic input handling
-  const readline = require('readline');
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    terminal: false
-  });
-  
-  // Process input line
-  rl.on('line', (line) => {
-    // Call solution with the input string
-    const result = isPalindrome(line);
-    
-    // Output the result
-    console.log(result ? "true" : "false");
-    rl.close();
-  });`,
-    PYTHON: `class Solution:
-      def isPalindrome(self, s: str) -> bool:
-          # Write your code here
-          pass
-  
-  # Input parsing
-  if __name__ == "__main__":
-      import sys
-      # Read the input string
-      s = sys.stdin.readline().strip()
-      
-      # Call solution
-      sol = Solution()
-      result = sol.isPalindrome(s)
-      
-      # Output result
-      print(str(result).lower())  # Convert True/False to lowercase true/false`,
-    JAVA: `import java.util.Scanner;
-
-public class Main {
-    public static String preprocess(String s) {
-        return s.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
-    }
-
-    public static boolean isPalindrome(String s) {
-       
-    }
-
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        String input = sc.nextLine();
-
-        boolean result = isPalindrome(input);
-        System.out.println(result ? "true" : "false");
-    }
-}
-`,
+    JAVASCRIPT: `function isPalindrome(s) {\n  // Write your code here\n}`,
+    PYTHON: `class Solution:\n    def isPalindrome(self, s: str) -> bool:\n        # Write your code here\n        pass`,
+    JAVA: `public class Main {\n    public static boolean isPalindrome(String s) {\n        // Write your code here\n        return false;\n    }\n}`,
   },
   referenceSolutions: {
-    JAVASCRIPT: `/**
-   * @param {string} s
-   * @return {boolean}
-   */
-  function isPalindrome(s) {
-    // Convert to lowercase and remove non-alphanumeric characters
-    s = s.toLowerCase().replace(/[^a-z0-9]/g, '');
-    
-    // Check if it's a palindrome
-    let left = 0;
-    let right = s.length - 1;
-    
-    while (left < right) {
-      if (s[left] !== s[right]) {
-        return false;
-      }
-      left++;
-      right--;
-    }
-    
-    return true;
-  }
-  
-  // Add readline for dynamic input handling
-  const readline = require('readline');
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    terminal: false
-  });
-  
-  // Process input line
-  rl.on('line', (line) => {
-    // Call solution with the input string
-    const result = isPalindrome(line);
-    
-    // Output the result
-    console.log(result ? "true" : "false");
-    rl.close();
-  });`,
-    PYTHON: `class Solution:
-      def isPalindrome(self, s: str) -> bool:
-          # Convert to lowercase and keep only alphanumeric characters
-          filtered_chars = [c.lower() for c in s if c.isalnum()]
-          
-          # Check if it's a palindrome
-          return filtered_chars == filtered_chars[::-1]
-  
-  # Input parsing
-  if __name__ == "__main__":
-      import sys
-      # Read the input string
-      s = sys.stdin.readline().strip()
-      
-      # Call solution
-      sol = Solution()
-      result = sol.isPalindrome(s)
-      
-      # Output result
-      print(str(result).lower())  # Convert True/False to lowercase true/false`,
-    JAVA: `import java.util.Scanner;
+    JAVASCRIPT: `function isPalindrome(s) {\n  s = s.toLowerCase().replace(/[^a-z0-9]/g, '');\n  let left = 0, right = s.length - 1;\n  while (left < right) {\n    if (s[left] !== s[right]) return false;\n    left++; right--;\n  }\n  return true;\n}`,
+    PYTHON: `class Solution:\n    def isPalindrome(self, s: str) -> bool:\n        filtered = [c.lower() for c in s if c.isalnum()]\n        return filtered == filtered[::-1]`,
+    JAVA: `public static boolean isPalindrome(String s) {\n    s = s.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();\n    int left = 0, right = s.length() - 1;\n    while (left < right) {\n        if (s.charAt(left) != s.charAt(right)) return false;\n        left++; right--;\n    }\n    return true;\n}`,
+  },
+};
 
-public class Main {
-    public static String preprocess(String s) {
-        return s.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
-    }
-
-    public static boolean isPalindrome(String s) {
-        s = preprocess(s);
-        int left = 0, right = s.length() - 1;
-
-        while (left < right) {
-            if (s.charAt(left) != s.charAt(right)) return false;
-            left++;
-            right--;
-        }
-
-        return true;
-    }
-
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        String input = sc.nextLine();
-
-        boolean result = isPalindrome(input);
-        System.out.println(result ? "true" : "false");
-    }
-}
-`,
+const defaultFormValues = {
+  title: "",
+  description: "",
+  difficulty: "",
+  testCases: [{ input: "", output: "" }],
+  tags: [""],
+  constraints: "",
+  hints: "",
+  editorial: "",
+  examples: {
+    JAVASCRIPT: { input: "", output: "", explanation: "" },
+    PYTHON: { input: "", output: "", explanation: "" },
+    JAVA: { input: "", output: "", explanation: "" },
+  },
+  codeSnippets: {
+    JAVASCRIPT: "function solution() {\n  // Write your code here\n}",
+    PYTHON: "def solution():\n    # Write your code here\n    pass",
+    JAVA: "public class Solution {\n    public static void main(String[] args) {\n        // Write your code here\n    }\n}",
+  },
+  referenceSolutions: {
+    JAVASCRIPT: "// Add your reference solution here",
+    PYTHON: "# Add your reference solution here",
+    JAVA: "// Add your reference solution here",
   },
 };
 
 const CreateProblemForm = () => {
+  const [currentStep, setCurrentStep] = useState(0);
   const [sampleType, setSampleType] = useState("DP");
-
+  const [showDraftPrompt, setShowDraftPrompt] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigate();
+
+  // Form draft management
+  const { hasDraft, saveDraft, debouncedSave, loadDraft, clearDraft, getLastSavedText } = useFormDraft('create-problem', {
+    debounceMs: 3000,
+  });
+
   const {
     register,
     control,
     handleSubmit,
     reset,
-    formState: { errors },
+    watch,
+    formState: { errors, isValid, isDirty },
   } = useForm({
     resolver: zodResolver(problemSchema),
-    defaultValues: {
-      testCases: [{ input: "", output: "" }],
-      tags: [""],
-      examples: {
-        JAVASCRIPT: { input: "", output: "", explanation: "" },
-        PYTHON: { input: "", output: "", explanation: "" },
-        JAVA: { input: "", output: "", explanation: "" },
-      },
-      codeSnippets: {
-        JAVASCRIPT: "function solution() {\n  // Write your code here\n}",
-        PYTHON: "def solution():\n    # Write your code here\n    pass",
-        JAVA: "public class Solution {\n    public static void main(String[] args) {\n        // Write your code here\n    }\n}",
-      },
-      referenceSolutions: {
-        JAVASCRIPT: "// Add your reference solution here",
-        PYTHON: "# Add your reference solution here",
-        JAVA: "// Add your reference solution here",
-      },
-    },
+    defaultValues: defaultFormValues,
+    mode: 'onChange',
   });
 
   const {
@@ -503,36 +170,63 @@ const CreateProblemForm = () => {
     append: appendTestCase,
     remove: removeTestCase,
     replace: replaceTestCase,
-  } = useFieldArray({
-    control,
-    name: "testCases",
-  });
+  } = useFieldArray({ control, name: "testCases" });
 
   const {
     fields: tagFields,
     append: appendTag,
     remove: removeTag,
     replace: replaceTag,
-  } = useFieldArray({
-    control,
-    name: "tags",
-  });
+  } = useFieldArray({ control, name: "tags" });
 
-  const [isLoading, setIsLoading] = useState(false);
-  const onSubmit = async (data) => {
-    console.log("Form submitted with data:", data); // Debug log
+  // Watch form values for auto-save
+  const formValues = watch();
 
-    // Check if form validation passed
-    const formErrors = Object.keys(errors);
-    if (formErrors.length > 0) {
-      console.log("Form has validation errors:", errors);
-      toast.error("Please fix validation errors before submitting");
-      return;
+  // Check for existing draft on mount
+  useEffect(() => {
+    if (hasDraft) {
+      setShowDraftPrompt(true);
     }
+  }, [hasDraft]);
 
+  // Auto-save when form changes
+  useEffect(() => {
+    if (isDirty) {
+      debouncedSave(formValues);
+    }
+  }, [formValues, isDirty, debouncedSave]);
+
+  // Load draft
+  const handleLoadDraft = () => {
+    const draft = loadDraft();
+    if (draft) {
+      reset(draft);
+      if (draft.tags) replaceTag(draft.tags);
+      if (draft.testCases) replaceTestCase(draft.testCases);
+      toast.success('Draft loaded successfully');
+    }
+    setShowDraftPrompt(false);
+  };
+
+  // Discard draft
+  const handleDiscardDraft = () => {
+    clearDraft();
+    setShowDraftPrompt(false);
+  };
+
+  // Load sample data
+  const loadSampleData = () => {
+    const sampleData = sampleType === "DP" ? sampledData : sampleStringProblem;
+    replaceTag(sampleData.tags);
+    replaceTestCase(sampleData.testCases);
+    reset(sampleData);
+    toast.success(`${sampleType === "DP" ? "DP" : "String"} sample loaded`);
+  };
+
+  // Form submission
+  const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      // Transform data to match backend API
       const problemData = {
         title: data.title,
         description: data.description,
@@ -540,73 +234,473 @@ const CreateProblemForm = () => {
         tags: data.tags.filter((tag) => tag.trim() !== ""),
         examples: data.examples,
         constraints: data.constraints,
-        testCases: data.testCases || data.testcases, // Handle both naming conventions
+        testCases: data.testCases,
         codeSnippet: data.codeSnippets,
         referenceSolution: data.referenceSolutions,
-        hints: data.hints, // ADD THIS LINE
-        editorial: data.editorial, // ADD THIS LINE
+        hints: data.hints,
+        editorial: data.editorial,
       };
 
-      console.log("Sending problem data to API:", problemData); // Debug log
-
-      const response = await axiosInstance.post(
-        "/problems/create-problem",
-        problemData
-      );
-
-      console.log("API response:", response); // Debug log
+      await axiosInstance.post("/problems/create-problem", problemData);
+      clearDraft();
       toast.success("Problem created successfully!");
       navigation("/");
     } catch (error) {
       console.error("Error creating problem:", error);
-      console.error("Error response:", error.response); // More detailed error logging
       toast.error(error.response?.data?.error || "Failed to create problem");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loadSampleData = () => {
-    const sampleData = sampleType === "DP" ? sampledData : sampleStringProblem;
-    replaceTag(sampleData.tags.map((tag) => tag));
-    replaceTestCase(sampleData.testCases.map((testCase) => testCase));
-    reset(sampleData);
+  // Check if current step is valid
+  const isCurrentStepValid = useMemo(() => {
+    const stepErrors = {
+      0: ['title', 'description', 'difficulty'],
+      1: ['tags', 'constraints'],
+      2: ['testCases'],
+      3: ['codeSnippets'],
+      4: ['referenceSolutions'],
+    };
+    
+    const currentStepFields = stepErrors[currentStep] || [];
+    return !currentStepFields.some(field => errors[field]);
+  }, [currentStep, errors]);
+
+  // Render step content
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <WizardStep
+            title="Basic Information"
+            description="Enter the fundamental details of your problem"
+            icon={FileText}
+          >
+            <div className="space-y-6">
+              {/* Title */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text text-lg font-semibold">Title</span>
+                </label>
+                <input
+                  type="text"
+                  className={`input input-bordered w-full text-lg ${errors.title ? 'input-error' : ''}`}
+                  {...register("title")}
+                  placeholder="Enter problem title"
+                />
+                {errors.title && (
+                  <label className="label">
+                    <span className="label-text-alt text-error">{errors.title.message}</span>
+                  </label>
+                )}
+              </div>
+
+              {/* Description */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text text-lg font-semibold">Description</span>
+                </label>
+                <textarea
+                  className={`textarea textarea-bordered min-h-40 w-full text-base p-4 ${errors.description ? 'textarea-error' : ''}`}
+                  {...register("description")}
+                  placeholder="Describe the problem in detail..."
+                />
+                {errors.description && (
+                  <label className="label">
+                    <span className="label-text-alt text-error">{errors.description.message}</span>
+                  </label>
+                )}
+              </div>
+
+              {/* Difficulty */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text text-lg font-semibold">Difficulty</span>
+                </label>
+                <Controller
+                  name="difficulty"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex gap-3">
+                      {['EASY', 'MEDIUM', 'HARD'].map((level) => (
+                        <button
+                          key={level}
+                          type="button"
+                          onClick={() => field.onChange(level)}
+                          className={`
+                            flex-1 px-6 py-4 rounded-xl font-bold text-lg transition-all border-2
+                            ${field.value === level
+                              ? level === 'EASY' ? 'bg-success/20 border-success text-success'
+                              : level === 'MEDIUM' ? 'bg-warning/20 border-warning text-warning'
+                              : 'bg-error/20 border-error text-error'
+                              : 'bg-base-200 border-base-300 hover:border-base-content/20'
+                            }
+                          `}
+                        >
+                          <span className={`w-3 h-3 rounded-full inline-block mr-2 ${
+                            level === 'EASY' ? 'bg-success' : level === 'MEDIUM' ? 'bg-warning' : 'bg-error'
+                          }`} />
+                          {level.charAt(0) + level.slice(1).toLowerCase()}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                />
+                {errors.difficulty && (
+                  <label className="label">
+                    <span className="label-text-alt text-error">{errors.difficulty.message}</span>
+                  </label>
+                )}
+              </div>
+            </div>
+          </WizardStep>
+        );
+
+      case 1:
+        return (
+          <WizardStep
+            title="Tags & Constraints"
+            description="Add categorization tags and problem constraints"
+            icon={BookOpen}
+          >
+            <div className="space-y-6">
+              {/* Tags */}
+              <CollapsibleSection title="Tags" icon={BookOpen} badge={tagFields.length}>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {tagFields.map((field, index) => (
+                      <div key={field.id} className="flex gap-2">
+                        <input
+                          type="text"
+                          className="input input-bordered flex-1"
+                          {...register(`tags.${index}`)}
+                          placeholder="Enter tag"
+                        />
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-square"
+                          onClick={() => removeTag(index)}
+                          disabled={tagFields.length === 1}
+                        >
+                          <Trash2 className="w-4 h-4 text-error" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm gap-2"
+                    onClick={() => appendTag("")}
+                  >
+                    <Plus className="w-4 h-4" /> Add Tag
+                  </button>
+                </div>
+              </CollapsibleSection>
+
+              {/* Constraints */}
+              <CollapsibleSection title="Constraints" icon={AlertCircle}>
+                <textarea
+                  className="textarea textarea-bordered min-h-24 w-full"
+                  {...register("constraints")}
+                  placeholder="Enter problem constraints (e.g., 1 <= n <= 10^5)"
+                />
+              </CollapsibleSection>
+
+              {/* Hints */}
+              <CollapsibleSection title="Hints (Optional)" icon={Lightbulb} defaultOpen={false}>
+                <textarea
+                  className="textarea textarea-bordered min-h-24 w-full"
+                  {...register("hints")}
+                  placeholder="Enter hints for solving the problem"
+                />
+              </CollapsibleSection>
+            </div>
+          </WizardStep>
+        );
+
+      case 2:
+        return (
+          <WizardStep
+            title="Test Cases"
+            description="Define input/output pairs for testing solutions"
+            icon={CheckCircle2}
+          >
+            <div className="space-y-4">
+              {testCaseFields.map((field, index) => (
+                <motion.div
+                  key={field.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="card bg-base-200 shadow-md"
+                >
+                  <div className="card-body p-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <h4 className="font-bold">Test Case #{index + 1}</h4>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm text-error"
+                        onClick={() => removeTestCase(index)}
+                        disabled={testCaseFields.length === 1}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-medium">Input</span>
+                        </label>
+                        <textarea
+                          className="textarea textarea-bordered min-h-20"
+                          {...register(`testCases.${index}.input`)}
+                          placeholder="Enter test input"
+                        />
+                      </div>
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-medium">Expected Output</span>
+                        </label>
+                        <textarea
+                          className="textarea textarea-bordered min-h-20"
+                          {...register(`testCases.${index}.output`)}
+                          placeholder="Enter expected output"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+              
+              <button
+                type="button"
+                className="btn btn-primary gap-2 w-full"
+                onClick={() => appendTestCase({ input: "", output: "" })}
+              >
+                <Plus className="w-4 h-4" /> Add Test Case
+              </button>
+            </div>
+          </WizardStep>
+        );
+
+      case 3:
+        return (
+          <WizardStep
+            title="Code Templates"
+            description="Provide starter code templates for each language"
+            icon={Code2}
+          >
+            <div className="space-y-6">
+              {["JAVASCRIPT", "PYTHON", "JAVA"].map((language) => (
+                <CollapsibleSection
+                  key={language}
+                  title={language}
+                  icon={Code2}
+                  defaultOpen={language === "JAVASCRIPT"}
+                >
+                  <div className="space-y-4">
+                    <div>
+                      <label className="label">
+                        <span className="label-text font-medium">Starter Code Template</span>
+                      </label>
+                      <div className="border rounded-lg overflow-hidden">
+                        <Controller
+                          name={`codeSnippets.${language}`}
+                          control={control}
+                          render={({ field }) => (
+                            <Editor
+                              height="250px"
+                              language={language.toLowerCase()}
+                              theme="vs-dark"
+                              value={field.value}
+                              onChange={field.onChange}
+                              loading={<SkeletonCodeEditor height="250px" />}
+                              options={{
+                                minimap: { enabled: false },
+                                fontSize: 14,
+                                lineNumbers: "on",
+                                scrollBeyondLastLine: false,
+                                automaticLayout: true,
+                              }}
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Examples for this language */}
+                    <div className="card bg-base-100 p-4">
+                      <h5 className="font-medium mb-3">Example</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="form-control">
+                          <label className="label"><span className="label-text">Input</span></label>
+                          <input
+                            type="text"
+                            className="input input-bordered input-sm"
+                            {...register(`examples.${language}.input`)}
+                            placeholder="Example input"
+                          />
+                        </div>
+                        <div className="form-control">
+                          <label className="label"><span className="label-text">Output</span></label>
+                          <input
+                            type="text"
+                            className="input input-bordered input-sm"
+                            {...register(`examples.${language}.output`)}
+                            placeholder="Example output"
+                          />
+                        </div>
+                        <div className="form-control md:col-span-2">
+                          <label className="label"><span className="label-text">Explanation</span></label>
+                          <textarea
+                            className="textarea textarea-bordered textarea-sm"
+                            {...register(`examples.${language}.explanation`)}
+                            placeholder="Explain the example"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CollapsibleSection>
+              ))}
+            </div>
+          </WizardStep>
+        );
+
+      case 4:
+        return (
+          <WizardStep
+            title="Reference Solutions & Editorial"
+            description="Provide working solutions and explanation"
+            icon={Lightbulb}
+          >
+            <div className="space-y-6">
+              {/* Reference Solutions */}
+              {["JAVASCRIPT", "PYTHON", "JAVA"].map((language) => (
+                <CollapsibleSection
+                  key={language}
+                  title={`${language} Solution`}
+                  icon={CheckCircle2}
+                  defaultOpen={language === "JAVASCRIPT"}
+                >
+                  <div className="border rounded-lg overflow-hidden">
+                    <Controller
+                      name={`referenceSolutions.${language}`}
+                      control={control}
+                      render={({ field }) => (
+                        <Editor
+                          height="250px"
+                          language={language.toLowerCase()}
+                          theme="vs-dark"
+                          value={field.value}
+                          onChange={field.onChange}
+                          loading={<SkeletonCodeEditor height="250px" />}
+                          options={{
+                            minimap: { enabled: false },
+                            fontSize: 14,
+                            lineNumbers: "on",
+                            scrollBeyondLastLine: false,
+                            automaticLayout: true,
+                          }}
+                        />
+                      )}
+                    />
+                  </div>
+                </CollapsibleSection>
+              ))}
+
+              {/* Editorial */}
+              <CollapsibleSection title="Editorial (Optional)" icon={Lightbulb}>
+                <textarea
+                  className="textarea textarea-bordered min-h-32 w-full"
+                  {...register("editorial")}
+                  placeholder="Explain the approach and solution..."
+                />
+              </CollapsibleSection>
+            </div>
+          </WizardStep>
+        );
+
+      default:
+        return null;
+    }
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-7xl">
-      <div className="card bg-base-100 shadow-xl">
-        <div className="card-body p-6 md:p-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 pb-4 border-b">
-            <h2 className="card-title text-2xl md:text-3xl flex items-center gap-3">
-              <FileText className="w-6 h-6 md:w-8 md:h-8 text-primary" />
-              Create Problem
-            </h2>
-
-            <div className="flex flex-col md:flex-row gap-3 mt-4 md:mt-0">
-              <div className="join">
+    <div className="container mx-auto py-8 px-4 max-w-5xl">
+      {/* Draft Recovery Prompt */}
+      <AnimatePresence>
+        {showDraftPrompt && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="mb-6 p-4 rounded-xl bg-info/10 border border-info/20"
+          >
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <RotateCcw className="w-5 h-5 text-info" />
+                <span className="font-medium">You have an unsaved draft. Would you like to continue?</span>
+              </div>
+              <div className="flex gap-2">
                 <button
                   type="button"
-                  className={`btn join-item ${
-                    sampleType === "DP" ? "btn-active" : ""
-                  }`}
-                  onClick={() => setSampleType("DP")}
+                  className="btn btn-sm btn-ghost"
+                  onClick={handleDiscardDraft}
                 >
-                  DP Problem
+                  Discard
                 </button>
                 <button
                   type="button"
-                  className={`btn join-item ${
-                    sampleType === "string" ? "btn-active" : ""
-                  }`}
+                  className="btn btn-sm btn-info"
+                  onClick={handleLoadDraft}
+                >
+                  Load Draft
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="card bg-base-100 shadow-xl">
+        <div className="card-body p-6 md:p-8">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-4 border-b">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
+                <FileText className="w-7 h-7 text-primary" />
+                Create Problem
+              </h2>
+              {isDirty && (
+                <p className="text-sm text-base-content/50 mt-1">
+                  <Save className="w-3 h-3 inline mr-1" />
+                  {getLastSavedText() ? `Auto-saved ${getLastSavedText()}` : 'Saving...'}
+                </p>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-2 mt-4 md:mt-0">
+              {/* Sample data buttons */}
+              <div className="join">
+                <button
+                  type="button"
+                  className={`btn btn-sm join-item ${sampleType === "DP" ? "btn-active" : ""}`}
+                  onClick={() => setSampleType("DP")}
+                >
+                  DP
+                </button>
+                <button
+                  type="button"
+                  className={`btn btn-sm join-item ${sampleType === "string" ? "btn-active" : ""}`}
                   onClick={() => setSampleType("string")}
                 >
-                  String Problem
+                  String
                 </button>
               </div>
               <button
                 type="button"
-                className="btn btn-secondary gap-2"
+                className="btn btn-secondary btn-sm gap-2"
                 onClick={loadSampleData}
               >
                 <Download className="w-4 h-4" />
@@ -615,507 +709,18 @@ const CreateProblemForm = () => {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-            {/* Basic Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="form-control md:col-span-2">
-                <label className="label">
-                  <span className="label-text text-base md:text-lg font-semibold">
-                    Title
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  className="input input-bordered w-full text-base md:text-lg"
-                  {...register("title")}
-                  placeholder="Enter problem title"
-                />
-                {errors.title && (
-                  <label className="label">
-                    <span className="label-text-alt text-error">
-                      {errors.title.message}
-                    </span>
-                  </label>
-                )}
-              </div>
-
-              <div className="form-control md:col-span-2">
-                <label className="label">
-                  <span className="label-text text-base md:text-lg font-semibold">
-                    Description
-                  </span>
-                </label>
-                <textarea
-                  className="textarea textarea-bordered min-h-32 w-full text-base md:text-lg p-4 resize-y"
-                  {...register("description")}
-                  placeholder="Enter problem description"
-                />
-                {errors.description && (
-                  <label className="label">
-                    <span className="label-text-alt text-error">
-                      {errors.description.message}
-                    </span>
-                  </label>
-                )}
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text text-base md:text-lg font-semibold">
-                    Difficulty
-                  </span>
-                </label>
-                <Controller
-                  name="difficulty"
-                  control={control}
-                  render={({ field }) => (
-                    <div className="dropdown w-full">
-                      <div
-                        tabIndex={0}
-                        role="button"
-                        className={`btn w-full justify-between bg-base-100 border-base-content/20 hover:border-primary font-normal text-base md:text-lg h-12 ${
-                          field.value === "EASY"
-                            ? "text-success"
-                            : field.value === "MEDIUM"
-                            ? "text-warning"
-                            : "text-error"
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          {field.value === "EASY" && (
-                            <span className="w-2 h-2 rounded-full bg-success"></span>
-                          )}
-                          {field.value === "MEDIUM" && (
-                            <span className="w-2 h-2 rounded-full bg-warning"></span>
-                          )}
-                          {field.value === "HARD" && (
-                            <span className="w-2 h-2 rounded-full bg-error"></span>
-                          )}
-                          {field.value
-                            ? field.value.charAt(0) +
-                              field.value.slice(1).toLowerCase()
-                            : "Select Difficulty"}
-                        </span>
-                        <svg
-                          className="w-5 h-5 opacity-50"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </div>
-                      <ul
-                        tabIndex={0}
-                        className="dropdown-content z-[20] menu p-2 shadow-xl bg-base-100 rounded-box w-full border border-base-content/10 mt-1"
-                      >
-                        <li>
-                          <button
-                            type="button"
-                            className="text-success hover:bg-success/10"
-                            onClick={() => {
-                              field.onChange("EASY");
-                              document.activeElement?.blur();
-                            }}
-                          >
-                            <span className="w-2 h-2 rounded-full bg-success"></span>
-                            Easy
-                          </button>
-                        </li>
-                        <li>
-                          <button
-                            type="button"
-                            className="text-warning hover:bg-warning/10"
-                            onClick={() => {
-                              field.onChange("MEDIUM");
-                              document.activeElement?.blur();
-                            }}
-                          >
-                            <span className="w-2 h-2 rounded-full bg-warning"></span>
-                            Medium
-                          </button>
-                        </li>
-                        <li>
-                          <button
-                            type="button"
-                            className="text-error hover:bg-error/10"
-                            onClick={() => {
-                              field.onChange("HARD");
-                              document.activeElement?.blur();
-                            }}
-                          >
-                            <span className="w-2 h-2 rounded-full bg-error"></span>
-                            Hard
-                          </button>
-                        </li>
-                      </ul>
-                    </div>
-                  )}
-                />
-                {errors.difficulty && (
-                  <label className="label">
-                    <span className="label-text-alt text-error">
-                      {errors.difficulty.message}
-                    </span>
-                  </label>
-                )}
-              </div>
-            </div>
-
-            {/* Tags */}
-            <div className="card bg-base-200 p-4 md:p-6 shadow-md">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg md:text-xl font-semibold flex items-center gap-2">
-                  <BookOpen className="w-5 h-5" />
-                  Tags
-                </h3>
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  onClick={() => appendTag("")}
-                >
-                  <Plus className="w-4 h-4 mr-1" /> Add Tag
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {tagFields.map((field, index) => (
-                  <div key={field.id} className="flex gap-2 items-center">
-                    <input
-                      type="text"
-                      className="input input-bordered flex-1"
-                      {...register(`tags.${index}`)}
-                      placeholder="Enter tag"
-                    />
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-square btn-sm"
-                      onClick={() => removeTag(index)}
-                      disabled={tagFields.length === 1}
-                    >
-                      <Trash2 className="w-4 h-4 text-error" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-              {errors.tags && (
-                <div className="mt-2">
-                  <span className="text-error text-sm">
-                    {errors.tags.message}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Test Cases */}
-            <div className="card bg-base-200 p-4 md:p-6 shadow-md">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg md:text-xl font-semibold flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5" />
-                  Test Cases
-                </h3>
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  onClick={() => appendTestCase({ input: "", output: "" })}
-                >
-                  <Plus className="w-4 h-4 mr-1" /> Add Test Case
-                </button>
-              </div>
-              <div className="space-y-6">
-                {testCaseFields.map((field, index) => (
-                  <div key={field.id} className="card bg-base-100 shadow-md">
-                    <div className="card-body p-4 md:p-6">
-                      <div className="flex justify-between items-center mb-4">
-                        <h4 className="text-base md:text-lg font-semibold">
-                          Test Case #{index + 1}
-                        </h4>
-                        <button
-                          type="button"
-                          className="btn btn-ghost btn-sm text-error"
-                          onClick={() => removeTestCase(index)}
-                          disabled={testCaseFields.length === 1}
-                        >
-                          <Trash2 className="w-4 h-4 mr-1" /> Remove
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                        <div className="form-control">
-                          <label className="label">
-                            <span className="label-text font-medium">
-                              Input
-                            </span>
-                          </label>
-                          <textarea
-                            className="textarea textarea-bordered min-h-24 w-full p-3 resize-y"
-                            {...register(`testCases.${index}.input`)}
-                            placeholder="Enter test case input"
-                          />
-                          {errors.testCases?.[index]?.input && (
-                            <label className="label">
-                              <span className="label-text-alt text-error">
-                                {errors.testCases[index].input.message}
-                              </span>
-                            </label>
-                          )}
-                        </div>
-                        <div className="form-control">
-                          <label className="label">
-                            <span className="label-text font-medium">
-                              Expected Output
-                            </span>
-                          </label>
-                          <textarea
-                            className="textarea textarea-bordered min-h-24 w-full p-3 resize-y"
-                            {...register(`testCases.${index}.output`)}
-                            placeholder="Enter expected output"
-                          />
-                          {errors.testCases?.[index]?.output && (
-                            <label className="label">
-                              <span className="label-text-alt text-error">
-                                {errors.testCases[index].output.message}
-                              </span>
-                            </label>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {errors.testCases && !Array.isArray(errors.testCases) && (
-                <div className="mt-2">
-                  <span className="text-error text-sm">
-                    {errors.testCases.message}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Code Editor Sections */}
-            <div className="space-y-8">
-              {["JAVASCRIPT", "PYTHON", "JAVA"].map((language) => (
-                <div
-                  key={language}
-                  className="card bg-base-200 p-4 md:p-6 shadow-md"
-                >
-                  <h3 className="text-lg md:text-xl font-semibold mb-6 flex items-center gap-2">
-                    <Code2 className="w-5 h-5" />
-                    {language}
-                  </h3>
-
-                  <div className="space-y-6">
-                    {/* Starter Code */}
-                    <div className="card bg-base-100 shadow-md">
-                      <div className="card-body p-4 md:p-6">
-                        <h4 className="font-semibold text-base md:text-lg mb-4">
-                          Starter Code Template
-                        </h4>
-                        <div className="border rounded-md overflow-hidden">
-                          <Controller
-                            name={`codeSnippets.${language}`}
-                            control={control}
-                            render={({ field }) => (
-                              <Editor
-                                height="300px"
-                                language={language.toLowerCase()}
-                                theme="vs-dark"
-                                value={field.value}
-                                onChange={field.onChange}
-                                options={{
-                                  minimap: { enabled: false },
-                                  fontSize: 14,
-                                  lineNumbers: "on",
-                                  roundedSelection: false,
-                                  scrollBeyondLastLine: false,
-                                  automaticLayout: true,
-                                }}
-                              />
-                            )}
-                          />
-                        </div>
-                        {errors.codeSnippets?.[language] && (
-                          <div className="mt-2">
-                            <span className="text-error text-sm">
-                              {errors.codeSnippets[language].message}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Reference Solution */}
-                    <div className="card bg-base-100 shadow-md">
-                      <div className="card-body p-4 md:p-6">
-                        <h4 className="font-semibold text-base md:text-lg mb-4 flex items-center gap-2">
-                          <CheckCircle2 className="w-5 h-5 text-success" />
-                          Reference Solution
-                        </h4>
-                        <div className="border rounded-md overflow-hidden">
-                          <Controller
-                            name={`referenceSolutions.${language}`}
-                            control={control}
-                            render={({ field }) => (
-                              <Editor
-                                height="300px"
-                                language={language.toLowerCase()}
-                                theme="vs-dark"
-                                value={field.value}
-                                onChange={field.onChange}
-                                options={{
-                                  minimap: { enabled: false },
-                                  fontSize: 14,
-                                  lineNumbers: "on",
-                                  roundedSelection: false,
-                                  scrollBeyondLastLine: false,
-                                  automaticLayout: true,
-                                }}
-                              />
-                            )}
-                          />
-                        </div>
-                        {errors.referenceSolutions?.[language] && (
-                          <div className="mt-2">
-                            <span className="text-error text-sm">
-                              {errors.referenceSolutions[language].message}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Examples */}
-                    <div className="card bg-base-100 shadow-md">
-                      <div className="card-body p-4 md:p-6">
-                        <h4 className="font-semibold text-base md:text-lg mb-4">
-                          Example
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                          <div className="form-control">
-                            <label className="label">
-                              <span className="label-text font-medium">
-                                Input
-                              </span>
-                            </label>
-                            <textarea
-                              className="textarea textarea-bordered min-h-20 w-full p-3 resize-y"
-                              {...register(`examples.${language}.input`)}
-                              placeholder="Example input"
-                            />
-                            {errors.examples?.[language]?.input && (
-                              <label className="label">
-                                <span className="label-text-alt text-error">
-                                  {errors.examples[language].input.message}
-                                </span>
-                              </label>
-                            )}
-                          </div>
-                          <div className="form-control">
-                            <label className="label">
-                              <span className="label-text font-medium">
-                                Output
-                              </span>
-                            </label>
-                            <textarea
-                              className="textarea textarea-bordered min-h-20 w-full p-3 resize-y"
-                              {...register(`examples.${language}.output`)}
-                              placeholder="Example output"
-                            />
-                            {errors.examples?.[language]?.output && (
-                              <label className="label">
-                                <span className="label-text-alt text-error">
-                                  {errors.examples[language].output.message}
-                                </span>
-                              </label>
-                            )}
-                          </div>
-                          <div className="form-control md:col-span-2">
-                            <label className="label">
-                              <span className="label-text font-medium">
-                                Explanation
-                              </span>
-                            </label>
-                            <textarea
-                              className="textarea textarea-bordered min-h-24 w-full p-3 resize-y"
-                              {...register(`examples.${language}.explanation`)}
-                              placeholder="Explain the example"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Additional Information */}
-            <div className="card bg-base-200 p-4 md:p-6 shadow-md">
-              <h3 className="text-lg md:text-xl font-semibold mb-6 flex items-center gap-2">
-                <Lightbulb className="w-5 h-5 text-warning" />
-                Additional Information
-              </h3>
-              <div className="space-y-6">
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">Constraints</span>
-                  </label>
-                  <textarea
-                    className="textarea textarea-bordered min-h-24 w-full p-3 resize-y"
-                    {...register("constraints")}
-                    placeholder="Enter problem constraints"
-                  />
-                  {errors.constraints && (
-                    <label className="label">
-                      <span className="label-text-alt text-error">
-                        {errors.constraints.message}
-                      </span>
-                    </label>
-                  )}
-                </div>
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">
-                      Hints (Optional)
-                    </span>
-                  </label>
-                  <textarea
-                    className="textarea textarea-bordered min-h-24 w-full p-3 resize-y"
-                    {...register("hints")}
-                    placeholder="Enter hints for solving the problem"
-                  />
-                </div>
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">
-                      Editorial (Optional)
-                    </span>
-                  </label>
-                  <textarea
-                    className="textarea textarea-bordered min-h-32 w-full p-3 resize-y"
-                    {...register("editorial")}
-                    placeholder="Enter problem editorial/solution explanation"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="card-actions justify-end pt-4 border-t">
-              <button type="submit" className="btn btn-primary btn-lg gap-2">
-                {isLoading ? (
-                  <span className="loading loading-spinner text-white"></span>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-5 h-5" />
-                    Create Problem
-                  </>
-                )}
-              </button>
-            </div>
+          {/* Form Wizard */}
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <FormWizard
+              steps={FORM_STEPS}
+              currentStep={currentStep}
+              onStepChange={setCurrentStep}
+              onComplete={handleSubmit(onSubmit)}
+              isLoading={isLoading}
+              canProceed={isCurrentStepValid}
+            >
+              {renderStepContent()}
+            </FormWizard>
           </form>
         </div>
       </div>
