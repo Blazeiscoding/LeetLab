@@ -1,19 +1,13 @@
 import { useState, useEffect } from "react";
-import Loader from "../components/Loader";
 import {
   Trophy,
   Code,
   Calendar,
   Target,
   Award,
-  GitBranch,
   TrendingUp,
-  Clock,
   CheckCircle,
-  XCircle,
-  Star,
   Layout,
-  Hash,
   Terminal,
   Activity
 } from "lucide-react";

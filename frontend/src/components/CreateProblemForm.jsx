@@ -12,7 +12,6 @@ import {
   Download,
   Save,
   RotateCcw,
-  ChevronDown,
   AlertCircle,
 } from "lucide-react";
 import Editor from "@monaco-editor/react";

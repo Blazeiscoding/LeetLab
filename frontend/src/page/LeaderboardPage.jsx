@@ -1,5 +1,5 @@
 import React from "react";
-import Loader from "../components/Loader";
+import { SkeletonLeaderboard } from "../components/ui/Skeleton";
 import {
   Trophy,
   Medal,
@@ -113,14 +113,30 @@ const LeaderboardPage = () => {
         </button>
       </motion.div>
 
+
       {/* Loading State */}
       {loading ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex flex-col justify-center items-center h-64"
+          className="w-full"
         >
-          <Loader />
+          <div className="flex gap-4 justify-center py-6 mb-8">
+             {/* Podium Skeletons */}
+             <div className="flex flex-col items-center mt-8">
+                <div className="w-16 h-16 rounded-full bg-base-300 animate-pulse mb-2" />
+                <div className="h-4 w-20 bg-base-300 rounded animate-pulse" />
+             </div>
+             <div className="flex flex-col items-center">
+                <div className="w-20 h-20 rounded-full bg-base-300 animate-pulse mb-2" />
+                <div className="h-4 w-24 bg-base-300 rounded animate-pulse" />
+             </div>
+             <div className="flex flex-col items-center mt-8">
+                <div className="w-16 h-16 rounded-full bg-base-300 animate-pulse mb-2" />
+                <div className="h-4 w-20 bg-base-300 rounded animate-pulse" />
+             </div>
+          </div>
+          <SkeletonLeaderboard rows={10} />
         </motion.div>
       ) : error ? (
         <motion.div

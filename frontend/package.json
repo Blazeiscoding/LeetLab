@@ -33,7 +33,6 @@
     "react-resizable-panels": "^3.0.6",
     "react-router-dom": "^7.6.0",
     "react-select": "^5.10.2",
-    "react-virtualized-auto-sizer": "^2.0.0",
     "react-window": "^2.2.1",
     "tailwindcss": "^4.1.6",
     "terser": "^5.44.0",
