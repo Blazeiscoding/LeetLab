@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Search, CheckCircle, ArrowRight } from "lucide-react";
-import Loader from "../components/Loader";
+
 
 // Hooks
 import { useProblems, useSolvedProblems } from "../hooks/useProblems";
@@ -11,6 +11,69 @@ import { getDifficultyColor, getDifficultyIcon, getDifficultyBgColor } from "../
 
 // Components
 import DifficultyBadge from "../components/ui/DifficultyBadge";
+import { SkeletonCard, SkeletonProblemList } from "../components/ui/Skeleton";
+
+// Reusable Problem Card component
+const ProblemCard = ({ problem, isSolved }) => (
+  <div className="group card bg-base-100 shadow-sm hover:shadow-lg transition-all duration-300 border border-base-content/5 hover:border-primary/20 card-interactive">
+    <div className="card-body p-5 sm:p-6 flex-row items-center gap-6">
+      <div
+        className={`w-1.5 self-stretch rounded-full ${getDifficultyBgColor(problem.difficulty)}`}
+      ></div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-3 mb-2">
+          <h3 className="text-lg font-bold group-hover:text-primary transition-colors truncate">
+            {problem.title}
+          </h3>
+          {isSolved && (
+            <div className="badge badge-success badge-sm gap-1 font-semibold">
+              <CheckCircle className="w-3 h-3" /> Solved
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4 text-sm text-base-content/70">
+          <DifficultyBadge
+            difficulty={problem.difficulty}
+            showIcon={true}
+          />
+          <div className="hidden sm:block w-1 h-1 bg-base-content/20 rounded-full"></div>
+          <div className="flex items-center gap-2">
+            {problem.tags?.slice(0, 3).map((tag, i) => (
+              <span
+                key={i}
+                className="badge badge-ghost badge-sm border-base-content/10 bg-base-200/50 text-xs"
+              >
+                {tag}
+              </span>
+            ))}
+            {problem.tags?.length > 3 && (
+              <span className="text-xs opacity-60">
+                +{problem.tags.length - 3} more
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="hidden sm:block">
+        <Link
+          to={`/problems/${problem.id}`}
+          className="btn btn-primary btn-sm gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0 shadow-lg shadow-primary/20 btn-haptic"
+        >
+          Solve <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
+    </div>
+    {/* Mobile Link Overlay */}
+    <Link
+      to={`/problems/${problem.id}`}
+      className="absolute inset-0 sm:hidden"
+      aria-label="Solve problem"
+    />
+  </div>
+);
 
 const ProblemsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -286,9 +349,7 @@ const ProblemsPage = () => {
         {/* Problems List */}
         <div className="space-y-4">
           {loading ? (
-            <div className="flex justify-center py-20">
-              <Loader />
-            </div>
+            <SkeletonProblemList count={6} />
           ) : filteredProblems.length === 0 ? (
             <div className="text-center py-20 bg-base-100 rounded-3xl border border-dashed border-base-content/20">
               <div className="bg-base-200 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -303,69 +364,21 @@ const ProblemsPage = () => {
               </p>
             </div>
           ) : (
-            filteredProblems.map((problem) => (
-              <div
-                key={problem.id}
-                className="group card bg-base-100 shadow-sm hover:shadow-lg transition-all duration-300 border border-base-content/5 hover:border-primary/20"
-              >
-                <div className="card-body p-5 sm:p-6 flex-row items-center gap-6">
-                  <div
-                    className={`w-1.5 self-stretch rounded-full ${getDifficultyBgColor(problem.difficulty)}`}
-                  ></div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-bold group-hover:text-primary transition-colors truncate">
-                        {problem.title}
-                      </h3>
-                      {solvedProblems.has(problem.id) && (
-                        <div className="badge badge-success badge-sm gap-1 font-semibold">
-                          <CheckCircle className="w-3 h-3" /> Solved
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-base-content/70">
-                      <DifficultyBadge
-                        difficulty={problem.difficulty}
-                        showIcon={true}
-                      />
-                      <div className="hidden sm:block w-1 h-1 bg-base-content/20 rounded-full"></div>
-                      <div className="flex items-center gap-2">
-                        {problem.tags?.slice(0, 3).map((tag, i) => (
-                          <span
-                            key={i}
-                            className="badge badge-ghost badge-sm border-base-content/10 bg-base-200/50 text-xs"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                        {problem.tags?.length > 3 && (
-                          <span className="text-xs opacity-60">
-                            +{problem.tags.length - 3} more
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="hidden sm:block">
-                    <Link
-                      to={`/problems/${problem.id}`}
-                      className="btn btn-primary btn-sm gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0 shadow-lg shadow-primary/20"
-                    >
-                      Solve <ArrowRight className="w-4 h-4" />
-                    </Link>
-                  </div>
+            /* Problem list with animations */
+            <div className="space-y-4 animate-fade-in">
+              {filteredProblems.map((problem, index) => (
+                <div 
+                  key={problem.id}
+                  className="animate-slide-up"
+                  style={{ animationDelay: `${Math.min(index * 30, 300)}ms` }}
+                >
+                  <ProblemCard 
+                    problem={problem} 
+                    isSolved={solvedProblems.has(problem.id)} 
+                  />
                 </div>
-                {/* Mobile Link Overlay */}
-                <Link
-                  to={`/problems/${problem.id}`}
-                  className="absolute inset-0 sm:hidden"
-                  aria-label="Solve problem"
-                />
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
       </div>

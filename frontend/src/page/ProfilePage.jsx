@@ -253,8 +253,76 @@ const ProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-base-100">
-        <Loader />
+      <div className="min-h-screen bg-base-200/30">
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
+          {/* Skeleton Profile Header */}
+          <div className="relative bg-base-100/80 backdrop-blur-xl rounded-3xl shadow-xl mb-8 overflow-hidden border border-base-content/5">
+            <div className="absolute inset-0 opacity-30">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20" />
+            </div>
+            <div className="relative p-8 lg:p-10">
+              <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
+                {/* Avatar skeleton */}
+                <div className="w-32 h-32 rounded-full bg-base-300 animate-pulse" />
+                
+                {/* Profile info skeleton */}
+                <div className="flex-1 space-y-4 text-center lg:text-left">
+                  <div className="h-10 w-48 bg-base-300 rounded-lg animate-pulse mx-auto lg:mx-0" />
+                  <div className="h-5 w-64 bg-base-300 rounded-lg animate-pulse mx-auto lg:mx-0" />
+                  <div className="flex gap-4 justify-center lg:justify-start">
+                    <div className="h-10 w-40 bg-base-300 rounded-full animate-pulse" />
+                    <div className="h-10 w-48 bg-base-300 rounded-full animate-pulse" />
+                  </div>
+                </div>
+                
+                {/* Stats skeleton */}
+                <div className="grid grid-cols-3 gap-4 lg:min-w-[400px] w-full lg:w-auto">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="bg-base-100/50 rounded-2xl p-4 border border-base-content/5 text-center">
+                      <div className="w-6 h-6 bg-base-300 rounded mx-auto mb-2 animate-pulse" />
+                      <div className="h-8 w-12 bg-base-300 rounded mx-auto mb-1 animate-pulse" />
+                      <div className="h-3 w-16 bg-base-300 rounded mx-auto animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Tab buttons skeleton */}
+          <div className="flex gap-2 mb-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-12 w-32 bg-base-300 rounded-xl animate-pulse" />
+            ))}
+          </div>
+          
+          {/* Content skeleton */}
+          <div className="space-y-8">
+            <div className="card bg-base-100 shadow-xl border border-base-content/5 p-6">
+              <div className="h-8 w-48 bg-base-300 rounded-lg mb-6 animate-pulse" />
+              <div className="h-40 bg-base-300 rounded-lg animate-pulse" />
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {[1, 2].map((i) => (
+                <div key={i} className="card bg-base-100 shadow-xl border border-base-content/5 p-6">
+                  <div className="h-6 w-36 bg-base-300 rounded mb-6 animate-pulse" />
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((j) => (
+                      <div key={j} className="space-y-2">
+                        <div className="flex justify-between">
+                          <div className="h-4 w-16 bg-base-300 rounded animate-pulse" />
+                          <div className="h-4 w-8 bg-base-300 rounded animate-pulse" />
+                        </div>
+                        <div className="h-3 bg-base-300 rounded-full animate-pulse" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -334,7 +402,7 @@ const ProfilePage = () => {
                     <Code className="w-6 h-6" />
                   </div>
                   <div className="text-2xl font-black text-base-content">{stats.totalSubmissions}</div>
-                  <div className="text-xs font-bold text-base-content/50 uppercase tracking-wide">Total</div>
+                  <div className="text-xs font-bold text-base-content/50 uppercase tracking-wide">Submissions</div>
                 </div>
 
                 <div className="bg-base-100/50 backdrop-blur-sm rounded-2xl p-4 border border-base-content/5 text-center hover:bg-base-100 transition-colors">
