@@ -1,10 +1,57 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+/* ============================================
+   Design System - Spacing & Variables
+   ============================================ */
 :root {
+  /* Spacing scale for consistency */
+  --space-xs: 0.25rem;   /* 4px */
+  --space-sm: 0.5rem;    /* 8px */
+  --space-md: 1rem;      /* 16px */
+  --space-lg: 1.5rem;    /* 24px */
+  --space-xl: 2rem;      /* 32px */
+  --space-2xl: 3rem;     /* 48px */
+  --space-3xl: 4rem;     /* 64px */
+
+  /* Animation durations */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+
+  /* Typography */
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
+/* ============================================
+   Theme Transitions
+   ============================================ */
+/* Smooth color transitions on theme change */
+html {
+  transition: background-color var(--duration-normal) ease,
+              color var(--duration-fast) ease;
+}
+
+/* Apply transition to all elements for theme switching */
+html:not(.no-transition) *,
+html:not(.no-transition) *::before,
+html:not(.no-transition) *::after {
+  transition: background-color var(--duration-normal) ease,
+              border-color var(--duration-normal) ease,
+              color var(--duration-fast) ease,
+              fill var(--duration-fast) ease,
+              stroke var(--duration-fast) ease,
+              box-shadow var(--duration-normal) ease;
+}
+
+/* Disable transitions during theme switch to prevent flash */
+html.theme-transitioning * {
+  transition-duration: 0s !important;
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
 body {
   @apply bg-base-100 text-base-content;
   background-image: radial-gradient(circle at center top, oklch(var(--p) / 0.05) 0%, transparent 40%),
@@ -12,7 +59,9 @@ body {
   background-attachment: fixed;
 }
 
-/* Custom Scrollbar */
+/* ============================================
+   Custom Scrollbar
+   ============================================ */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -23,5 +72,217 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-base-content/20 rounded-full hover:bg-base-content/30 transition-colors;
+  @apply bg-base-content/20 rounded-full hover:bg-base-content/30;
+  transition: background-color var(--duration-normal) ease;
 }
+
+/* ============================================
+   Button Animations & Micro-interactions
+   ============================================ */
+
+/* Ripple animation for buttons */
+@keyframes ripple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.5;
+  }
+  100% {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+.animate-ripple {
+  animation: ripple 0.6s ease-out forwards;
+}
+
+/* Haptic-like button press effect */
+.btn-haptic {
+  transition: transform var(--duration-fast) ease;
+}
+
+.btn-haptic:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Button hover lift effect */
+.btn-lift {
+  transition: transform var(--duration-fast) ease,
+              box-shadow var(--duration-fast) ease;
+}
+
+.btn-lift:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-lift:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* ============================================
+   Loading Animations
+   ============================================ */
+
+/* Slide animation for loading bar */
+@keyframes slide-right {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+.animate-slide-right {
+  animation: slide-right 1.5s ease-in-out infinite;
+}
+
+/* Skeleton shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(var(--b3) / 0.3) 25%,
+    oklch(var(--b3) / 0.5) 50%,
+    oklch(var(--b3) / 0.3) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fade in animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in var(--duration-normal) ease forwards;
+}
+
+/* Slide up animation */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up var(--duration-normal) ease forwards;
+}
+
+/* Scale in animation */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in var(--duration-normal) ease forwards;
+}
+
+/* Stagger delay utilities */
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
+
+/* ============================================
+   Form Wizard Specific
+   ============================================ */
+
+/* Step indicator line */
+.wizard-step-line {
+  @apply h-0.5 bg-base-300 flex-1;
+  transition: background-color var(--duration-normal) ease;
+}
+
+.wizard-step-line.completed {
+  @apply bg-primary;
+}
+
+/* Step circle */
+.wizard-step-circle {
+  @apply w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm;
+  @apply bg-base-200 text-base-content/50;
+  @apply border-2 border-base-300;
+  transition: all var(--duration-normal) ease;
+}
+
+.wizard-step-circle.active {
+  @apply bg-primary text-primary-content border-primary;
+  @apply ring-4 ring-primary/20;
+}
+
+.wizard-step-circle.completed {
+  @apply bg-success text-success-content border-success;
+}
+
+/* Collapsible section */
+.collapsible-section {
+  @apply overflow-hidden;
+  transition: max-height var(--duration-slow) ease;
+}
+
+.collapsible-section.collapsed {
+  max-height: 0;
+}
+
+/* ============================================
+   Card Hover Effects
+   ============================================ */
+
+.card-interactive {
+  @apply transition-all duration-300;
+  @apply hover:shadow-lg hover:border-primary/20;
+  @apply hover:-translate-y-0.5;
+}
+
+/* Glassmorphism card */
+.card-glass {
+  @apply bg-base-100/80 backdrop-blur-xl;
+  @apply border border-base-content/5;
+  @apply shadow-xl;
+}
+
