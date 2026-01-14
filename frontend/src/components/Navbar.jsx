@@ -1,20 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import {
-  Home,
-  Code,
-  BookOpen,
-  Trophy,
-  Menu,
-  X,
-  Sun,
-  Moon,
-  Trash2,
-  Edit,
-  User,
-  LogOut,
-  ChevronDown,
-} from 'lucide-react';
+import { IconBook, IconChevronDown, IconCode, IconEdit, IconHome, IconLogout, IconMenu2, IconMoon, IconSun, IconTrash, IconTrophy, IconUser, IconX } from '@tabler/icons-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useThemeStore } from '../store/useThemeStore';
@@ -23,16 +9,16 @@ import LogoutButton from './LogoutButton';
 
 // Navigation links
 const NAV_LINKS = [
-  { path: '/', label: 'Home', icon: Home },
-  { path: '/problems', label: 'Problems', icon: Code },
-  { path: '/playlists', label: 'Playlists', icon: BookOpen },
-  { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+  { path: '/', label: 'Home', icon: IconHome },
+  { path: '/problems', label: 'Problems', icon: IconCode },
+  { path: '/playlists', label: 'Playlists', icon: IconBook },
+  { path: '/leaderboard', label: 'Leaderboard', icon: IconTrophy },
 ];
 
 const ADMIN_LINKS = [
-  { path: '/add-problem', label: 'Add Problem', icon: Code },
-  { path: '/update-problem', label: 'Update Problem', icon: Edit },
-  { path: '/delete-problem', label: 'Delete Problem', icon: Trash2, danger: true },
+  { path: '/add-problem', label: 'Add Problem', icon: IconCode },
+  { path: '/update-problem', label: 'Update Problem', icon: IconEdit },
+  { path: '/delete-problem', label: 'Delete Problem', icon: IconTrash, danger: true },
 ];
 
 /**
@@ -124,7 +110,7 @@ const MobileMenu = ({ isOpen, onClose, authUser }) => {
             transition={{ duration: 0.2 }}
             className="fixed top-20 left-4 right-4 bg-base-100 rounded-2xl shadow-xl z-50 lg:hidden border border-base-content/10 overflow-hidden"
           >
-            {/* User info */}
+            {/* IconUser info */}
             <div className="p-4 bg-base-200/50 border-b border-base-content/5">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full overflow-hidden">
@@ -187,7 +173,7 @@ const MobileMenu = ({ isOpen, onClose, authUser }) => {
             {/* Logout */}
             <div className="p-2 border-t border-base-content/5">
               <LogoutButton className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium w-full text-left text-error hover:bg-error/10 transition-colors">
-                <LogOut className="w-5 h-5" />
+                <IconLogout className="w-5 h-5" />
                 Sign Out
               </LogoutButton>
             </div>
@@ -270,15 +256,16 @@ const Navbar = () => {
               onClick={toggleTheme}
               className="btn btn-ghost btn-circle btn-sm"
               title={theme === 'night' ? 'Light mode' : 'Dark mode'}
+              aria-label={theme === 'night' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {theme === 'night' ? (
-                <Sun className="w-5 h-5 text-amber-400" />
+                <IconSun className="w-5 h-5 text-amber-400" />
               ) : (
-                <Moon className="w-5 h-5 text-slate-600" />
+                <IconMoon className="w-5 h-5 text-slate-600" />
               )}
             </button>
 
-            {/* User dropdown - Desktop */}
+            {/* IconUser dropdown - Desktop */}
             <div className="dropdown dropdown-end hidden md:block">
               <label tabIndex={0} className="cursor-pointer">
                 <div className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-base-200/50 hover:bg-base-200 transition-colors border border-base-content/5">
@@ -292,7 +279,7 @@ const Navbar = () => {
                   <span className="text-sm font-medium max-w-[80px] truncate">
                     {authUser?.name?.split(' ')[0]}
                   </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-base-content/60" />
+                  <IconChevronDown className="w-3.5 h-3.5 text-base-content/60" />
                 </div>
               </label>
               
@@ -304,7 +291,7 @@ const Navbar = () => {
                 
                 <li>
                   <Link to="/profile" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-base-200 transition-colors">
-                    <User className="w-4 h-4" />
+                    <IconUser className="w-4 h-4" />
                     <span className="text-sm font-medium">Profile</span>
                   </Link>
                 </li>
@@ -314,19 +301,19 @@ const Navbar = () => {
                     <div className="my-1 h-px bg-base-content/10" />
                     <li>
                       <Link to="/add-problem" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-base-200 transition-colors">
-                        <Code className="w-4 h-4" />
+                        <IconCode className="w-4 h-4" />
                         <span className="text-sm font-medium">Add Problem</span>
                       </Link>
                     </li>
                     <li>
                       <Link to="/update-problem" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-base-200 transition-colors">
-                        <Edit className="w-4 h-4" />
+                        <IconEdit className="w-4 h-4" />
                         <span className="text-sm font-medium">Update Problem</span>
                       </Link>
                     </li>
                     <li>
                       <Link to="/delete-problem" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-error/10 text-error transition-colors">
-                        <Trash2 className="w-4 h-4" />
+                        <IconTrash className="w-4 h-4" />
                         <span className="text-sm font-medium">Delete Problem</span>
                       </Link>
                     </li>
@@ -336,7 +323,7 @@ const Navbar = () => {
                 <div className="my-1 h-px bg-base-content/10" />
                 <li>
                   <LogoutButton className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-error/10 text-error transition-colors w-full text-left">
-                    <LogOut className="w-4 h-4" />
+                    <IconLogout className="w-4 h-4" />
                     <span className="text-sm font-medium">Sign Out</span>
                   </LogoutButton>
                 </li>
@@ -347,8 +334,10 @@ const Navbar = () => {
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="btn btn-ghost btn-circle btn-sm lg:hidden"
+              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMobileMenuOpen}
             >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isMobileMenuOpen ? <IconX className="w-5 h-5" /> : <IconMenu2 className="w-5 h-5" />}
             </button>
           </div>
         </div>
