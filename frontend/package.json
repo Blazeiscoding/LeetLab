@@ -12,6 +12,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
     "@monaco-editor/react": "^4.7.0",
+    "@tabler/icons-react": "^3.36.1",
     "@tailwindcss/vite": "^4.1.6",
     "@tanstack/react-query": "^5.90.12",
     "@vercel/analytics": "^1.5.0",
@@ -22,7 +23,6 @@
     "cmdk": "^1.1.1",
     "daisyui": "^5.0.35",
     "framer-motion": "^12.23.12",
-    "lucide-react": "^0.510.0",
     "monaco-editor": "^0.52.2",
     "react": "^19.1.0",
     "react-activity-calendar": "^3.0.1",
