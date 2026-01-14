@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { IconActivity, IconAward, IconCalendar, IconCircleCheck, IconCode, IconLayout, IconTarget, IconTerminal, IconTrendingUp, IconTrophy } from '@tabler/icons-react';
+import { IconActivity, IconAward, IconCalendar, IconCircleCheck, IconCode, IconTarget, IconTerminal, IconTrendingUp, IconTrophy, IconStar ,IconClock ,IconLayout ,IconGitBranch  } from '@tabler/icons-react';
 import { useAuthStore } from "../store/useAuthStore";
 import { axiosInstance } from "../utils/axios";
 import StreakCalendar from "../components/StreakCalendar";
@@ -348,7 +348,7 @@ const ProfilePage = () => {
                   </h1>
                   {authUser?.role === "ADMIN" && (
                     <div className="badge badge-warning gap-1 font-bold">
-                      <Star className="w-3 h-3 fill-current" />
+                      <IconStar className="w-3 h-3 fill-current" />
                       Admin
                     </div>
                   )}
@@ -364,7 +364,7 @@ const ProfilePage = () => {
                     </span>
                   </div>
                   <div className="flex items-center gap-2 px-4 py-2 bg-base-200/50 rounded-full border border-base-content/5">
-                    <Clock className="w-4 h-4 text-secondary" />
+                    <IconClock  className="w-4 h-4 text-secondary" />
                     <span className="text-sm font-medium">{stats.recentSubmissions} submissions this week</span>
                   </div>
                 </div>
@@ -509,7 +509,7 @@ const ProfilePage = () => {
               <div className="card-body">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-3 bg-base-200 rounded-xl">
-                    <GitBranch className="w-6 h-6 text-secondary" />
+                    <IconGitBranch  className="w-6 h-6 text-secondary" />
                   </div>
                   <div>
                     <h2 className="text-xl font-bold">Languages Used</h2>
