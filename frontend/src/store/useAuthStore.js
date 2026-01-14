@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { axiosInstance } from "../util/axios";
+import { axiosInstance } from "../utils/axios";
 import toast from "react-hot-toast";
 
 export const useAuthStore = create((set, get) => ({
@@ -47,7 +47,6 @@ export const useAuthStore = create((set, get) => ({
         email: data.email,
         password: data.password,
       });
-      console.log("LOGIN RESPONSE", res.data); // Debug log
       // Check if user is verified
       if (res.data.user && res.data.user.isEmailVerified) {
         // User is verified, direct login

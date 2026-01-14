@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import Loader from "../components/Loader";
-import { Plus, BookOpen, Trash2, Edit, Play, AlertCircle } from "lucide-react";
+import { IconAlertCircle, IconBook, IconEdit, IconPlayerPlay, IconPlus, IconTrash } from '@tabler/icons-react';
 import { Link } from "react-router-dom";
-import { axiosInstance } from "../util/axios";
+import { axiosInstance } from "../utils/axios";
 import toast from "react-hot-toast";
 
 const PlaylistsPage = () => {
@@ -19,7 +19,6 @@ const PlaylistsPage = () => {
   const fetchPlaylists = async () => {
     try {
       const response = await axiosInstance.get("/playlist");
-      console.log("Playlists response:", response.data);
       setPlaylists(response.data.data || []);
     } catch (error) {
       toast.error("Failed to fetch playlists");
@@ -128,7 +127,7 @@ const PlaylistsPage = () => {
           className="btn btn-primary gap-2"
           onClick={() => setShowCreateModal(true)}
         >
-          <Plus className="w-4 h-4" />
+          <IconPlus className="w-4 h-4" />
           Create Playlist
         </button>
       </div>
@@ -136,7 +135,7 @@ const PlaylistsPage = () => {
       {/* Playlists Grid */}
       {playlists.length === 0 ? (
         <div className="text-center py-16">
-          <BookOpen className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+          <IconBook className="w-16 h-16 mx-auto text-gray-400 mb-4" />
           <h2 className="text-2xl font-bold mb-2">No playlists yet</h2>
           <p className="text-gray-600 mb-6">
             Create your first playlist to organize your practice problems
@@ -145,7 +144,7 @@ const PlaylistsPage = () => {
             className="btn btn-primary gap-2"
             onClick={() => setShowCreateModal(true)}
           >
-            <Plus className="w-4 h-4" />
+            <IconPlus className="w-4 h-4" />
             Create Your First Playlist
           </button>
         </div>
@@ -188,8 +187,8 @@ const PlaylistsPage = () => {
                             to={`/playlists/${playlist.id}/edit`}
                             className="gap-2"
                           >
-                            <Edit className="w-4 h-4" />
-                            Edit
+                            <IconEdit className="w-4 h-4" />
+                            IconEdit
                           </Link>
                         </li>
                         <li>
@@ -197,7 +196,7 @@ const PlaylistsPage = () => {
                             onClick={() => deletePlaylist(playlist.id)}
                             className="gap-2 text-error"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <IconTrash className="w-4 h-4" />
                             Delete
                           </button>
                         </li>
@@ -260,7 +259,7 @@ const PlaylistsPage = () => {
                   ) : (
                     <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center gap-2 text-gray-500 text-sm">
-                        <AlertCircle className="w-4 h-4" />
+                        <IconAlertCircle className="w-4 h-4" />
                         No problems added yet
                       </div>
                     </div>
@@ -271,7 +270,7 @@ const PlaylistsPage = () => {
                       to={`/playlists/${playlist.id}`}
                       className="btn btn-outline btn-sm gap-2"
                     >
-                      <BookOpen className="w-4 h-4" />
+                      <IconBook className="w-4 h-4" />
                       View Details
                     </Link>
                     {totalProblems > 0 && (
@@ -279,7 +278,7 @@ const PlaylistsPage = () => {
                         to={`/playlists/${playlist.id}/practice`}
                         className="btn btn-primary btn-sm gap-2"
                       >
-                        <Play className="w-4 h-4" />
+                        <IconPlayerPlay className="w-4 h-4" />
                         Practice
                       </Link>
                     )}
