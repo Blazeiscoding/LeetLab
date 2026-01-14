@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 /**
  * LazyImage - Image component with lazy loading and blur-up effect
@@ -127,12 +127,17 @@ export const Avatar = ({
 
   const [hasError, setHasError] = useState(false);
 
+  // Reset error state when src changes
+  useEffect(() => {
+    setHasError(false);
+  }, [src]);
+
   // Generate fallback avatar from name
-  const getFallbackUrl = () => {
+  const getFallbackUrl = useCallback(() => {
     if (fallback) return fallback;
     const initials = alt?.split(' ').map(n => n[0]).join('').slice(0, 2) || '?';
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=random`;
-  };
+  }, [fallback, alt]);
 
   return (
     <div className={`${sizes[size]} rounded-full overflow-hidden ${className}`}>

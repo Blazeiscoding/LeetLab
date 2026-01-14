@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import { IconAlertCircle, IconChevronDown } from '@tabler/icons-react';
 
 /**
  * WizardStep - Individual step wrapper with collapsible sections
@@ -49,7 +49,7 @@ const WizardStep = ({
           className="p-4 rounded-xl bg-error/10 border border-error/20"
         >
           <div className="flex items-center gap-2 text-error font-medium mb-2">
-            <AlertCircle className="w-5 h-5" />
+            <IconAlertCircle className="w-5 h-5" />
             Please fix the following errors:
           </div>
           <ul className="list-disc list-inside text-sm text-error/80 space-y-1">
@@ -98,7 +98,7 @@ export const CollapsibleSection = ({
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
         >
-          <ChevronDown className="w-5 h-5 text-base-content/50" />
+          <IconChevronDown className="w-5 h-5 text-base-content/50" />
         </motion.div>
       </button>
 
