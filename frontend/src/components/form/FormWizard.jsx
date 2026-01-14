@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { IconCheck, IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 
 /**
  * FormWizard - Multi-step form container with progress indicator
@@ -93,7 +93,7 @@ const FormWizard = ({
                     whileTap={index <= currentStep ? { scale: 0.95 } : {}}
                   >
                     {isCompleted ? (
-                      <Check className="w-5 h-5" />
+                      <IconCheck className="w-5 h-5" />
                     ) : Icon ? (
                       <Icon className="w-5 h-5" />
                     ) : (
@@ -139,7 +139,7 @@ const FormWizard = ({
           disabled={isFirstStep}
           className={`btn btn-ghost gap-2 ${isFirstStep ? 'invisible' : ''}`}
         >
-          <ChevronLeft className="w-4 h-4" />
+          <IconChevronLeft className="w-4 h-4" />
           Previous
         </button>
 
@@ -157,13 +157,13 @@ const FormWizard = ({
             <span className="loading loading-spinner loading-sm" />
           ) : isLastStep ? (
             <>
-              <Check className="w-4 h-4" />
+              <IconCheck className="w-4 h-4" />
               Complete
             </>
           ) : (
             <>
               Next
-              <ChevronRight className="w-4 h-4" />
+              <IconChevronRight className="w-4 h-4" />
             </>
           )}
         </button>

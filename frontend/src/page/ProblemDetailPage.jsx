@@ -1,31 +1,12 @@
 import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import Loader from "../components/Loader";
-import {
-  Play,
-  Send,
-  RotateCcw,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Lightbulb,
-  Eye,
-  EyeOff,
-  Code2,
-  FileText,
-  Terminal,
-  ChevronRight,
-  Maximize2,
-  Minimize2,
-  GripVertical,
-  Keyboard,
-  FlaskConical
-} from "lucide-react";
+import { IconBulb, IconChevronRight, IconCircleCheck, IconCircleX, IconClock, IconCode, IconEye, IconEyeOff, IconFileText, IconTestPipe, IconGripVertical, IconKeyboard, IconMaximize, IconMinimize, IconPlayerPlay, IconRotate, IconSend, IconTerminal } from '@tabler/icons-react';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useHotkeys } from "react-hotkeys-hook";
-import { axiosInstance } from "../util/axios";
-import { useCodePersistence } from "../util/useCodePersistence";
-import { useConfetti } from "../util/useConfetti";
+import { axiosInstance } from "../utils/axios";
+import { useCodePersistence } from "../utils/useCodePersistence";
+import { useConfetti } from "../utils/useConfetti";
 import KeyboardShortcutsModal from "../components/KeyboardShortcutsModal";
 import CustomTestCasePanel from "../components/CustomTestCasePanel";
 import toast from "react-hot-toast";
@@ -363,7 +344,7 @@ const ProblemDetailPage = () => {
     toast.success("Code reset to default");
   }, [resetPersistedCode]);
 
-  // ✅ Keyboard Shortcuts
+  // ✅ IconKeyboard Shortcuts
   // Run code: Ctrl/Cmd + Enter
   useHotkeys("ctrl+enter, meta+enter", (e) => {
     e.preventDefault();
@@ -420,7 +401,7 @@ const ProblemDetailPage = () => {
       <div className="flex items-center justify-center min-h-screen bg-base-100">
         <div className="text-center max-w-md mx-auto p-6">
           <div className="w-16 h-16 bg-base-200 rounded-full flex items-center justify-center mx-auto mb-4">
-            <XCircle className="w-8 h-8 text-base-content/40" />
+            <IconCircleX className="w-8 h-8 text-base-content/40" />
           </div>
           <h2 className="text-2xl font-bold mb-2">Problem not found</h2>
           <p className="text-base-content/60 mb-6">The problem you're looking for doesn't exist or has been removed.</p>
@@ -461,7 +442,7 @@ const ProblemDetailPage = () => {
                 className="btn btn-sm bg-base-200/50 hover:bg-base-200 border-0 font-mono gap-2 min-w-[130px] justify-between"
               >
                 <div className="flex items-center gap-2">
-                  <Code2 className="w-4 h-4 text-primary" />
+                  <IconCode className="w-4 h-4 text-primary" />
                   {languageMap[selectedLanguage]?.name || selectedLanguage}
                 </div>
                 <svg className="w-3 h-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -485,7 +466,7 @@ const ProblemDetailPage = () => {
                         {key === 'JAVA' && <span className="text-error">Java</span>}
                         {lang.name}
                       </span>
-                      {selectedLanguage === key && <CheckCircle className="w-3.5 h-3.5" />}
+                      {selectedLanguage === key && <IconCircleCheck className="w-3.5 h-3.5" />}
                     </button>
                   </li>
                 ))}
@@ -498,7 +479,7 @@ const ProblemDetailPage = () => {
                 onClick={handleResetCode}
                 title="Reset Code to Default"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <IconRotate className="w-3.5 h-3.5" />
               </button>
             </div>
 
@@ -512,7 +493,7 @@ const ProblemDetailPage = () => {
                 {isRunning ? (
                   <span className="loading loading-spinner loading-xs"></span>
                 ) : (
-                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <IconPlayerPlay className="w-3.5 h-3.5 fill-current" />
                 )}
                 {runCooldown > 0 ? `${runCooldown}s` : "Run"}
               </button>
@@ -525,7 +506,7 @@ const ProblemDetailPage = () => {
                 {isSubmitting ? (
                   <span className="loading loading-spinner loading-xs"></span>
                 ) : (
-                  <Send className="w-3.5 h-3.5" />
+                  <IconSend className="w-3.5 h-3.5" />
                 )}
                 {submitCooldown > 0 ? `${submitCooldown}s` : "Submit"}
               </button>
@@ -534,7 +515,7 @@ const ProblemDetailPage = () => {
                 onClick={() => setShowShortcutsModal(true)}
                 title="Keyboard Shortcuts (?)"
               >
-                <Keyboard className="w-4 h-4" />
+                <IconKeyboard className="w-4 h-4" />
               </button>
             </div>
         </div>
@@ -554,7 +535,7 @@ const ProblemDetailPage = () => {
               }`}
               onClick={() => setActiveTab("description")}
             >
-              <FileText className="w-4 h-4" />
+              <IconFileText className="w-4 h-4" />
               Description
             </button>
             <button
@@ -565,7 +546,7 @@ const ProblemDetailPage = () => {
               }`}
               onClick={() => setActiveTab("hints")}
             >
-              <Lightbulb className={`w-4 h-4 ${hints.length > 0 ? "text-warning" : ""}`} />
+              <IconBulb className={`w-4 h-4 ${hints.length > 0 ? "text-warning" : ""}`} />
               Hints 
               {hints.length > 0 && (
                 <span className="badge badge-xs badge-ghost">{hints.length}</span>
@@ -579,7 +560,7 @@ const ProblemDetailPage = () => {
               }`}
               onClick={() => setActiveTab("output")}
             >
-              <Terminal className="w-4 h-4" />
+              <IconTerminal className="w-4 h-4" />
               Output
               {testResults && (
                 <span className={`w-2 h-2 rounded-full ${
@@ -595,7 +576,7 @@ const ProblemDetailPage = () => {
               }`}
               onClick={() => setActiveTab("custom")}
             >
-              <FlaskConical className="w-4 h-4 text-accent" />
+              <IconTestPipe className="w-4 h-4 text-accent" />
               Custom
             </button>
           </div>
@@ -657,7 +638,7 @@ const ProblemDetailPage = () => {
               <div className="space-y-6">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-3 bg-warning/10 rounded-xl text-warning">
-                      <Lightbulb className="w-6 h-6" />
+                      <IconBulb className="w-6 h-6" />
                   </div>
                   <div>
                     <h3 className="text-lg font-bold">Need a nudge?</h3>
@@ -686,11 +667,11 @@ const ProblemDetailPage = () => {
                             >
                                 {revealedHints.has(index) ? (
                                     <>
-                                        <EyeOff className="w-3 h-3" /> Hide
+                                        <IconEyeOff className="w-3 h-3" /> Hide
                                     </>
                                 ) : (
                                     <>
-                                        <Eye className="w-3 h-3" /> Reveal
+                                        <IconEye className="w-3 h-3" /> Reveal
                                     </>
                                 )}
                             </button>
@@ -709,7 +690,7 @@ const ProblemDetailPage = () => {
                   </div>
                 ) : (
                   <div className="text-center py-12 bg-base-200/30 rounded-2xl border border-dashed border-base-content/10">
-                    <Lightbulb className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                    <IconBulb className="w-12 h-12 mx-auto mb-3 opacity-20" />
                     <p className="font-medium opacity-60">No hints available for this problem</p>
                   </div>
                 )}
@@ -722,7 +703,7 @@ const ProblemDetailPage = () => {
                   <div className="space-y-6">
                     {testResults.error && (
                       <div className="alert alert-error shadow-sm">
-                        <XCircle className="w-5 h-5" />
+                        <IconCircleX className="w-5 h-5" />
                         <div>
                           <h3 className="font-bold">Execution Error</h3>
                           <div className="text-xs mt-1 opacity-90 font-mono bg-black/10 p-2 rounded">
@@ -744,9 +725,9 @@ const ProblemDetailPage = () => {
                                 : "bg-error/10 border-error/20 text-error"
                          }`}>
                              {testResults.status === "Accepted" ? (
-                                 <CheckCircle className="w-6 h-6" />
+                                 <IconCircleCheck className="w-6 h-6" />
                              ) : (
-                                 <XCircle className="w-6 h-6" />
+                                 <IconCircleX className="w-6 h-6" />
                              )}
                              <div>
                                  <div className="font-bold text-lg">{testResults.status}</div>
@@ -763,9 +744,9 @@ const ProblemDetailPage = () => {
                             <input type="checkbox" /> 
                             <div className="collapse-title flex items-center gap-3 py-3 pr-12 min-h-0">
                                 {testCase.passed ? (
-                                    <CheckCircle className="w-5 h-5 text-success shrink-0" />
+                                    <IconCircleCheck className="w-5 h-5 text-success shrink-0" />
                                 ) : (
-                                    <XCircle className="w-5 h-5 text-error shrink-0" />
+                                    <IconCircleX className="w-5 h-5 text-error shrink-0" />
                                 )}
                                 <span className="font-medium text-sm">Test Case {index + 1}</span>
                                 {testCase.time && <span className="ml-auto text-xs font-mono opacity-50">{testCase.time}</span>}
@@ -815,7 +796,7 @@ const ProblemDetailPage = () => {
                   </div>
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center text-base-content/40 p-8 text-center">
-                    <Terminal className="w-16 h-16 mb-4 opacity-20" />
+                    <IconTerminal className="w-16 h-16 mb-4 opacity-20" />
                     <h3 className="font-bold text-lg mb-2">No output yet</h3>
                     <p className="text-sm max-w-xs">Run or submit your code to see test results and console output here.</p>
                   </div>
@@ -834,7 +815,7 @@ const ProblemDetailPage = () => {
 
         {/* Resize Handle */}
         <PanelResizeHandle className="w-2 bg-base-200 hover:bg-primary/30 transition-colors duration-200 flex items-center justify-center group cursor-col-resize">
-          <GripVertical className="w-4 h-4 text-base-content/30 group-hover:text-primary transition-colors" />
+          <IconGripVertical className="w-4 h-4 text-base-content/30 group-hover:text-primary transition-colors" />
         </PanelResizeHandle>
 
         {/* Right Panel - Code Editor */}
@@ -897,7 +878,7 @@ const ProblemDetailPage = () => {
         </div>
       )}
 
-      {/* Keyboard Shortcuts Modal */}
+      {/* IconKeyboard Shortcuts Modal */}
       <KeyboardShortcutsModal 
         isOpen={showShortcutsModal} 
         onClose={() => setShowShortcutsModal(false)} 

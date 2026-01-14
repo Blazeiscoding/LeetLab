@@ -2,19 +2,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Code,
-  Eye,
-  EyeOff,
-  Loader2,
-  Lock,
-  Mail,
-  User,
-  CheckCircle,
-  AlertCircle,
-  ArrowLeft,
-} from "lucide-react";
-import { signUpSchema } from "../util/zodSchema";
+import { IconAlertCircle, IconArrowLeft, IconCircleCheck, IconCode, IconEye, IconEyeOff, IconLoader, IconLock, IconMail, IconUser } from '@tabler/icons-react';
+import { signUpSchema } from "../utils/zodSchema";
 import AuthImagePattern from "../components/AuthImagePattern";
 import { useAuthStore } from "../store/useAuthStore";
 import OTPLogin from "../components/OtpLogin";
@@ -84,7 +73,7 @@ const SignupPage = () => {
             className="absolute top-8 left-8 p-2 rounded-full hover:bg-base-200 transition-colors group"
             aria-label="Go back to signup"
         >
-            <ArrowLeft className="w-5 h-5 text-base-content/60 group-hover:text-base-content" />
+            <IconArrowLeft className="w-5 h-5 text-base-content/60 group-hover:text-base-content" />
         </button>
 
           <div className="w-full max-w-md space-y-8">
@@ -92,7 +81,7 @@ const SignupPage = () => {
             <div className="text-center">
               <div className="flex flex-col items-center gap-4 mb-8">
                 <div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center border border-success/20 animate-bounce-subtle">
-                  <CheckCircle className="w-10 h-10 text-success" />
+                  <IconCircleCheck className="w-10 h-10 text-success" />
                 </div>
                 <h1 className="text-3xl font-black tracking-tight">Verify Your Email</h1>
                 <p className="text-base-content/60">
@@ -104,12 +93,12 @@ const SignupPage = () => {
             {/* Verification Info */}
             <div className="bg-base-200/50 border border-base-content/10 rounded-xl p-6 text-center">
               <p className="text-sm text-base-content/70 mb-2">
-                  Code sent to:
+                  IconCode sent to:
               </p>
               <p className="font-bold text-lg text-primary mb-4">{registrationEmail}</p>
               
               <div className="flex items-center justify-center gap-2 text-warning text-xs font-medium bg-warning/10 py-2 px-3 rounded-lg w-fit mx-auto">
-                <AlertCircle className="w-4 h-4" />
+                <IconAlertCircle className="w-4 h-4" />
                 <span>Check your spam folder if you don't see it</span>
               </div>
             </div>
@@ -154,7 +143,7 @@ const SignupPage = () => {
             className="absolute top-8 left-8 p-2 rounded-full hover:bg-base-200 transition-colors group"
             aria-label="Go back to home"
         >
-            <ArrowLeft className="w-5 h-5 text-base-content/60 group-hover:text-base-content" />
+            <IconArrowLeft className="w-5 h-5 text-base-content/60 group-hover:text-base-content" />
         </Link>
 
         <div className="w-full max-w-md space-y-8">
@@ -162,7 +151,7 @@ const SignupPage = () => {
           <div className="text-center mb-8">
             <div className="flex flex-col items-center gap-2 group">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-primary/10 border border-primary/10">
-                <Code className="w-7 h-7 text-primary" />
+                <IconCode className="w-7 h-7 text-primary" />
               </div>
               <h1 className="text-3xl font-black mt-4 tracking-tight">Create Account</h1>
               <p className="text-base-content/60">
@@ -179,7 +168,7 @@ const SignupPage = () => {
                 <span className="label-text font-bold">Full Name</span>
               </label>
               <div className="relative group">
-                <User className="absolute left-3 top-3.5 h-5 w-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
+                <IconUser className="absolute left-3 top-3.5 h-5 w-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
                 <input
                   type="text"
                   placeholder="Enter your full name"
@@ -202,7 +191,7 @@ const SignupPage = () => {
                 <span className="label-text font-bold">Email Address</span>
               </label>
               <div className="relative group">
-                <Mail className="absolute left-3 top-3.5 h-5 w-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
+                <IconMail className="absolute left-3 top-3.5 h-5 w-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
                 <input
                   type="email"
                   placeholder="Enter your email"
@@ -225,7 +214,7 @@ const SignupPage = () => {
                 <span className="label-text font-bold">Password</span>
               </label>
               <div className="relative group">
-                <Lock className="absolute left-3 top-3.5 h-5 w-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
+                <IconLock className="absolute left-3 top-3.5 h-5 w-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Create a strong password"
@@ -240,9 +229,9 @@ const SignupPage = () => {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
+                    <IconEyeOff className="h-5 w-5" />
                   ) : (
-                    <Eye className="h-5 w-5" />
+                    <IconEye className="h-5 w-5" />
                   )}
                 </button>
               </div>
@@ -289,7 +278,7 @@ const SignupPage = () => {
             >
               {isSigningUp ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <IconLoader className="w-5 h-5 animate-spin" />
                   Creating Account...
                 </>
               ) : (

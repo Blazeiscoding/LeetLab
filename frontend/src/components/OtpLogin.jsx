@@ -1,14 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Mail,
-  KeyRound,
-  Loader2,
-  ArrowLeft,
-  Timer,
-  RefreshCw,
-} from "lucide-react";
+import { IconArrowLeft, IconKey, IconLoader, IconMail, IconRefresh, IconClock } from '@tabler/icons-react';
 import { z } from "zod";
 import { useAuthStore } from "../store/useAuthStore";
 
@@ -63,7 +56,7 @@ const OTPLogin = ({ email: initialEmail, onBackToLogin, onSuccess }) => {
     }
   }, [initialEmail]);
 
-  // Timer countdown effect
+  // IconClock countdown effect
   useEffect(() => {
     let interval;
     if (timer > 0) {
@@ -187,7 +180,7 @@ const OTPLogin = ({ email: initialEmail, onBackToLogin, onSuccess }) => {
               className="btn btn-ghost btn-circle btn-sm"
               disabled={isSendingOTP}
             >
-              <ArrowLeft className="h-4 w-4" />
+              <IconArrowLeft className="h-4 w-4" />
             </button>
             <h1 className="text-2xl font-bold">Login with OTP</h1>
           </div>
@@ -204,7 +197,7 @@ const OTPLogin = ({ email: initialEmail, onBackToLogin, onSuccess }) => {
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-base-content/40" />
+                <IconMail className="h-5 w-5 text-base-content/40" />
               </div>
               <input
                 type="email"
@@ -230,7 +223,7 @@ const OTPLogin = ({ email: initialEmail, onBackToLogin, onSuccess }) => {
           >
             {isSendingOTP ? (
               <>
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <IconLoader className="h-5 w-5 animate-spin" />
                 Sending OTP...
               </>
             ) : (
@@ -265,7 +258,7 @@ const OTPLogin = ({ email: initialEmail, onBackToLogin, onSuccess }) => {
             className="btn btn-ghost btn-circle btn-sm"
             disabled={isVerifyingOTP}
           >
-            <ArrowLeft className="h-4 w-4" />
+            <IconArrowLeft className="h-4 w-4" />
           </button>
           <h1 className="text-2xl font-bold">Enter OTP</h1>
         </div>
@@ -275,12 +268,12 @@ const OTPLogin = ({ email: initialEmail, onBackToLogin, onSuccess }) => {
         </p>
       </div>
 
-      {/* Timer and Attempts Info */}
+      {/* IconClock and Attempts Info */}
       <div className="bg-base-200 rounded-lg p-4 space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium">Time remaining:</span>
           <div className="flex items-center gap-1 text-primary">
-            <Timer className="h-4 w-4" />
+            <IconClock className="h-4 w-4" />
             <span className="font-mono text-sm">{formatTime(timer)}</span>
           </div>
         </div>
@@ -298,7 +291,7 @@ const OTPLogin = ({ email: initialEmail, onBackToLogin, onSuccess }) => {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <KeyRound className="h-5 w-5 text-base-content/40" />
+              <IconKey className="h-5 w-5 text-base-content/40" />
             </div>
             <input
               type="text"
@@ -324,7 +317,7 @@ const OTPLogin = ({ email: initialEmail, onBackToLogin, onSuccess }) => {
         >
           {isVerifyingOTP ? (
             <>
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <IconLoader className="h-5 w-5 animate-spin" />
               Verifying...
             </>
           ) : (
@@ -345,19 +338,19 @@ const OTPLogin = ({ email: initialEmail, onBackToLogin, onSuccess }) => {
         >
           {timer > 0 ? (
             <>
-              <Timer className="h-4 w-4 mr-1" />
+              <IconClock className="h-4 w-4 mr-1" />
               Resend in {formatTime(timer)}
             </>
           ) : remainingAttempts <= 0 ? (
             "No more attempts"
           ) : isSendingOTP ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              <IconLoader className="h-4 w-4 animate-spin mr-1" />
               Resending...
             </>
           ) : (
             <>
-              <RefreshCw className="h-4 w-4 mr-1" />
+              <IconRefresh className="h-4 w-4 mr-1" />
               Resend OTP
             </>
           )}

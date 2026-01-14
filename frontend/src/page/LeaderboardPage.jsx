@@ -1,12 +1,6 @@
 import React from "react";
 import { SkeletonLeaderboard } from "../components/ui/Skeleton";
-import {
-  Trophy,
-  Medal,
-  TrendingUp,
-  Calendar,
-  RefreshCw,
-} from "lucide-react";
+import { IconCalendar, IconMedal, IconRefresh, IconTrendingUp, IconTrophy } from '@tabler/icons-react';
 import { motion, AnimatePresence } from "framer-motion";
 
 // Hooks
@@ -30,7 +24,7 @@ const LeaderboardPage = () => {
     if (rank === 1) {
       return (
         <div className="relative">
-          <Trophy className="w-8 h-8 text-yellow-400 drop-shadow-lg" />
+          <IconTrophy className="w-8 h-8 text-yellow-400 drop-shadow-lg" />
           <div className="absolute inset-0 bg-yellow-400/20 blur-xl rounded-full"></div>
         </div>
       );
@@ -38,7 +32,7 @@ const LeaderboardPage = () => {
     if (rank === 2) {
       return (
         <div className="relative">
-          <Trophy className="w-7 h-7 text-gray-300 drop-shadow-lg" />
+          <IconTrophy className="w-7 h-7 text-gray-300 drop-shadow-lg" />
           <div className="absolute inset-0 bg-gray-300/20 blur-xl rounded-full"></div>
         </div>
       );
@@ -46,7 +40,7 @@ const LeaderboardPage = () => {
     if (rank === 3) {
       return (
         <div className="relative">
-          <Trophy className="w-7 h-7 text-amber-700 drop-shadow-lg" />
+          <IconTrophy className="w-7 h-7 text-amber-700 drop-shadow-lg" />
           <div className="absolute inset-0 bg-amber-700/20 blur-xl rounded-full"></div>
         </div>
       );
@@ -76,7 +70,7 @@ const LeaderboardPage = () => {
       >
         <div className="flex items-center gap-3 mb-4">
           <div className="p-3 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20">
-            <Trophy className="w-8 h-8 text-primary" />
+            <IconTrophy className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
             Leaderboard
@@ -90,7 +84,7 @@ const LeaderboardPage = () => {
             transition={{ delay: 0.2 }}
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-base-200 border border-base-content/10 mb-2"
           >
-            <Calendar className="w-4 h-4 text-primary" />
+            <IconCalendar className="w-4 h-4 text-primary" />
             <span className="text-sm font-semibold text-base-content/80">
               {formatMonthYear(period.year, period.month)}
             </span>
@@ -106,7 +100,7 @@ const LeaderboardPage = () => {
           disabled={refreshing || loading}
           className="mt-4 btn btn-ghost btn-sm gap-2 hover:scale-105 transition-transform"
         >
-          <RefreshCw
+          <IconRefresh
             className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
           />
           Refresh
@@ -168,7 +162,7 @@ const LeaderboardPage = () => {
           className="card bg-base-200 shadow-xl"
         >
           <div className="card-body items-center text-center py-16">
-            <Trophy className="w-16 h-16 text-base-content/20 mb-4" />
+            <IconTrophy className="w-16 h-16 text-base-content/20 mb-4" />
             <h3 className="text-xl font-bold mb-2">No rankings yet</h3>
             <p className="text-base-content/60">
               Be the first to solve problems and climb the leaderboard!
@@ -236,7 +230,7 @@ const LeaderboardPage = () => {
                     />
                   </div>
                   <div className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-yellow-400 flex items-center justify-center text-sm font-bold text-white shadow-lg">
-                    <Trophy className="w-4 h-4" />
+                    <IconTrophy className="w-4 h-4" />
                   </div>
                 </div>
                 <div className="text-center">
@@ -294,7 +288,7 @@ const LeaderboardPage = () => {
                       <th className="text-base-content/70 font-bold">User</th>
                       <th className="text-base-content/70 font-bold">
                         <div className="flex items-center gap-1">
-                          <TrendingUp className="w-4 h-4" />
+                          <IconTrendingUp className="w-4 h-4" />
                           Score
                         </div>
                       </th>

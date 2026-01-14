@@ -1,15 +1,8 @@
 import { useState, useEffect } from "react";
 import Loader from "../components/Loader";
-import {
-  ArrowLeft,
-  Save,
-  Edit,
-  BookOpen,
-  AlertCircle,
-  CheckCircle2,
-} from "lucide-react";
+import { IconAlertCircle, IconArrowLeft, IconBook, IconCircleCheck, IconDeviceFloppy, IconEdit } from '@tabler/icons-react';
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { axiosInstance } from "../util/axios";
+import { axiosInstance } from "../utils/axios";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 
@@ -125,7 +118,7 @@ const UpdatePlaylist = () => {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="text-center">
-          <AlertCircle className="w-16 h-16 mx-auto text-error mb-4" />
+          <IconAlertCircle className="w-16 h-16 mx-auto text-error mb-4" />
           <h2 className="text-2xl font-bold mb-2">Playlist not found</h2>
           <Link to="/playlists" className="btn btn-primary mt-4">
             Back to Playlists
@@ -148,14 +141,14 @@ const UpdatePlaylist = () => {
           to={`/playlists/${id}`}
           className="btn btn-ghost btn-circle hover:scale-110 transition-transform"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <IconArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex-1">
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             Update Playlist
           </h1>
           <p className="text-base-content/60">
-            Edit your playlist details and information
+            IconEdit your playlist details and information
           </p>
         </div>
       </motion.div>
@@ -173,7 +166,7 @@ const UpdatePlaylist = () => {
             <div className="form-control">
               <label className="label">
                 <span className="label-text font-semibold text-base flex items-center gap-2">
-                  <Edit className="w-4 h-4" />
+                  <IconEdit className="w-4 h-4" />
                   Playlist Name *
                 </span>
                 <span className="label-text-alt text-base-content/50">
@@ -196,7 +189,7 @@ const UpdatePlaylist = () => {
               {errors.name && (
                 <label className="label">
                   <span className="label-text-alt text-error flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
+                    <IconAlertCircle className="w-3 h-3" />
                     {errors.name}
                   </span>
                 </label>
@@ -207,7 +200,7 @@ const UpdatePlaylist = () => {
             <div className="form-control">
               <label className="label">
                 <span className="label-text font-semibold text-base flex items-center gap-2">
-                  <BookOpen className="w-4 h-4" />
+                  <IconBook className="w-4 h-4" />
                   Description
                   <span className="text-base-content/50 font-normal text-xs">
                     (Optional)
@@ -233,7 +226,7 @@ const UpdatePlaylist = () => {
               {errors.description && (
                 <label className="label">
                   <span className="label-text-alt text-error flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
+                    <IconAlertCircle className="w-3 h-3" />
                     {errors.description}
                   </span>
                 </label>
@@ -245,7 +238,7 @@ const UpdatePlaylist = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="stat bg-base-200 rounded-lg p-4">
                 <div className="stat-figure text-primary">
-                  <BookOpen className="w-6 h-6" />
+                  <IconBook className="w-6 h-6" />
                 </div>
                 <div className="stat-title text-xs">Total Problems</div>
                 <div className="stat-value text-2xl text-primary">
@@ -254,7 +247,7 @@ const UpdatePlaylist = () => {
               </div>
               <div className="stat bg-base-200 rounded-lg p-4">
                 <div className="stat-figure text-success">
-                  <CheckCircle2 className="w-6 h-6" />
+                  <IconCircleCheck className="w-6 h-6" />
                 </div>
                 <div className="stat-title text-xs">Solved</div>
                 <div className="stat-value text-2xl text-success">
@@ -265,7 +258,7 @@ const UpdatePlaylist = () => {
               </div>
               <div className="stat bg-base-200 rounded-lg p-4">
                 <div className="stat-figure text-info">
-                  <Edit className="w-6 h-6" />
+                  <IconEdit className="w-6 h-6" />
                 </div>
                 <div className="stat-title text-xs">Created</div>
                 <div className="stat-value text-xs text-info">
@@ -295,8 +288,8 @@ const UpdatePlaylist = () => {
                   </>
                 ) : (
                   <>
-                    <Save className="w-4 h-4" />
-                    Save Changes
+                    <IconDeviceFloppy className="w-4 h-4" />
+                    IconDeviceFloppy Changes
                   </>
                 )}
               </button>

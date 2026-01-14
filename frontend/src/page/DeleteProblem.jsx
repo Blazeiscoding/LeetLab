@@ -1,9 +1,9 @@
 import  { useState, useEffect } from "react";
 import Loader from "../components/Loader";
-import { Trash2, AlertTriangle, Search, Filter, X, CheckCircle, Clock } from "lucide-react";
+import { IconAlertTriangle, IconCircleCheck, IconClock, IconFilter, IconSearch, IconTrash, IconX } from '@tabler/icons-react';
 
 
-import { axiosInstance } from "../util/axios.js";
+import { axiosInstance } from "../utils/axios.js";
 
 const DeleteProblem = () => {
   const [problems, setProblems] = useState([]);
@@ -36,11 +36,11 @@ const DeleteProblem = () => {
     }
   };
 
-  // Filter problems based on search and difficulty
+  // IconFilter problems based on search and difficulty
   useEffect(() => {
     let filtered = problems;
 
-    // Filter by search term
+    // IconFilter by search term
     if (searchTerm) {
       filtered = filtered.filter(
         (problem) =>
@@ -49,7 +49,7 @@ const DeleteProblem = () => {
       );
     }
 
-    // Filter by difficulty
+    // IconFilter by difficulty
     if (difficultyFilter !== "all") {
       filtered = filtered.filter(
         (problem) => problem.difficulty.toLowerCase() === difficultyFilter
@@ -155,12 +155,12 @@ const DeleteProblem = () => {
           </div>
         )}
 
-        {/* Search and Filter Controls */}
+        {/* IconSearch and IconFilter Controls */}
         <div className="card bg-base-100 shadow-xl border border-base-content/5 mb-8 backdrop-blur-xl overflow-visible relative z-30">
           <div className="card-body p-4 md:flex-row gap-4 items-center">
-            {/* Search */}
+            {/* IconSearch */}
             <div className="relative flex-1 w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/40 w-5 h-5" />
+              <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/40 w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search problems by title or description..."
@@ -170,7 +170,7 @@ const DeleteProblem = () => {
               />
             </div>
 
-            {/* Difficulty Filter */}
+            {/* Difficulty IconFilter */}
             <div className="relative dropdown dropdown-end">
               <div
                 tabIndex={0}
@@ -178,7 +178,7 @@ const DeleteProblem = () => {
                 className="btn bg-base-100 border-base-content/20 hover:border-primary text-base-content gap-2 min-w-[160px] justify-between font-medium capitalize h-[52px]"
               >
                 <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-base-content/50" />
+                  <IconFilter className="w-4 h-4 text-base-content/50" />
                   {difficultyFilter === "all" ? "All Difficulties" : difficultyFilter}
                 </div>
                 <svg className="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -202,7 +202,7 @@ const DeleteProblem = () => {
                     >
                       <span className={`w-2 h-2 rounded-full ${option.value === "all" ? "bg-gradient-to-r from-success via-warning to-error" : `bg-current ${option.color}`}`}></span>
                       <span className={option.color}>{option.label}</span>
-                      {difficultyFilter === option.value && <CheckCircle className="w-4 h-4 ml-auto text-primary" />}
+                      {difficultyFilter === option.value && <IconCircleCheck className="w-4 h-4 ml-auto text-primary" />}
                     </button>
                   </li>
                 ))}
@@ -283,7 +283,7 @@ const DeleteProblem = () => {
                       </>
                     ) : (
                       <>
-                        <Trash2 className="w-4 h-4" />
+                        <IconTrash className="w-4 h-4" />
                         Delete Problem
                       </>
                     )}
@@ -301,7 +301,7 @@ const DeleteProblem = () => {
             <div className="card w-96 bg-base-100 shadow-xl border border-base-content/5">
               <div className="card-body items-center text-center">
                 <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mb-4">
-                  <AlertTriangle className="w-8 h-8 text-error" />
+                  <IconAlertTriangle className="w-8 h-8 text-error" />
                 </div>
                 <h3 className="card-title text-xl font-bold mb-2">
                   Delete Problem

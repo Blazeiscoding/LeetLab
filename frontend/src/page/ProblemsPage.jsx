@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Search, CheckCircle, ArrowRight } from "lucide-react";
+import { IconArrowRight, IconCircleCheck, IconSearch } from '@tabler/icons-react';
 
 
 // Hooks
@@ -28,7 +28,7 @@ const ProblemCard = ({ problem, isSolved }) => (
           </h3>
           {isSolved && (
             <div className="badge badge-success badge-sm gap-1 font-semibold">
-              <CheckCircle className="w-3 h-3" /> Solved
+              <IconCircleCheck className="w-3 h-3" /> Solved
             </div>
           )}
         </div>
@@ -62,7 +62,7 @@ const ProblemCard = ({ problem, isSolved }) => (
           to={`/problems/${problem.id}`}
           className="btn btn-primary btn-sm gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0 shadow-lg shadow-primary/20 btn-haptic"
         >
-          Solve <ArrowRight className="w-4 h-4" />
+          Solve <IconArrowRight className="w-4 h-4" />
         </Link>
       </div>
     </div>
@@ -166,7 +166,7 @@ const ProblemsPage = () => {
           <div className="card-body p-4">
             <div className="flex flex-col md:flex-row gap-4 items-center">
               <div className="relative flex-1 w-full">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-base-content/40 w-5 h-5" />
+                <IconSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-base-content/40 w-5 h-5" />
                 <input
                   type="text"
                   placeholder="Search problems by title or tag..."
@@ -223,7 +223,7 @@ const ProblemsPage = () => {
                       >
                         <span className="w-3 h-3 rounded-full bg-gradient-to-r from-success via-warning to-error"></span>
                         All Levels
-                        {difficultyFilter === "ALL" && <CheckCircle className="w-4 h-4 ml-auto" />}
+                        {difficultyFilter === "ALL" && <IconCircleCheck className="w-4 h-4 ml-auto" />}
                       </button>
                     </li>
                     <li>
@@ -236,7 +236,7 @@ const ProblemsPage = () => {
                       >
                         <span className="w-3 h-3 rounded-full bg-success"></span>
                         Easy
-                        {difficultyFilter === "EASY" && <CheckCircle className="w-4 h-4 ml-auto text-success" />}
+                        {difficultyFilter === "EASY" && <IconCircleCheck className="w-4 h-4 ml-auto text-success" />}
                       </button>
                     </li>
                     <li>
@@ -249,7 +249,7 @@ const ProblemsPage = () => {
                       >
                         <span className="w-3 h-3 rounded-full bg-warning"></span>
                         Medium
-                        {difficultyFilter === "MEDIUM" && <CheckCircle className="w-4 h-4 ml-auto text-warning" />}
+                        {difficultyFilter === "MEDIUM" && <IconCircleCheck className="w-4 h-4 ml-auto text-warning" />}
                       </button>
                     </li>
                     <li>
@@ -262,7 +262,7 @@ const ProblemsPage = () => {
                       >
                         <span className="w-3 h-3 rounded-full bg-error"></span>
                         Hard
-                        {difficultyFilter === "HARD" && <CheckCircle className="w-4 h-4 ml-auto text-error" />}
+                        {difficultyFilter === "HARD" && <IconCircleCheck className="w-4 h-4 ml-auto text-error" />}
                       </button>
                     </li>
                   </ul>
@@ -277,17 +277,17 @@ const ProblemsPage = () => {
                     <span className="flex items-center gap-2">
                       {statusFilter === "ALL" ? (
                         <>
-                          <CheckCircle className="w-4 h-4 opacity-60" />
+                          <IconCircleCheck className="w-4 h-4 opacity-60" />
                           All Status
                         </>
                       ) : statusFilter === "SOLVED" ? (
                         <>
-                          <CheckCircle className="w-4 h-4 text-success" />
+                          <IconCircleCheck className="w-4 h-4 text-success" />
                           <span className="text-success">Solved</span>
                         </>
                       ) : (
                         <>
-                          <CheckCircle className="w-4 h-4 text-info" />
+                          <IconCircleCheck className="w-4 h-4 text-info" />
                           <span className="text-info">Unsolved</span>
                         </>
                       )}
@@ -308,9 +308,9 @@ const ProblemsPage = () => {
                           document.activeElement?.blur();
                         }}
                       >
-                        <CheckCircle className="w-4 h-4 opacity-60" />
+                        <IconCircleCheck className="w-4 h-4 opacity-60" />
                         All Status
-                        {statusFilter === "ALL" && <CheckCircle className="w-4 h-4 ml-auto" />}
+                        {statusFilter === "ALL" && <IconCircleCheck className="w-4 h-4 ml-auto" />}
                       </button>
                     </li>
                     <li>
@@ -321,9 +321,9 @@ const ProblemsPage = () => {
                           document.activeElement?.blur();
                         }}
                       >
-                        <CheckCircle className="w-4 h-4 text-success" />
+                        <IconCircleCheck className="w-4 h-4 text-success" />
                         Solved
-                        {statusFilter === "SOLVED" && <CheckCircle className="w-4 h-4 ml-auto text-success" />}
+                        {statusFilter === "SOLVED" && <IconCircleCheck className="w-4 h-4 ml-auto text-success" />}
                       </button>
                     </li>
                     <li>
@@ -334,9 +334,9 @@ const ProblemsPage = () => {
                           document.activeElement?.blur();
                         }}
                       >
-                        <CheckCircle className="w-4 h-4 text-info" />
+                        <IconCircleCheck className="w-4 h-4 text-info" />
                         Unsolved
-                        {statusFilter === "UNSOLVED" && <CheckCircle className="w-4 h-4 ml-auto text-info" />}
+                        {statusFilter === "UNSOLVED" && <IconCircleCheck className="w-4 h-4 ml-auto text-info" />}
                       </button>
                     </li>
                   </ul>
@@ -353,7 +353,7 @@ const ProblemsPage = () => {
           ) : filteredProblems.length === 0 ? (
             <div className="text-center py-20 bg-base-100 rounded-3xl border border-dashed border-base-content/20">
               <div className="bg-base-200 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Search className="w-10 h-10 text-base-content/40" />
+                <IconSearch className="w-10 h-10 text-base-content/40" />
               </div>
               <h3 className="text-2xl font-bold opacity-80 mb-2">
                 No problems found

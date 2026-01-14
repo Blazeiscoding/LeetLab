@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import { X, CheckCircle, AlertCircle, Info, AlertTriangle, Undo2 } from 'lucide-react';
+import { IconAlertCircle, IconAlertTriangle, IconCircleCheck, IconInfoCircle, IconArrowBackUp, IconX } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /**
@@ -37,10 +37,10 @@ const ProgressToast = ({
   }, [duration, showProgress]);
 
   const icons = {
-    success: <CheckCircle className="w-5 h-5 text-success" />,
-    error: <AlertCircle className="w-5 h-5 text-error" />,
-    warning: <AlertTriangle className="w-5 h-5 text-warning" />,
-    info: <Info className="w-5 h-5 text-info" />,
+    success: <IconCircleCheck className="w-5 h-5 text-success" />,
+    error: <IconAlertCircle className="w-5 h-5 text-error" />,
+    warning: <IconAlertTriangle className="w-5 h-5 text-warning" />,
+    info: <IconInfoCircle className="w-5 h-5 text-info" />,
   };
 
   const bgColors = {
@@ -89,7 +89,7 @@ const ProgressToast = ({
                 }}
                 className="btn btn-ghost btn-xs gap-1 text-primary hover:bg-primary/10"
               >
-                <Undo2 className="w-3 h-3" />
+                <IconArrowBackUp className="w-3 h-3" />
                 {undoLabel}
               </button>
             )}
@@ -97,7 +97,7 @@ const ProgressToast = ({
               onClick={() => toast.dismiss(t.id)}
               className="btn btn-ghost btn-circle btn-xs"
             >
-              <X className="w-4 h-4" />
+              <IconX className="w-4 h-4" />
             </button>
           </div>
         </div>

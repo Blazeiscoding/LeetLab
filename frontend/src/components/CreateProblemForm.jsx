@@ -1,24 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Plus,
-  Trash2,
-  Code2,
-  FileText,
-  Lightbulb,
-  BookOpen,
-  CheckCircle2,
-  Download,
-  Save,
-  RotateCcw,
-  AlertCircle,
-} from "lucide-react";
+import { IconAlertCircle, IconBook, IconBulb, IconCircleCheck, IconCode, IconDeviceFloppy, IconDownload, IconFileText, IconPlus, IconRotate, IconTrash } from '@tabler/icons-react';
 import Editor from "@monaco-editor/react";
-import { axiosInstance } from "../util/axios";
+import { axiosInstance } from "../utils/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { problemSchema } from "../util/zodSchema";
+import { problemSchema } from "../utils/zodSchema";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Components
@@ -29,11 +17,11 @@ import { SkeletonCodeEditor } from "./ui/Skeleton";
 
 // Form step definitions
 const FORM_STEPS = [
-  { id: 'basic', title: 'Basic Info', icon: FileText },
-  { id: 'metadata', title: 'Tags & Constraints', icon: BookOpen },
-  { id: 'testcases', title: 'Test Cases', icon: CheckCircle2 },
-  { id: 'code', title: 'Code Templates', icon: Code2 },
-  { id: 'solutions', title: 'Solutions', icon: Lightbulb },
+  { id: 'basic', title: 'Basic Info', icon: IconFileText },
+  { id: 'metadata', title: 'Tags & Constraints', icon: IconBook },
+  { id: 'testcases', title: 'Test Cases', icon: IconCircleCheck },
+  { id: 'code', title: 'Code Templates', icon: IconCode },
+  { id: 'solutions', title: 'Solutions', icon: IconBulb },
 ];
 
 // Sample data for quick loading
@@ -274,7 +262,7 @@ const CreateProblemForm = () => {
           <WizardStep
             title="Basic Information"
             description="Enter the fundamental details of your problem"
-            icon={FileText}
+            icon={IconFileText}
           >
             <div className="space-y-6">
               {/* Title */}
@@ -361,11 +349,11 @@ const CreateProblemForm = () => {
           <WizardStep
             title="Tags & Constraints"
             description="Add categorization tags and problem constraints"
-            icon={BookOpen}
+            icon={IconBook}
           >
             <div className="space-y-6">
               {/* Tags */}
-              <CollapsibleSection title="Tags" icon={BookOpen} badge={tagFields.length}>
+              <CollapsibleSection title="Tags" icon={IconBook} badge={tagFields.length}>
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {tagFields.map((field, index) => (
@@ -382,7 +370,7 @@ const CreateProblemForm = () => {
                           onClick={() => removeTag(index)}
                           disabled={tagFields.length === 1}
                         >
-                          <Trash2 className="w-4 h-4 text-error" />
+                          <IconTrash className="w-4 h-4 text-error" />
                         </button>
                       </div>
                     ))}
@@ -392,13 +380,13 @@ const CreateProblemForm = () => {
                     className="btn btn-primary btn-sm gap-2"
                     onClick={() => appendTag("")}
                   >
-                    <Plus className="w-4 h-4" /> Add Tag
+                    <IconPlus className="w-4 h-4" /> Add Tag
                   </button>
                 </div>
               </CollapsibleSection>
 
               {/* Constraints */}
-              <CollapsibleSection title="Constraints" icon={AlertCircle}>
+              <CollapsibleSection title="Constraints" icon={IconAlertCircle}>
                 <textarea
                   className="textarea textarea-bordered min-h-24 w-full"
                   {...register("constraints")}
@@ -407,7 +395,7 @@ const CreateProblemForm = () => {
               </CollapsibleSection>
 
               {/* Hints */}
-              <CollapsibleSection title="Hints (Optional)" icon={Lightbulb} defaultOpen={false}>
+              <CollapsibleSection title="Hints (Optional)" icon={IconBulb} defaultOpen={false}>
                 <textarea
                   className="textarea textarea-bordered min-h-24 w-full"
                   {...register("hints")}
@@ -423,7 +411,7 @@ const CreateProblemForm = () => {
           <WizardStep
             title="Test Cases"
             description="Define input/output pairs for testing solutions"
-            icon={CheckCircle2}
+            icon={IconCircleCheck}
           >
             <div className="space-y-4">
               {testCaseFields.map((field, index) => (
@@ -442,7 +430,7 @@ const CreateProblemForm = () => {
                         onClick={() => removeTestCase(index)}
                         disabled={testCaseFields.length === 1}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <IconTrash className="w-4 h-4" />
                       </button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -476,7 +464,7 @@ const CreateProblemForm = () => {
                 className="btn btn-primary gap-2 w-full"
                 onClick={() => appendTestCase({ input: "", output: "" })}
               >
-                <Plus className="w-4 h-4" /> Add Test Case
+                <IconPlus className="w-4 h-4" /> Add Test Case
               </button>
             </div>
           </WizardStep>
@@ -487,14 +475,14 @@ const CreateProblemForm = () => {
           <WizardStep
             title="Code Templates"
             description="Provide starter code templates for each language"
-            icon={Code2}
+            icon={IconCode}
           >
             <div className="space-y-6">
               {["JAVASCRIPT", "PYTHON", "JAVA"].map((language) => (
                 <CollapsibleSection
                   key={language}
                   title={language}
-                  icon={Code2}
+                  icon={IconCode}
                   defaultOpen={language === "JAVASCRIPT"}
                 >
                   <div className="space-y-4">
@@ -571,7 +559,7 @@ const CreateProblemForm = () => {
           <WizardStep
             title="Reference Solutions & Editorial"
             description="Provide working solutions and explanation"
-            icon={Lightbulb}
+            icon={IconBulb}
           >
             <div className="space-y-6">
               {/* Reference Solutions */}
@@ -579,7 +567,7 @@ const CreateProblemForm = () => {
                 <CollapsibleSection
                   key={language}
                   title={`${language} Solution`}
-                  icon={CheckCircle2}
+                  icon={IconCircleCheck}
                   defaultOpen={language === "JAVASCRIPT"}
                 >
                   <div className="border rounded-lg overflow-hidden">
@@ -609,7 +597,7 @@ const CreateProblemForm = () => {
               ))}
 
               {/* Editorial */}
-              <CollapsibleSection title="Editorial (Optional)" icon={Lightbulb}>
+              <CollapsibleSection title="Editorial (Optional)" icon={IconBulb}>
                 <textarea
                   className="textarea textarea-bordered min-h-32 w-full"
                   {...register("editorial")}
@@ -638,7 +626,7 @@ const CreateProblemForm = () => {
           >
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
-                <RotateCcw className="w-5 h-5 text-info" />
+                <IconRotate className="w-5 h-5 text-info" />
                 <span className="font-medium">You have an unsaved draft. Would you like to continue?</span>
               </div>
               <div className="flex gap-2">
@@ -668,12 +656,12 @@ const CreateProblemForm = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-4 border-b">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-                <FileText className="w-7 h-7 text-primary" />
+                <IconFileText className="w-7 h-7 text-primary" />
                 Create Problem
               </h2>
               {isDirty && (
                 <p className="text-sm text-base-content/50 mt-1">
-                  <Save className="w-3 h-3 inline mr-1" />
+                  <IconDeviceFloppy className="w-3 h-3 inline mr-1" />
                   {getLastSavedText() ? `Auto-saved ${getLastSavedText()}` : 'Saving...'}
                 </p>
               )}
@@ -702,7 +690,7 @@ const CreateProblemForm = () => {
                 className="btn btn-secondary btn-sm gap-2"
                 onClick={loadSampleData}
               >
-                <Download className="w-4 h-4" />
+                <IconDownload className="w-4 h-4" />
                 Load Sample
               </button>
             </div>

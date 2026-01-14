@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Play, Plus, Trash2, FlaskConical } from "lucide-react";
+import { IconTestPipe, IconPlayerPlay, IconPlus, IconTrash } from '@tabler/icons-react';
 
 /**
  * Panel for adding and running custom test cases
@@ -47,7 +47,7 @@ const CustomTestCasePanel = ({ onRunCustomTest, isRunning }) => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-accent/10 rounded-lg">
-            <FlaskConical className="w-5 h-5 text-accent" />
+            <IconTestPipe className="w-5 h-5 text-accent" />
           </div>
           <div>
             <h3 className="font-bold text-lg">Custom Test Cases</h3>
@@ -62,7 +62,7 @@ const CustomTestCasePanel = ({ onRunCustomTest, isRunning }) => {
           {isRunning ? (
             <span className="loading loading-spinner loading-xs"></span>
           ) : (
-            <Play className="w-4 h-4 fill-current" />
+            <IconPlayerPlay className="w-4 h-4 fill-current" />
           )}
           Run Custom
         </button>
@@ -89,7 +89,7 @@ const CustomTestCasePanel = ({ onRunCustomTest, isRunning }) => {
                   removeTestCase(test.id);
                 }}
               >
-                <Trash2 className="w-3 h-3" />
+                <IconTrash className="w-3 h-3" />
               </span>
             )}
           </button>
@@ -99,7 +99,7 @@ const CustomTestCasePanel = ({ onRunCustomTest, isRunning }) => {
           onClick={addTestCase}
           title="Add Test Case"
         >
-          <Plus className="w-4 h-4" />
+          <IconPlus className="w-4 h-4" />
         </button>
       </div>
 

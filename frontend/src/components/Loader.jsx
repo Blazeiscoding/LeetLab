@@ -1,5 +1,3 @@
-import React from "react";
-
 const Loader = ({ size = "lg" }) => {
   // Map size prop to pixel values or tailwind classes
   const sizeClasses = {

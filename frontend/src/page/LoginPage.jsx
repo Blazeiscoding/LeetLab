@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Code, Loader2, Lock, Mail, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { IconArrowLeft, IconCode, IconEye, IconEyeOff, IconLoader, IconLock, IconMail } from '@tabler/icons-react';
 import { z } from "zod";
 import AuthImagePattern from "../components/AuthImagePattern";
 import { useAuthStore } from "../store/useAuthStore";
@@ -91,7 +91,7 @@ const LoginPage = () => {
             className="absolute top-8 left-8 p-2 rounded-full hover:bg-base-200 transition-colors group"
             aria-label="Go back to home"
         >
-            <ArrowLeft className="w-5 h-5 text-base-content/60 group-hover:text-base-content" />
+            <IconArrowLeft className="w-5 h-5 text-base-content/60 group-hover:text-base-content" />
         </Link>
 
         {showOTPForm ? (
@@ -106,7 +106,7 @@ const LoginPage = () => {
             <div className="text-center mb-8">
               <div className="flex flex-col items-center gap-2 group">
                 <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-primary/10 border border-primary/10">
-                  <Code className="w-7 h-7 text-primary" />
+                  <IconCode className="w-7 h-7 text-primary" />
                 </div>
                 <h1 className="text-3xl font-black mt-4 tracking-tight">Welcome Back</h1>
                 <p className="text-base-content/60">
@@ -124,7 +124,7 @@ const LoginPage = () => {
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
+                    <IconMail className="h-5 w-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
                   </div>
                   <input
                     type="email"
@@ -150,7 +150,7 @@ const LoginPage = () => {
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
+                    <IconLock className="h-5 w-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
                   </div>
                   <input
                     type={showPassword ? "text" : "password"}
@@ -168,9 +168,9 @@ const LoginPage = () => {
                     disabled={isLoggingIn}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
+                      <IconEyeOff className="h-5 w-5" />
                     ) : (
-                      <Eye className="h-5 w-5" />
+                      <IconEye className="h-5 w-5" />
                     )}
                   </button>
                 </div>
@@ -188,7 +188,7 @@ const LoginPage = () => {
               >
                 {isLoggingIn ? (
                   <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <IconLoader className="h-5 w-5 animate-spin" />
                     Signing in...
                   </>
                 ) : (

@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  CheckCircle2,
-  XCircle,
-  Clock,
-  MemoryStick as Memory,
-} from "lucide-react";
+import { IconCircleCheck, IconCircleX, IconClock, IconCpu as Memory } from '@tabler/icons-react';
 
 const SubmissionResults = ({ submission }) => {
   // Parse stringified arrays
@@ -53,7 +48,7 @@ const SubmissionResults = ({ submission }) => {
         <div className="card bg-base-200 shadow-lg">
           <div className="card-body p-4">
             <h3 className="card-title text-sm flex items-center gap-2">
-              <Clock className="w-4 h-4" />
+              <IconClock className="w-4 h-4" />
               Avg. Runtime
             </h3>
             <div className="text-lg font-bold">{avgTime.toFixed(3)} s</div>
@@ -92,12 +87,12 @@ const SubmissionResults = ({ submission }) => {
                     <td>
                       {testCase.passed ? (
                         <div className="flex items-center gap-2 text-success">
-                          <CheckCircle2 className="w-5 h-5" />
+                          <IconCircleCheck className="w-5 h-5" />
                           Passed
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 text-error">
-                          <XCircle className="w-5 h-5" />
+                          <IconCircleX className="w-5 h-5" />
                           Failed
                         </div>
                       )}

@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { User, Code, Edit, Trash2, LogOut } from 'lucide-react';
+import { IconCode, IconEdit, IconLogout, IconTrash, IconUser } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LogoutButton from '../LogoutButton';
 import { getUserAvatar } from '../../utils/avatar';
 
 /**
- * User dropdown menu component for navbar
+ * IconUser dropdown menu component for navbar
  */
 const UserDropdown = ({ authUser, isScrolled = false }) => {
   const isAdmin = authUser?.role === 'ADMIN';
@@ -40,7 +40,7 @@ const UserDropdown = ({ authUser, isScrolled = false }) => {
         tabIndex={0}
         className="menu menu-sm dropdown-content mt-3 z-[100] p-2 shadow-2xl bg-base-100/95 backdrop-blur-xl rounded-2xl w-64 space-y-1 border border-base-content/10"
       >
-        {/* User Info Header */}
+        {/* IconUser Info Header */}
         <li className="mb-2 px-2 pt-2">
           <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 border border-base-content/5">
             <div className="flex items-center gap-3">
@@ -74,7 +74,7 @@ const UserDropdown = ({ authUser, isScrolled = false }) => {
             to="/profile"
             className={`${menuItemClass} hover:bg-primary/10 hover:text-primary`}
           >
-            <User className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+            <IconUser className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
             My Profile
           </Link>
         </li>
@@ -88,7 +88,7 @@ const UserDropdown = ({ authUser, isScrolled = false }) => {
                 to="/add-problem"
                 className={`${menuItemClass} hover:bg-primary/10 hover:text-primary`}
               >
-                <Code className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                <IconCode className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                 Add Problem
               </Link>
             </li>
@@ -97,7 +97,7 @@ const UserDropdown = ({ authUser, isScrolled = false }) => {
                 to="/update-problem"
                 className={`${menuItemClass} hover:bg-primary/10 hover:text-primary`}
               >
-                <Edit className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                <IconEdit className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                 Update Problem
               </Link>
             </li>
@@ -106,7 +106,7 @@ const UserDropdown = ({ authUser, isScrolled = false }) => {
                 to="/delete-problem"
                 className={`${menuItemClass} hover:bg-error/10 hover:text-error`}
               >
-                <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                <IconTrash className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                 Delete Problem
               </Link>
             </li>
@@ -117,7 +117,7 @@ const UserDropdown = ({ authUser, isScrolled = false }) => {
         <div className="divider my-1 opacity-50"></div>
         <li>
           <LogoutButton className={`${menuItemClass} hover:bg-error/10 hover:text-error w-full text-left`}>
-            <LogOut className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+            <IconLogout className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
             Logout
           </LogoutButton>
         </li>

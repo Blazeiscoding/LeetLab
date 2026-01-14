@@ -1,5 +1,5 @@
 import React from "react";
-import { Keyboard, X } from "lucide-react";
+import { IconKeyboard, IconX } from '@tabler/icons-react';
 
 /**
  * Modal component showing all available keyboard shortcuts
@@ -18,7 +18,7 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
     ]},
     { category: "Navigation", items: [
       { keys: ["Ctrl", "K"], action: "Open Command Palette" },
-      { keys: ["?"], action: "Show Keyboard Shortcuts" },
+      { keys: ["?"], action: "Show IconKeyboard Shortcuts" },
       { keys: ["Escape"], action: "Close Modal" },
     ]},
   ];
@@ -35,7 +35,7 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
-              <Keyboard className="w-5 h-5 text-primary" />
+              <IconKeyboard className="w-5 h-5 text-primary" />
             </div>
             <h3 className="font-bold text-xl">Keyboard Shortcuts</h3>
           </div>
@@ -43,7 +43,7 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
             className="btn btn-ghost btn-sm btn-circle"
             onClick={onClose}
           >
-            <X className="w-4 h-4" />
+            <IconX className="w-4 h-4" />
           </button>
         </div>
 

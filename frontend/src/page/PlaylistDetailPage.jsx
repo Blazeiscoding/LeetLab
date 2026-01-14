@@ -1,15 +1,6 @@
 import { useState, useMemo } from "react";
 import Loader from "../components/Loader";
-import {
-  ArrowLeft,
-  Plus,
-  Search,
-  Trash2,
-  Play,
-  BookOpen,
-  Target,
-  CheckCircle,
-} from "lucide-react";
+import { IconArrowLeft, IconBook, IconCircleCheck, IconPlayerPlay, IconPlus, IconSearch, IconTarget, IconTrash } from '@tabler/icons-react';
 import { Link, useParams, useNavigate } from "react-router-dom";
 
 // Hooks
@@ -142,7 +133,7 @@ const PlaylistDetailPage = () => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Link to="/playlists" className="btn btn-ghost btn-circle">
-          <ArrowLeft className="w-5 h-5" />
+          <IconArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex-1">
           <h1 className="text-3xl font-bold">{playlist.name}</h1>
@@ -154,7 +145,7 @@ const PlaylistDetailPage = () => {
           className="btn btn-primary gap-2"
           onClick={() => setShowAddProblemModal(true)}
         >
-          <Plus className="w-4 h-4" />
+          <IconPlus className="w-4 h-4" />
           Add Problems
         </button>
       </div>
@@ -163,7 +154,7 @@ const PlaylistDetailPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="stat bg-base-100 rounded-box shadow">
           <div className="stat-figure text-primary">
-            <BookOpen className="w-8 h-8" />
+            <IconBook className="w-8 h-8" />
           </div>
           <div className="stat-title">Total Problems</div>
           <div className="stat-value text-primary">
@@ -173,7 +164,7 @@ const PlaylistDetailPage = () => {
 
         <div className="stat bg-base-100 rounded-box shadow">
           <div className="stat-figure text-success">
-            <CheckCircle className="w-8 h-8" />
+            <IconCircleCheck className="w-8 h-8" />
           </div>
           <div className="stat-title">Solved</div>
           <div className="stat-value text-success">
@@ -185,7 +176,7 @@ const PlaylistDetailPage = () => {
 
         <div className="stat bg-base-100 rounded-box shadow">
           <div className="stat-figure text-info">
-            <Target className="w-8 h-8" />
+            <IconTarget className="w-8 h-8" />
           </div>
           <div className="stat-title">Progress</div>
           <div className="stat-value text-info">{getProgressPercentage()}%</div>
@@ -215,7 +206,7 @@ const PlaylistDetailPage = () => {
                 to={`/playlists/${playlist.id}/practice`}
                 className="btn btn-primary btn-sm gap-2"
               >
-                <Play className="w-4 h-4" />
+                <IconPlayerPlay className="w-4 h-4" />
                 Start Practice
               </Link>
             )}
@@ -223,7 +214,7 @@ const PlaylistDetailPage = () => {
 
           {!playlist.problems || playlist.problems.length === 0 ? (
             <div className="text-center py-12">
-              <BookOpen className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+              <IconBook className="w-16 h-16 mx-auto text-gray-400 mb-4" />
               <h3 className="text-xl font-bold mb-2">No problems yet</h3>
               <p className="text-gray-600 mb-4">
                 Add some problems to start practicing
@@ -232,7 +223,7 @@ const PlaylistDetailPage = () => {
                 className="btn btn-primary gap-2"
                 onClick={() => setShowAddProblemModal(true)}
               >
-                <Plus className="w-4 h-4" />
+                <IconPlus className="w-4 h-4" />
                 Add Problems
               </button>
             </div>
@@ -299,7 +290,7 @@ const PlaylistDetailPage = () => {
                               onClick={() => handleRemoveProblem(problem.id)}
                               disabled={removeProblemMutation.isPending}
                             >
-                              <Trash2 className="w-3 h-3" />
+                              <IconTrash className="w-3 h-3" />
                             </button>
                           </div>
                         </td>
@@ -319,11 +310,11 @@ const PlaylistDetailPage = () => {
           <div className="modal-box max-w-4xl">
             <h3 className="font-bold text-lg mb-4">Add Problems to Playlist</h3>
 
-            {/* Search */}
+            {/* IconSearch */}
             <div className="form-control mb-4">
               <div className="input-group">
                 <span>
-                  <Search className="w-4 h-4" />
+                  <IconSearch className="w-4 h-4" />
                 </span>
                 <input
                   type="text"

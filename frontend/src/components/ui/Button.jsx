@@ -1,6 +1,6 @@
 import { forwardRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import { IconLoader } from '@tabler/icons-react';
 
 /**
  * Enhanced Button component with haptic-like feedback and animations
@@ -103,7 +103,7 @@ const Button = forwardRef(({
 
       {/* Loading spinner */}
       {loading && (
-        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+        <IconLoader className="w-4 h-4 animate-spin mr-2" />
       )}
 
       {/* Left icon */}
@@ -162,7 +162,7 @@ export const IconButton = forwardRef(({
       {...props}
     >
       {loading ? (
-        <Loader2 className={`${iconSizes[size]} animate-spin`} />
+        <IconLoader className={`${iconSizes[size]} animate-spin`} />
       ) : (
         <Icon className={iconSizes[size]} />
       )}

@@ -2,19 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Command } from "cmdk";
 import { useHotkeys } from "react-hotkeys-hook";
-import {
-  Search,
-  Home,
-  FileCode,
-  Trophy,
-  User,
-  Settings,
-  LogOut,
-  X,
-  Hash,
-  Clock,
-  ChevronRight,
-} from "lucide-react";
+import { IconChevronRight, IconClock, IconFileCode, IconHash, IconHome, IconLogout, IconSearch, IconSettings, IconTrophy, IconUser, IconX } from '@tabler/icons-react';
 import { useAuthStore } from "../store/useAuthStore";
 import { useProblems } from "../hooks/useProblems";
 
@@ -70,10 +58,10 @@ const CommandPalette = () => {
   };
 
   const pages = [
-    { name: "Home", icon: Home, path: "/", shortcut: "G H" },
-    { name: "Problems", icon: FileCode, path: "/problems", shortcut: "G P" },
-    { name: "Leaderboard", icon: Trophy, path: "/leaderboard", shortcut: "G L" },
-    { name: "Profile", icon: User, path: "/profile", shortcut: "G U" },
+    { name: "Home", icon: IconHome, path: "/", shortcut: "G H" },
+    { name: "Problems", icon: IconFileCode, path: "/problems", shortcut: "G P" },
+    { name: "Leaderboard", icon: IconTrophy, path: "/leaderboard", shortcut: "G L" },
+    { name: "Profile", icon: IconUser, path: "/profile", shortcut: "G U" },
   ];
 
   if (!open) return null;
@@ -89,9 +77,9 @@ const CommandPalette = () => {
       {/* Command Dialog */}
       <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-full max-w-lg">
         <Command className="bg-base-100 rounded-2xl shadow-2xl border border-base-content/10 overflow-hidden">
-          {/* Search Input */}
+          {/* IconSearch Input */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-base-content/10">
-            <Search className="w-5 h-5 text-base-content/40" />
+            <IconSearch className="w-5 h-5 text-base-content/40" />
             <Command.Input
               value={search}
               onValueChange={setSearch}
@@ -103,7 +91,7 @@ const CommandPalette = () => {
               onClick={() => setOpen(false)}
               className="p-1 hover:bg-base-200 rounded-lg transition-colors"
             >
-              <X className="w-4 h-4" />
+              <IconX className="w-4 h-4" />
             </button>
           </div>
 
@@ -143,7 +131,7 @@ const CommandPalette = () => {
                     className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-base-content/80 hover:bg-base-200/50 hover:text-base-content transition-colors data-[selected=true]:bg-primary/10 data-[selected=true]:text-primary"
                   >
                     <div className="flex items-center gap-3 overflow-hidden">
-                      <Hash className="w-4 h-4 shrink-0" />
+                      <IconHash className="w-4 h-4 shrink-0" />
                       <span className="font-medium truncate">{problem.title}</span>
                       <span
                         className={`badge badge-sm shrink-0 ${
@@ -157,7 +145,7 @@ const CommandPalette = () => {
                         {problem.difficulty}
                       </span>
                     </div>
-                    <ChevronRight className="w-4 h-4 shrink-0 opacity-40" />
+                    <IconChevronRight className="w-4 h-4 shrink-0 opacity-40" />
                   </Command.Item>
                 ))}
               </Command.Group>
@@ -171,7 +159,7 @@ const CommandPalette = () => {
                   onSelect={handleLogout}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-error/70 hover:bg-error/10 hover:text-error transition-colors data-[selected=true]:bg-error/10 data-[selected=true]:text-error"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <IconLogout className="w-4 h-4" />
                   <span className="font-medium">Logout</span>
                 </Command.Item>
               </Command.Group>

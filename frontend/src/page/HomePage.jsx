@@ -1,16 +1,7 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-  Code,
-  Trophy,
-  Zap,
-  BookOpen,
-  Target,
-  CheckCircle,
-  ArrowRight,
-  Rocket,
-} from "lucide-react";
+import { IconArrowRight, IconBolt, IconBook, IconCircleCheck, IconCode, IconRocket, IconTarget, IconTrophy } from '@tabler/icons-react';
 import { useAuthStore } from "../store/useAuthStore";
 
 // Hooks
@@ -120,7 +111,7 @@ const HomePage = () => {
               transition={{ delay: 0.2 }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8"
             >
-              <Code className="w-4 h-4 text-primary" />
+              <IconCode className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-primary">
                 Welcome back, {authUser?.name?.split(" ")[0] || "Coder"}!
               </span>
@@ -152,13 +143,13 @@ const HomePage = () => {
                 className="btn btn-primary btn-lg gap-2 group"
               >
                 Start Practicing
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <IconArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
                 to="/leaderboard"
                 className="btn btn-outline btn-lg gap-2"
               >
-                <Trophy className="w-5 h-5" />
+                <IconTrophy className="w-5 h-5" />
                 View Leaderboard
               </Link>
             </motion.div>
@@ -273,7 +264,7 @@ const HomePage = () => {
               className="md:col-span-2"
             >
               <BentoGridItem
-                icon={Code}
+                icon={IconCode}
                 title="Curated Problem Set"
                 description="Practice with carefully selected algorithmic challenges covering data structures, algorithms, and more."
                 className="h-full"
@@ -298,7 +289,7 @@ const HomePage = () => {
               transition={{ delay: 0.1 }}
             >
               <BentoGridItem
-                icon={Trophy}
+                icon={IconTrophy}
                 title="Monthly Leaderboard"
                 description="Compete with other developers and climb the ranks."
                 className="h-full"
@@ -312,7 +303,7 @@ const HomePage = () => {
               transition={{ delay: 0.2 }}
             >
               <BentoGridItem
-                icon={BookOpen}
+                icon={IconBook}
                 title="Custom Playlists"
                 description="Create personalized problem sets for focused practice."
                 className="h-full"
@@ -326,7 +317,7 @@ const HomePage = () => {
               transition={{ delay: 0.3 }}
             >
               <BentoGridItem
-                icon={Target}
+                icon={IconTarget}
                 title="Progress Tracking"
                 description="Monitor your improvement with detailed analytics."
                 className="h-full"
@@ -340,7 +331,7 @@ const HomePage = () => {
               transition={{ delay: 0.4 }}
             >
               <BentoGridItem
-                icon={Zap}
+                icon={IconBolt}
                 title="Real-time Feedback"
                 description="Get instant feedback on your code submissions."
                 className="h-full"
@@ -387,7 +378,7 @@ const HomePage = () => {
                   >
                     {index === 0 && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-yellow-500 rounded-full">
-                        <Trophy className="w-4 h-4 text-yellow-900" />
+                        <IconTrophy className="w-4 h-4 text-yellow-900" />
                       </div>
                     )}
                     <div className="w-16 h-16 rounded-full mx-auto mb-4 overflow-hidden ring-4 ring-base-200">
@@ -419,7 +410,7 @@ const HomePage = () => {
             >
               <Link to="/leaderboard" className="btn btn-outline gap-2">
                 View Full Leaderboard
-                <ArrowRight className="w-4 h-4" />
+                <IconArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
           </div>
@@ -465,7 +456,7 @@ const HomePage = () => {
                             : "bg-error/10 text-error"
                         }`}
                       >
-                        <CheckCircle className="w-5 h-5" />
+                        <IconCircleCheck className="w-5 h-5" />
                       </div>
                       <div>
                         <p className="font-medium group-hover:text-primary transition-colors">
@@ -505,7 +496,7 @@ const HomePage = () => {
         >
           <div className="relative bg-base-100/50 backdrop-blur-sm rounded-3xl p-12 border border-base-content/5">
             <div className="relative z-10">
-              <Rocket className="w-12 h-12 text-primary mx-auto mb-6" />
+              <IconRocket className="w-12 h-12 text-primary mx-auto mb-6" />
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 Ready to level up?
               </h2>
@@ -517,7 +508,7 @@ const HomePage = () => {
                 className="btn btn-primary btn-lg gap-2 group"
               >
                 Start Coding Now
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <IconArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
           </div>

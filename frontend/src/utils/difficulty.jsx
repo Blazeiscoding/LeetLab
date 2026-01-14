@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle, Clock, Zap } from 'lucide-react';
+import { IconBolt, IconCircleCheck, IconClock } from '@tabler/icons-react';
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY_CONFIG } from '../constants/difficulty';
 
 /**
@@ -37,9 +37,9 @@ export const getDifficultyBadgeClass = (difficulty) => {
  */
 export const getDifficultyIcon = (difficulty, className = 'w-4 h-4') => {
   const icons = {
-    EASY: <CheckCircle className={className} />,
-    MEDIUM: <Clock className={className} />,
-    HARD: <Zap className={className} />,
+    EASY: <IconCircleCheck className={className} />,
+    MEDIUM: <IconClock className={className} />,
+    HARD: <IconBolt className={className} />,
   };
   return icons[difficulty] || null;
 };

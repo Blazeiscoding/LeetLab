@@ -1,18 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Loader from "../components/Loader";
-import { axiosInstance } from "../util/axios";
-import {
-  Edit,
-  Search,
-  Filter,
-  X,
-  Save,
-  AlertCircle,
-  Plus,
-  Trash2,
-  CheckCircle,
-} from "lucide-react";
-import { problemSchema } from "../util/zodSchema";
+import { axiosInstance } from "../utils/axios";
+import { IconAlertCircle, IconCircleCheck, IconDeviceFloppy, IconEdit, IconFilter, IconPlus, IconSearch, IconTrash, IconX } from '@tabler/icons-react';
+import { problemSchema } from "../utils/zodSchema";
 import toast from "react-hot-toast";
 
 const UpdateProblem = () => {
@@ -317,7 +307,7 @@ const UpdateProblem = () => {
         <div className="card bg-base-100 shadow-xl border border-base-content/5 mb-8 backdrop-blur-xl overflow-visible relative z-30">
           <div className="card-body p-6 flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/40 w-5 h-5" />
+              <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/40 w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search problems by title or description..."
@@ -333,7 +323,7 @@ const UpdateProblem = () => {
                 className="btn bg-base-100 border-base-content/20 hover:border-primary text-base-content gap-2 min-w-[160px] justify-between font-medium capitalize h-[52px]"
               >
                 <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-base-content/50" />
+                  <IconFilter className="w-4 h-4 text-base-content/50" />
                   {difficultyFilter === "all" ? "All Difficulties" : difficultyFilter}
                 </div>
                 <svg className="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -357,7 +347,7 @@ const UpdateProblem = () => {
                     >
                       <span className={`w-2 h-2 rounded-full ${option.value === "all" ? "bg-gradient-to-r from-success via-warning to-error" : `bg-current ${option.color}`}`}></span>
                       <span className={option.color}>{option.label}</span>
-                      {difficultyFilter === option.value && <CheckCircle className="w-4 h-4 ml-auto text-primary" />}
+                      {difficultyFilter === option.value && <IconCircleCheck className="w-4 h-4 ml-auto text-primary" />}
                     </button>
                   </li>
                 ))}
@@ -410,7 +400,7 @@ const UpdateProblem = () => {
                   onClick={() => openUpdateModal(problem)}
                   className="btn btn-primary btn-outline w-full gap-2 group-hover:scale-105"
                 >
-                  <Edit className="w-4 h-4" />
+                  <IconEdit className="w-4 h-4" />
                   Update Problem
                 </button>
               </div>
@@ -420,7 +410,7 @@ const UpdateProblem = () => {
 
         {filteredProblems.length === 0 && (
           <div className="text-center py-12">
-            <AlertCircle className="w-16 h-16 text-base-content/40 mx-auto mb-4" />
+            <IconAlertCircle className="w-16 h-16 text-base-content/40 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-base-content/60 mb-2">
               No Problems Found
             </h3>
@@ -440,7 +430,7 @@ const UpdateProblem = () => {
                 onClick={closeUpdateModal}
                 className="btn btn-ghost btn-sm btn-circle"
               >
-                <X className="w-6 h-6" />
+                <IconX className="w-6 h-6" />
               </button>
             </div>
 
@@ -512,7 +502,7 @@ const UpdateProblem = () => {
                             >
                               <span className={`w-2 h-2 rounded-full bg-current`}></span>
                               {option.label}
-                              {updateForm.difficulty === option.value && <CheckCircle className="w-4 h-4 ml-auto" />}
+                              {updateForm.difficulty === option.value && <IconCircleCheck className="w-4 h-4 ml-auto" />}
                             </button>
                           </li>
                         ))}
@@ -781,7 +771,7 @@ const UpdateProblem = () => {
                       onClick={addTestCase}
                       className="btn btn-sm btn-ghost text-primary"
                     >
-                      <Plus className="w-4 h-4" />
+                      <IconPlus className="w-4 h-4" />
                       Add Test Case
                     </button>
                   </div>
@@ -795,7 +785,7 @@ const UpdateProblem = () => {
                           onClick={() => removeTestCase(index)}
                           className="absolute top-2 right-2 btn btn-ghost btn-xs text-error"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <IconTrash className="w-4 h-4" />
                         </button>
                       )}
                       <div>
@@ -865,7 +855,7 @@ const UpdateProblem = () => {
                   </>
                 ) : (
                   <>
-                    <Save className="w-4 h-4" />
+                    <IconDeviceFloppy className="w-4 h-4" />
                     Update Problem
                   </>
                 )}

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { ActivityCalendar } from "react-activity-calendar";
-import { Flame, Calendar, TrendingUp } from "lucide-react";
+import { IconCalendar, IconFlame, IconTrendingUp } from '@tabler/icons-react';
 
 /**
  * GitHub-style activity heatmap showing submission history
@@ -96,24 +96,24 @@ const StreakCalendar = ({ submissions = [], showStats = true }) => {
       {showStats && (
         <div className="flex flex-wrap items-center gap-4 mb-4">
           <div className="flex items-center gap-2 px-3 py-2 bg-base-200/50 rounded-xl">
-            <Flame className="w-4 h-4 text-orange-500" />
+            <IconFlame className="w-4 h-4 text-orange-500" />
             <span className="text-sm font-bold">{currentStreak}</span>
             <span className="text-xs text-base-content/60">day streak</span>
           </div>
           <div className="flex items-center gap-2 px-3 py-2 bg-base-200/50 rounded-xl">
-            <TrendingUp className="w-4 h-4 text-success" />
+            <IconTrendingUp className="w-4 h-4 text-success" />
             <span className="text-sm font-bold">{longestStreak}</span>
             <span className="text-xs text-base-content/60">longest</span>
           </div>
           <div className="flex items-center gap-2 px-3 py-2 bg-base-200/50 rounded-xl">
-            <Calendar className="w-4 h-4 text-primary" />
+            <IconCalendar className="w-4 h-4 text-primary" />
             <span className="text-sm font-bold">{totalDays}</span>
             <span className="text-xs text-base-content/60">active days</span>
           </div>
         </div>
       )}
 
-      {/* Activity Calendar */}
+      {/* Activity IconCalendar */}
       <div className="overflow-x-auto pb-2">
         <ActivityCalendar
           data={calendarData}

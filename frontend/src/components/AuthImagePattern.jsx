@@ -1,10 +1,10 @@
-import { Code, Terminal, FileCode, Braces } from "lucide-react";
+import { IconBrackets, IconCode, IconFileCode, IconTerminal } from '@tabler/icons-react';
 import { useEffect, useState } from "react";
 
 const CodeBackground = ({ title, subtitle }) => {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Code snippets to display in the background
+  // IconCode snippets to display in the background
   const codeSnippets = [
     `function twoSum(nums, target) {
   const map = new Map();
@@ -69,27 +69,27 @@ function reverseList(head) {
       {/* Animated code symbols in background */}
       <div className="absolute inset-0 opacity-5 pointer-events-none">
         <div className="absolute top-[10%] left-[15%] animate-pulse text-primary">
-          <Braces size={40} />
+          <IconBrackets size={40} />
         </div>
         <div className="absolute top-[30%] left-[80%] animate-pulse delay-300 text-secondary">
-          <FileCode size={50} />
+          <IconFileCode size={50} />
         </div>
         <div className="absolute top-[70%] left-[20%] animate-pulse delay-700 text-accent">
-          <Terminal size={45} />
+          <IconTerminal size={45} />
         </div>
         <div className="absolute top-[60%] left-[75%] animate-pulse delay-500 text-primary">
-          <Code size={55} />
+          <IconCode size={55} />
         </div>
         <div className="absolute top-[85%] left-[45%] animate-pulse delay-200 text-secondary">
-          <Braces size={35} />
+          <IconBrackets size={35} />
         </div>
         <div className="absolute top-[15%] left-[60%] animate-pulse delay-100 text-accent">
-          <Terminal size={30} />
+          <IconTerminal size={30} />
         </div>
       </div>
 
       <div className="z-10 max-w-md flex flex-col items-center text-center">
-        {/* Code editor mockup */}
+        {/* IconCode editor mockup */}
         <div className="w-full bg-base-300 rounded-xl shadow-2xl mb-8 overflow-hidden border border-base-content/5 ring-1 ring-base-content/5 transform transition-transform hover:scale-[1.02] duration-500">
           {/* Editor header */}
           <div className="bg-base-100 px-4 py-3 flex items-center border-b border-base-content/5">
@@ -101,7 +101,7 @@ function reverseList(head) {
             <div className="text-xs font-mono opacity-50">problem.js</div>
           </div>
 
-          {/* Code content */}
+          {/* IconCode content */}
           <div className="p-5 font-mono text-xs sm:text-sm overflow-hidden relative h-64 text-left bg-base-300">
             <pre className="whitespace-pre-wrap text-primary/80 transition-opacity duration-1000 leading-relaxed">
               {codeSnippets[activeIndex]}
@@ -115,7 +115,7 @@ function reverseList(head) {
         {/* Logo */}
         <div className="flex items-center justify-center mb-6">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20 shadow-lg shadow-primary/10">
-            <Code className="w-8 h-8 text-primary" />
+            <IconCode className="w-8 h-8 text-primary" />
           </div>
         </div>
 

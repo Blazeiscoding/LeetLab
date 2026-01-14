@@ -1,18 +1,7 @@
 import { useState, useEffect } from "react";
-import {
-  Trophy,
-  Code,
-  Calendar,
-  Target,
-  Award,
-  TrendingUp,
-  CheckCircle,
-  Layout,
-  Terminal,
-  Activity
-} from "lucide-react";
+import { IconActivity, IconAward, IconCalendar, IconCircleCheck, IconCode, IconLayout, IconTarget, IconTerminal, IconTrendingUp, IconTrophy } from '@tabler/icons-react';
 import { useAuthStore } from "../store/useAuthStore";
-import { axiosInstance } from "../util/axios";
+import { axiosInstance } from "../utils/axios";
 import StreakCalendar from "../components/StreakCalendar";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
@@ -346,7 +335,7 @@ const ProfilePage = () => {
                     />
                   </div>
                   <div className="absolute -bottom-1 -right-1 bg-success text-success-content p-1.5 rounded-full border-4 border-base-100 shadow-sm">
-                    <CheckCircle className="w-4 h-4" />
+                    <IconCircleCheck className="w-4 h-4" />
                   </div>
                 </div>
               </div>
@@ -369,7 +358,7 @@ const ProfilePage = () => {
 
                 <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 lg:gap-8">
                   <div className="flex items-center gap-2 px-4 py-2 bg-base-200/50 rounded-full border border-base-content/5">
-                    <Calendar className="w-4 h-4 text-primary" />
+                    <IconCalendar className="w-4 h-4 text-primary" />
                     <span className="text-sm font-medium">
                       Joined {formatDate(authUser?.createdAt || new Date())}
                     </span>
@@ -385,7 +374,7 @@ const ProfilePage = () => {
               <div className="grid grid-cols-3 gap-4 lg:min-w-[400px] w-full lg:w-auto">
                 <div className="bg-base-100/50 backdrop-blur-sm rounded-2xl p-4 border border-base-content/5 text-center hover:bg-base-100 transition-colors">
                   <div className="text-success mb-2 flex justify-center">
-                    <Trophy className="w-6 h-6" />
+                    <IconTrophy className="w-6 h-6" />
                   </div>
                   <div className="text-2xl font-black text-base-content">{stats.solvedCount}</div>
                   <div className="text-xs font-bold text-base-content/50 uppercase tracking-wide">Solved</div>
@@ -393,7 +382,7 @@ const ProfilePage = () => {
 
                 <div className="bg-base-100/50 backdrop-blur-sm rounded-2xl p-4 border border-base-content/5 text-center hover:bg-base-100 transition-colors">
                   <div className="text-primary mb-2 flex justify-center">
-                    <Code className="w-6 h-6" />
+                    <IconCode className="w-6 h-6" />
                   </div>
                   <div className="text-2xl font-black text-base-content">{stats.totalSubmissions}</div>
                   <div className="text-xs font-bold text-base-content/50 uppercase tracking-wide">Submissions</div>
@@ -401,7 +390,7 @@ const ProfilePage = () => {
 
                 <div className="bg-base-100/50 backdrop-blur-sm rounded-2xl p-4 border border-base-content/5 text-center hover:bg-base-100 transition-colors">
                   <div className="text-secondary mb-2 flex justify-center">
-                    <Target className="w-6 h-6" />
+                    <IconTarget className="w-6 h-6" />
                   </div>
                   <div className="text-2xl font-black text-base-content">{stats.successRate}%</div>
                   <div className="text-xs font-bold text-base-content/50 uppercase tracking-wide">Success</div>
@@ -414,9 +403,9 @@ const ProfilePage = () => {
         {/* Navigation Tabs */}
         <div className="flex overflow-x-auto pb-4 lg:pb-0 gap-2 mb-8 no-scrollbar">
           {[
-            { id: "overview", label: "Overview", icon: Layout },
-            { id: "submissions", label: "Submissions", icon: Terminal },
-            { id: "solved", label: "Solved Problems", icon: Trophy },
+            { id: "overview", label: "Overview", icon: IconLayout },
+            { id: "submissions", label: "Submissions", icon: IconTerminal },
+            { id: "solved", label: "Solved Problems", icon: IconTrophy },
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -436,12 +425,12 @@ const ProfilePage = () => {
         {/* Tab Content */}
         {activeTab === "overview" && (
           <div className="space-y-8">
-            {/* Activity Streak Calendar */}
+            {/* IconActivity Streak IconCalendar */}
             <div className="card bg-base-100 shadow-xl border border-base-content/5">
               <div className="card-body">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-3 bg-base-200 rounded-xl">
-                    <Activity className="w-6 h-6 text-success" />
+                    <IconActivity className="w-6 h-6 text-success" />
                   </div>
                   <div>
                     <h2 className="text-xl font-bold">Activity Calendar</h2>
@@ -458,7 +447,7 @@ const ProfilePage = () => {
               <div className="card-body">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-3 bg-base-200 rounded-xl">
-                    <Award className="w-6 h-6 text-primary" />
+                    <IconAward className="w-6 h-6 text-primary" />
                   </div>
                   <div>
                     <h2 className="text-xl font-bold">Difficulty Breakdown</h2>
@@ -531,7 +520,7 @@ const ProfilePage = () => {
                 <div className="space-y-4">
                   {Object.entries(stats.languageBreakdown).length === 0 ? (
                     <div className="text-center py-12 bg-base-200/30 rounded-2xl border border-dashed border-base-content/10">
-                      <Code className="w-12 h-12 text-base-content/20 mx-auto mb-3" />
+                      <IconCode className="w-12 h-12 text-base-content/20 mx-auto mb-3" />
                       <p className="text-base-content/60 font-medium">No submissions yet</p>
                       <p className="text-sm text-base-content/40">Start coding to see your stats!</p>
                     </div>
@@ -575,7 +564,7 @@ const ProfilePage = () => {
                     {submissions.length === 0 ? (
                         <div className="text-center py-20">
                             <div className="w-16 h-16 bg-base-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Terminal className="w-8 h-8 text-base-content/40" />
+                                <IconTerminal className="w-8 h-8 text-base-content/40" />
                             </div>
                             <h3 className="text-lg font-bold opacity-80 mb-2">No submissions found</h3>
                             <p className="text-base-content/60 mb-6">Start solving problems to populate your history</p>
@@ -609,7 +598,7 @@ const ProfilePage = () => {
                                                     : "bg-error/10 text-error"
                                             }`}>
                                                 {submission.status === "Accepted" ? (
-                                                    <CheckCircle className="w-3 h-3" />
+                                                    <IconCircleCheck className="w-3 h-3" />
                                                 ) : (
                                                     <XCircle className="w-3 h-3" />
                                                 )}
@@ -645,7 +634,7 @@ const ProfilePage = () => {
                     {solvedProblems.length === 0 ? (
                         <div className="text-center py-20 bg-base-200/30 rounded-3xl border border-dashed border-base-content/10">
                              <div className="w-20 h-20 bg-gradient-to-br from-yellow-400/20 to-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <Trophy className="w-10 h-10 text-warning" />
+                                <IconTrophy className="w-10 h-10 text-warning" />
                             </div>
                             <h3 className="text-xl font-bold mb-2">No problems solved yet</h3>
                             <p className="text-base-content/60 mb-6">Solve your first problem to earn a badge!</p>
@@ -668,7 +657,7 @@ const ProfilePage = () => {
                                             }`}>
                                                 {problem.difficulty}
                                             </div>
-                                            <CheckCircle className="w-4 h-4 text-success" />
+                                            <IconCircleCheck className="w-4 h-4 text-success" />
                                         </div>
                                         <h3 className="font-bold text-lg line-clamp-1 group-hover:text-primary transition-colors">
                                             {problem.title}

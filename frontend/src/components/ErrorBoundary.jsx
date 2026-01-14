@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertTriangle, RefreshCw, Home, Bug } from "lucide-react";
+import { IconAlertTriangle, IconBug, IconHome, IconRefresh } from '@tabler/icons-react';
 import { Link } from "react-router-dom";
 
 /**
@@ -47,13 +47,13 @@ class ErrorBoundary extends React.Component {
       if (minimal) {
         return (
           <div className="flex items-center gap-2 p-4 bg-error/10 text-error rounded-xl border border-error/20">
-            <AlertTriangle className="w-5 h-5 shrink-0" />
+            <IconAlertTriangle className="w-5 h-5 shrink-0" />
             <span className="text-sm font-medium">Something went wrong</span>
             <button
               onClick={this.handleRetry}
               className="btn btn-ghost btn-xs gap-1"
             >
-              <RefreshCw className="w-3 h-3" />
+              <IconRefresh className="w-3 h-3" />
               Retry
             </button>
           </div>
@@ -66,7 +66,7 @@ class ErrorBoundary extends React.Component {
           <div className="max-w-md w-full text-center">
             {/* Error Icon */}
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-error/10 mb-6">
-              <AlertTriangle className="w-10 h-10 text-error" />
+              <IconAlertTriangle className="w-10 h-10 text-error" />
             </div>
 
             {/* Error Message */}
@@ -80,7 +80,7 @@ class ErrorBoundary extends React.Component {
               <div className="collapse collapse-arrow bg-base-200/50 rounded-xl mb-6 text-left">
                 <input type="checkbox" />
                 <div className="collapse-title flex items-center gap-2 text-sm font-medium">
-                  <Bug className="w-4 h-4" />
+                  <IconBug className="w-4 h-4" />
                   Technical Details
                 </div>
                 <div className="collapse-content">
@@ -102,12 +102,12 @@ class ErrorBoundary extends React.Component {
                 onClick={this.handleRetry}
                 className="btn btn-primary gap-2"
               >
-                <RefreshCw className="w-4 h-4" />
+                <IconRefresh className="w-4 h-4" />
                 Try Again
               </button>
               <Link to="/" className="btn btn-ghost gap-2">
-                <Home className="w-4 h-4" />
-                Go Home
+                <IconHome className="w-4 h-4" />
+                Go IconHome
               </Link>
             </div>
           </div>
