@@ -6,6 +6,7 @@ import batch2 from './problems-batch2.js';
 import batch3 from './problems-batch3.js';
 import batch4 from './problems-batch4.js';
 import batch5 from './problems-batch5.js';
+import batchHard from './problems-hard.js';
 
 // Get admin user ID (first admin in database)
 async function getAdminUserId() {
@@ -156,7 +157,7 @@ const problems = [
 ];
 
 // Combine all problems from all batches
-const allProblems = [...problems, ...batch2, ...batch3, ...batch4, ...batch5];
+const allProblems = [...problems, ...batch2, ...batch3, ...batch4, ...batch5, ...batchHard];
 
 async function seed() {
   console.log('🌱 Starting seed...');
