@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { axiosInstance } from "../util/axios";
+import { axiosInstance } from "../utils/axios";
 
 /**
  * Hook to fetch all problems with caching

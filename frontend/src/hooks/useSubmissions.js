@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { axiosInstance } from "../util/axios";
+import { axiosInstance } from "../utils/axios";
 
 /**
  * Hook to fetch all user submissions
