@@ -2,6 +2,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from "../utils/axios"
 import toast from 'react-hot-toast';
 
+// Query cache configuration for optimal performance
+const QUERY_CONFIG = {
+  staleTime: 5 * 60 * 1000, // 5 minutes - data considered fresh
+  gcTime: 10 * 60 * 1000,   // 10 minutes - garbage collection time
+};
+
 /**
  * Hook to fetch all user playlists
  */
@@ -12,6 +18,7 @@ export const usePlaylists = () => {
       const response = await axiosInstance.get('/playlist');
       return response.data.data || [];
     },
+    ...QUERY_CONFIG,
   });
 };
 
@@ -27,6 +34,7 @@ export const usePlaylist = (id) => {
       return response.data.data;
     },
     enabled: !!id,
+    ...QUERY_CONFIG,
   });
 };
 

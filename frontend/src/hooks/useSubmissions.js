@@ -11,6 +11,8 @@ export const useSubmissions = () => {
       const response = await axiosInstance.get("/submission/get-all-submission");
       return response.data.data || [];
     },
+    staleTime: 2 * 60 * 1000, // 2 minutes - submissions change more frequently
+    gcTime: 5 * 60 * 1000,    // 5 minutes - garbage collection time
   });
 };
 

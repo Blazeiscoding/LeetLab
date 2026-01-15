@@ -1,20 +1,25 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo, useDeferredValue } from "react";
 import { Link } from "react-router-dom";
 import { IconArrowRight, IconCircleCheck, IconSearch } from '@tabler/icons-react';
-
+import { List } from 'react-window';
 
 // Hooks
 import { useProblems, useSolvedProblems } from "../hooks/useProblems";
 
 // Utils
-import { getDifficultyColor, getDifficultyIcon, getDifficultyBgColor } from "../utils/difficulty";
+import { getDifficultyBgColor } from "../utils/difficulty";
 
 // Components
 import DifficultyBadge from "../components/ui/DifficultyBadge";
-import { SkeletonCard, SkeletonProblemList } from "../components/ui/Skeleton";
+import { SkeletonProblemList } from "../components/ui/Skeleton";
 
-// Reusable Problem Card component
-const ProblemCard = ({ problem, isSolved }) => (
+// Constants for virtualization
+const ITEM_HEIGHT = 100; // Estimated height of each problem card
+const LIST_HEIGHT = 600; // Height of the virtualized list container
+const VIRTUALIZATION_THRESHOLD = 20; // Only virtualize when more than 20 items
+
+// Reusable Problem Card component - memoized to prevent unnecessary re-renders
+const ProblemCard = memo(({ problem, isSolved }) => (
   <div className="group card bg-base-100 shadow-sm hover:shadow-lg transition-all duration-300 border border-base-content/5 hover:border-primary/20 card-interactive">
     <div className="card-body p-5 sm:p-6 flex-row items-center gap-6">
       <div
@@ -73,12 +78,15 @@ const ProblemCard = ({ problem, isSolved }) => (
       aria-label="Solve problem"
     />
   </div>
-);
+));
 
 const ProblemsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
+
+  // Defer search term updates to keep UI responsive during fast typing
+  const deferredSearchTerm = useDeferredValue(searchTerm);
 
   // Data fetching with React Query hooks
   const { data: problems = [], isLoading: loading } = useProblems();
@@ -93,13 +101,13 @@ const ProblemsPage = () => {
   const filteredProblems = useMemo(() => {
     let filtered = problems;
 
-    if (searchTerm) {
+    if (deferredSearchTerm) {
       filtered = filtered.filter(
         (problem) =>
-          (problem.title && problem.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (problem.title && problem.title.toLowerCase().includes(deferredSearchTerm.toLowerCase())) ||
           (problem.tags &&
             problem.tags.some((tag) =>
-              tag.toLowerCase().includes(searchTerm.toLowerCase())
+              tag.toLowerCase().includes(deferredSearchTerm.toLowerCase())
             ))
       );
     }
@@ -121,7 +129,7 @@ const ProblemsPage = () => {
     }
 
     return filtered;
-  }, [problems, searchTerm, difficultyFilter, statusFilter, solvedProblems]);
+  }, [problems, deferredSearchTerm, difficultyFilter, statusFilter, solvedProblems]);
 
   return (
     <div className="min-h-screen bg-base-200/50 pb-12">
@@ -364,21 +372,45 @@ const ProblemsPage = () => {
               </p>
             </div>
           ) : (
-            /* Problem list with animations */
-            <div className="space-y-4 animate-fade-in">
-              {filteredProblems.map((problem, index) => (
-                <div 
-                  key={problem.id}
-                  className="animate-slide-up"
-                  style={{ animationDelay: `${Math.min(index * 30, 300)}ms` }}
+            /* Problem list - virtualized for large lists, regular for small */
+            filteredProblems.length > VIRTUALIZATION_THRESHOLD ? (
+              <div className="animate-fade-in">
+                <List
+                  height={LIST_HEIGHT}
+                  itemCount={filteredProblems.length}
+                  itemSize={ITEM_HEIGHT}
+                  width="100%"
+                  className="no-scrollbar"
                 >
-                  <ProblemCard 
-                    problem={problem} 
-                    isSolved={solvedProblems.has(problem.id)} 
-                  />
-                </div>
-              ))}
-            </div>
+                  {({ index, style }) => {
+                    const problem = filteredProblems[index];
+                    return (
+                      <div style={{ ...style, paddingBottom: '16px' }}>
+                        <ProblemCard 
+                          problem={problem} 
+                          isSolved={solvedProblems.has(problem.id)} 
+                        />
+                      </div>
+                    );
+                  }}
+                </List>
+              </div>
+            ) : (
+              <div className="space-y-4 animate-fade-in">
+                {filteredProblems.map((problem, index) => (
+                  <div 
+                    key={problem.id}
+                    className="animate-slide-up"
+                    style={{ animationDelay: `${Math.min(index * 30, 300)}ms` }}
+                  >
+                    <ProblemCard 
+                      problem={problem} 
+                      isSolved={solvedProblems.has(problem.id)} 
+                    />
+                  </div>
+                ))}
+              </div>
+            )
           )}
         </div>
       </div>

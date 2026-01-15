@@ -1,6 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "../utils/axios";
 
+// Query cache configuration for optimal performance
+const QUERY_CONFIG = {
+  staleTime: 5 * 60 * 1000, // 5 minutes - data considered fresh
+  gcTime: 10 * 60 * 1000,   // 10 minutes - garbage collection time (formerly cacheTime)
+};
+
 /**
  * Hook to fetch all problems with caching
  */
@@ -11,6 +17,7 @@ export const useProblems = () => {
       const response = await axiosInstance.get("/problems/get-all-problems");
       return response.data.data || [];
     },
+    ...QUERY_CONFIG,
   });
 };
 
@@ -25,6 +32,7 @@ export const useProblem = (id) => {
       return response.data.data;
     },
     enabled: !!id,
+    ...QUERY_CONFIG,
   });
 };
 
@@ -40,6 +48,7 @@ export const useSolvedProblems = () => {
       // Ensure we always return an array (API might return object with difficulty keys)
       return Array.isArray(data) ? data : [];
     },
+    ...QUERY_CONFIG,
   });
 };
 
@@ -63,3 +72,4 @@ export const useProblemsByDifficulty = () => {
     totalProblems: problems.length,
   };
 };
+
