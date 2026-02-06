@@ -16,7 +16,7 @@ import { SkeletonProblemList } from "../components/ui/Skeleton";
 // Constants for virtualization
 const ITEM_HEIGHT = 100; // Estimated height of each problem card
 const LIST_HEIGHT = 600; // Height of the virtualized list container
-const VIRTUALIZATION_THRESHOLD = 20; // Only virtualize when more than 20 items
+const VIRTUALIZATION_THRESHOLD = 1000; // Temporarily disabled virtualization due to react-window width issue
 
 // Reusable Problem Card component - memoized to prevent unnecessary re-renders
 const ProblemCard = memo(({ problem, isSolved }) => (
@@ -384,6 +384,7 @@ const ProblemsPage = () => {
                 >
                   {({ index, style }) => {
                     const problem = filteredProblems[index];
+                    if (!problem) return null;
                     return (
                       <div style={{ ...style, paddingBottom: '16px' }}>
                         <ProblemCard 
