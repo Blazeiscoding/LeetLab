@@ -28,6 +28,7 @@
    ============================================ */
 /* Smooth color transitions on theme change */
 html {
+  scrollbar-gutter: stable;
   transition: background-color var(--duration-normal) ease,
               color var(--duration-fast) ease;
 }

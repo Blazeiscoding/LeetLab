@@ -30,32 +30,37 @@ const ADMIN_LINKS: NavItem[] = [
 ];
 
 /**
- * Simple scroll detection hook with debounce
+ * Stable scroll detection with hysteresis to avoid jitter near threshold
  */
-const useScrolled = (threshold = 20) => {
+const useScrolled = (enterThreshold = 30, exitThreshold = 20) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    
+    let rafId: number | null = null;
+
+    const updateScrollState = () => {
+      const scrollY = window.scrollY;
+      setIsScrolled((prev) => {
+        if (prev) return scrollY > exitThreshold;
+        return scrollY > enterThreshold;
+      });
+      rafId = null;
+    };
+
     const handleScroll = () => {
-      if (timeoutId) return;
-      
-      timeoutId = setTimeout(() => {
-        setIsScrolled(window.scrollY > threshold);
-        timeoutId = null;
-      }, 50); // 50ms debounce
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(updateScrollState);
     };
 
     // Initial check
-    setIsScrolled(window.scrollY > threshold);
+    updateScrollState();
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      if (timeoutId) clearTimeout(timeoutId);
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
     };
-  }, [threshold]);
+  }, [enterThreshold, exitThreshold]);
 
   return isScrolled;
 };
@@ -225,7 +230,7 @@ const Navbar = () => {
             flex items-center justify-between mx-auto max-w-7xl px-4
             bg-base-100/90 backdrop-blur-lg border border-base-content/5
             transition-[padding,border-radius,box-shadow] duration-300 ease-out
-            ${isScrolled 
+            ${isScrolled
               ? 'py-2 px-4 rounded-xl shadow-md' 
               : 'py-3 px-5 rounded-2xl shadow-sm'
             }
