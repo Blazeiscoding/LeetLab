@@ -70,9 +70,9 @@ const sampledData = {
     },
   },
   codeSnippets: {
-    JAVASCRIPT: `function climbStairs(n) {\n  // Write your code here\n}\n\nconst readline = require('readline');\nconst rl = readline.createInterface({\n  input: process.stdin,\n  output: process.stdout,\n  terminal: false\n});\n\nrl.on('line', (line) => {\n  const n = parseInt(line.trim());\n  const result = climbStairs(n);\n  console.log(result);\n  rl.close();\n});`,
-    PYTHON: `class Solution:\n    def climbStairs(self, n: int) -> int:\n        # Write your code here\n        pass\n\nif __name__ == "__main__":\n    import sys\n    n = int(sys.stdin.readline().strip())\n    sol = Solution()\n    result = sol.climbStairs(n)\n    print(result)`,
-    JAVA: `import java.util.Scanner;\n\nclass Main {\n    public int climbStairs(int n) {\n        // Write your code here\n        return 0;\n    }\n    \n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = Integer.parseInt(scanner.nextLine().trim());\n        Main main = new Main();\n        int result = main.climbStairs(n);\n        System.out.println(result);\n        scanner.close();\n    }\n}`,
+    JAVASCRIPT: `function climbStairs(n) {\n  // Write your code here\n}`,
+    PYTHON: `class Solution:\n    def climbStairs(self, n: int) -> int:\n        # Write your code here\n        pass`,
+    JAVA: `public class Solution {\n    public int climbStairs(int n) {\n        // Write your code here\n        return 0;\n    }\n}`,
   },
   referenceSolutions: {
     JAVASCRIPT: `function climbStairs(n) {\n  if (n <= 2) return n;\n  let dp = new Array(n + 1);\n  dp[1] = 1;\n  dp[2] = 2;\n  for (let i = 3; i <= n; i++) {\n    dp[i] = dp[i - 1] + dp[i - 2];\n  }\n  return dp[n];\n}`,

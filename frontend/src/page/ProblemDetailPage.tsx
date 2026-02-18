@@ -851,24 +851,18 @@ const ProblemDetailPage = () => {
                                     )}
 
                                     {!testCase.compileOutput && (
-                                        <>
+                                        <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <div className="text-xs font-bold opacity-50 uppercase mb-1">Input</div>
-                                                <pre className="bg-base-200/50 p-2 rounded-lg font-mono text-xs overflow-x-auto">{testCase.input || "(empty)"}</pre>
+                                                <div className="text-xs font-bold opacity-50 uppercase mb-1">Your Output</div>
+                                                <pre className={`p-2 rounded-lg font-mono text-xs overflow-x-auto ${
+                                                    testCase.passed ? "bg-success/5 text-success" : "bg-error/5 text-error"
+                                                }`}>{testCase.stdout || "(empty)"}</pre>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <div className="text-xs font-bold opacity-50 uppercase mb-1">Your Output</div>
-                                                    <pre className={`p-2 rounded-lg font-mono text-xs overflow-x-auto ${
-                                                        testCase.passed ? "bg-success/5 text-success" : "bg-error/5 text-error"
-                                                    }`}>{testCase.stdout || "(empty)"}</pre>
-                                                </div>
-                                                <div>
-                                                    <div className="text-xs font-bold opacity-50 uppercase mb-1">Expected</div>
-                                                    <pre className="bg-base-200/50 p-2 rounded-lg font-mono text-xs overflow-x-auto">{testCase.expected || "(empty)"}</pre>
-                                                </div>
+                                            <div>
+                                                <div className="text-xs font-bold opacity-50 uppercase mb-1">Expected</div>
+                                                <pre className="bg-base-200/50 p-2 rounded-lg font-mono text-xs overflow-x-auto">{testCase.expected || "(empty)"}</pre>
                                             </div>
-                                        </>
+                                        </div>
                                     )}
                                 </div>
                             </div>
