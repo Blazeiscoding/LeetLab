@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { IconActivity, IconAward, IconCalendar, IconCircleCheck, IconCircleX, IconCode, IconTarget, IconTerminal, IconTrendingUp, IconTrophy, IconStar ,IconClock ,IconLayout ,IconGitBranch  } from '@tabler/icons-react';
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { IconActivity, IconAward, IconCalendar, IconCircleCheck, IconCircleX, IconCode, IconTarget, IconTerminal, IconTrophy, IconStar ,IconClock ,IconLayout ,IconGitBranch  } from '@tabler/icons-react';
 import { useAuthStore } from "../store/useAuthStore";
 import { axiosInstance } from "../utils/axios";
 import StreakCalendar from "../components/StreakCalendar";
@@ -9,176 +9,72 @@ import { getUserAvatar } from "../utils/avatar";
 import { Difficulty, Problem, ProblemSolved, Submission } from "../types";
 
 type ActiveTab = "overview" | "submissions" | "solved";
-type ProblemTitleMap = Record<string, string>;
 
 const ProfilePage = () => {
   const { authUser } = useAuthStore();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [solvedProblems, setSolvedProblems] = useState<ProblemSolved[]>([]);
   const [problems, setProblems] = useState<Problem[]>([]);
-  const [problemTitles, setProblemTitles] = useState<ProblemTitleMap>({}); // Cache for individual problem titles
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ActiveTab>("overview");
 
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
-  const fetchIndividualProblemTitles = async (submissionsData: Submission[]) => {
-    const uniqueProblemIds = [
-      ...new Set(submissionsData.map((s) => s.problemId)),
-    ];
-    const titles: ProblemTitleMap = {};
-
-    // Try different endpoints for individual problems
-    const endpoints = [
-      (id: string) => `/problems/${id}`,
-      (id: string) => `/problem/${id}`,
-      (id: string) => `/problems/get-problem/${id}`,
-      (id: string) => `/get-problem/${id}`,
-    ];
-
-    for (const problemId of uniqueProblemIds) {
-      for (const endpointFn of endpoints) {
-        try {
-          const response = await axiosInstance.get(endpointFn(problemId));
-          const problemData = response.data?.data || response.data;
-          if (problemData && problemData.title) {
-            titles[problemId] = problemData.title;
-            break; // Successfully got the title, move to next problem
-          }
-        } catch (error) {
-          // Continue to next endpoint
-          continue;
-        }
-      }
-    }
-
-    setProblemTitles(titles);
-  };
-
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
       setLoading(true);
 
-      // Fetch data with proper error handling for each endpoint
-      const promises = [];
+      const [submissionsRes, solvedRes, problemsRes] = await Promise.all([
+        axiosInstance.get("/submission/get-all-submission"),
+        axiosInstance.get("/problems/get-solved-problems"),
+        axiosInstance.get("/problems/get-all-problems"),
+      ]);
 
-      // Always try to fetch submissions and solved problems
-      promises.push(
-        axiosInstance.get("/submission/get-all-submission").catch((err) => {
-          console.warn("Submissions endpoint failed:", err);
-          return { data: { data: [] } };
-        })
-      );
-
-      promises.push(
-        axiosInstance.get("/problems/get-solved-problems").catch((err) => {
-          console.warn("Solved problems endpoint failed:", err);
-          return { data: { data: [] } };
-        })
-      );
-
-      // Try different possible endpoints for problems
-      promises.push(
-        axiosInstance
-          .get("/problems/get-all-problems")
-          .catch(() => axiosInstance.get("/problems"))
-          .catch(() => axiosInstance.get("/problem"))
-          .catch(() => axiosInstance.get("/problems/all"))
-          .catch(() => axiosInstance.get("/admin/problems"))
-          .catch(() => axiosInstance.get("/api/problems"))
-          .catch(() => axiosInstance.get("/get-problems"))
-          .catch(() => axiosInstance.get("/getAllProblems"))
-          .catch((err) => {
-            console.warn("All problems endpoints failed:", err);
-            return { data: { data: [] } };
-          })
-      );
-
-      const [submissionsRes, solvedRes, problemsRes] = await Promise.all(
-        promises
-      );
-
-      const submissionsData =
-        ((submissionsRes.data?.data || submissionsRes.data || []) as Submission[]);
-      const solvedData = ((solvedRes.data?.data || solvedRes.data || []) as ProblemSolved[]);
-      const problemsData = ((problemsRes.data?.data || problemsRes.data || []) as Problem[]);
+      const submissionsData = (
+        Array.isArray(submissionsRes.data?.data) ? submissionsRes.data.data : []
+      ) as Submission[];
+      const solvedData = (
+        Array.isArray(solvedRes.data?.data) ? solvedRes.data.data : []
+      ) as ProblemSolved[];
+      const problemsData = (
+        Array.isArray(problemsRes.data?.data) ? problemsRes.data.data : []
+      ) as Problem[];
 
       setSubmissions(submissionsData);
       setSolvedProblems(solvedData);
       setProblems(problemsData);
-
-      // If problems data is empty but we have submissions, try to fetch individual problem titles
-      if (problemsData.length === 0 && submissionsData.length > 0) {
-        await fetchIndividualProblemTitles(submissionsData);
-      }
     } catch (error) {
       console.error("Error fetching profile data:", error);
-      // Don't show error toast if we have partial data
-      if (submissions.length === 0 && solvedProblems.length === 0) {
-        toast.error("Some profile data couldn't be loaded");
-      }
+      toast.error("Some profile data couldn't be loaded");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
+  const problemTitleById = useMemo(() => {
+    return problems.reduce<Record<string, string>>((acc, problem) => {
+      if (problem.id && problem.title) {
+        acc[problem.id] = problem.title;
+      }
+      return acc;
+    }, {});
+  }, [problems]);
 
   const getProblemTitle = (problemId: string) => {
     if (!problemId) {
       return "Unknown Problem";
     }
 
-    // First, check if we have the title in our cache
-    if (problemTitles[problemId]) {
-      return problemTitles[problemId];
+    if (problemTitleById[problemId]) {
+      return problemTitleById[problemId];
     }
 
-    // If we don't have problems data, use fallback
-    if (problems.length === 0) {
-      return `Problem #${problemId}`;
-    }
-
-    // Try different matching strategies
-    let problem = null;
-
-    // Strategy 1: Direct ID match
-    problem = problems.find((p) => p.id === problemId || p._id === problemId);
-
-    // Strategy 2: String/Number conversion match
-    if (!problem) {
-      problem = problems.find(
-        (p) =>
-          String(p.id) === String(problemId) ||
-          String(p._id) === String(problemId)
-      );
-    }
-
-    // Strategy 3: Number conversion match
-    if (!problem) {
-      const numericId = parseInt(problemId, 10);
-      if (!isNaN(numericId)) {
-        problem = problems.find(
-          (p) =>
-            parseInt(String(p.id), 10) === numericId ||
-            parseInt(String(p._id || ""), 10) === numericId
-        );
-      }
-    }
-
-    // Strategy 4: Check if problemId is actually the title itself
-    if (!problem) {
-      problem = problems.find(
-        (p) =>
-          p.title === problemId ||
-          p.title?.toLowerCase() === String(problemId).toLowerCase()
-      );
-    }
-
-    return problem ? problem.title : `Problem #${problemId}`;
+    return `Problem #${problemId}`;
   };
 
-  const getStats = () => {
+  const stats = useMemo(() => {
     const totalSubmissions = submissions.length;
     const acceptedSubmissions = submissions.filter(
       (s) => s.status === "Accepted"
@@ -204,7 +100,6 @@ const ProfilePage = () => {
       return acc;
     }, {});
 
-    // Get recent activity (last 7 days)
     const recentSubmissions = submissions.filter((s) => {
       const submissionDate = new Date(s.createdAt);
       const weekAgo = new Date();
@@ -221,9 +116,7 @@ const ProfilePage = () => {
       languageBreakdown,
       recentSubmissions,
     };
-  };
-
-  const stats = getStats();
+  }, [solvedProblems, submissions]);
 
   const formatDate = (dateString: string | Date) => {
     return new Date(dateString).toLocaleDateString("en-US", {

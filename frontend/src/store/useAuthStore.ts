@@ -34,7 +34,7 @@ interface AuthState {
   updateProfile: (data: { name?: string; image?: string }) => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   authUser: null,
   isSigningUp: false,
   isLoggingIn: false,
@@ -79,7 +79,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
       if (res.data.user && res.data.user.isEmailVerified) {
         set({ authUser: res.data.user });
-        await get().checkAuth();
         toast.success('Login successful!');
         return { success: true, user: res.data.user };
       } else {
@@ -126,7 +125,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const res = await axiosInstance.post('/auth/verify-otp', { email, otp });
       set({ authUser: res.data.user });
-      await get().checkAuth();
       toast.success('Email verified successfully!');
       return { success: true, user: res.data.user };
     } catch (error: unknown) {

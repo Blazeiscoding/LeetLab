@@ -1,94 +1,58 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Loader from "../components/Loader";
 import { IconAlertCircle, IconBook, IconEdit, IconPlayerPlay, IconPlus, IconTrash } from '@tabler/icons-react';
 import { Link } from "react-router-dom";
-import { axiosInstance } from "../utils/axios";
 import toast from "react-hot-toast";
-import { isAxiosError } from "axios";
 import { Playlist, ProblemInPlaylist } from "../types";
+import {
+  useCreatePlaylist,
+  useDeletePlaylist,
+  usePlaylists,
+} from "../hooks/usePlaylists";
 
 interface CreatePlaylistPayload {
   name: string;
   description: string;
 }
 
-interface ApiErrorPayload {
-  message?: string;
-  error?: string;
-}
-
 const PlaylistsPage = () => {
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newPlaylist, setNewPlaylist] = useState<CreatePlaylistPayload>({ name: "", description: "" });
-  const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
-    fetchPlaylists();
-  }, []);
+  const { data: playlists = [], isLoading: loading } = usePlaylists();
+  const createPlaylistMutation = useCreatePlaylist();
+  const deletePlaylistMutation = useDeletePlaylist();
 
-  const fetchPlaylists = async () => {
-    try {
-      const response = await axiosInstance.get<{ data: Playlist[] }>("/playlist");
-      setPlaylists(response.data.data || []);
-    } catch (error) {
-      toast.error("Failed to fetch playlists");
-      console.error("Error fetching playlists:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const createPlaylist = async () => {
+  const createPlaylist = () => {
     if (!newPlaylist.name.trim()) {
       toast.error("Playlist name is required");
       return;
     }
 
-    setCreating(true);
-    try {
-      const response = await axiosInstance.post(
-        "/playlist/create-playlist",
-        newPlaylist
-      );
-
-      if (response.data.success) {
-        const createdPlaylist = response.data.data as Playlist;
-        setPlaylists((prev) => [...prev, createdPlaylist]);
-        setNewPlaylist({ name: "", description: "" });
-        setShowCreateModal(false);
-        toast.success("Playlist created successfully!");
+    createPlaylistMutation.mutate(
+      {
+        name: newPlaylist.name.trim(),
+        description: newPlaylist.description.trim() || undefined,
+      },
+      {
+        onSuccess: () => {
+          setNewPlaylist({ name: "", description: "" });
+          setShowCreateModal(false);
+        },
       }
-    } catch (error) {
-      const errorMessage = isAxiosError<ApiErrorPayload>(error)
-        ? error.response?.data?.message ||
-          error.response?.data?.error ||
-          "Failed to create playlist"
-        : "Failed to create playlist";
-      toast.error(errorMessage);
-    } finally {
-      setCreating(false);
-    }
+    );
   };
 
-  const deletePlaylist = async (playlistId: string) => {
-    if (!window.confirm("Are you sure you want to delete this playlist?"))
+  const deletePlaylist = (playlistId: string) => {
+    if (!window.confirm("Are you sure you want to delete this playlist?")) {
       return;
-
-    try {
-      const response = await axiosInstance.delete(`/playlist/${playlistId}`);
-
-      if (response.data.success) {
-        setPlaylists((prev) => prev.filter((p) => p.id !== playlistId));
-        toast.success("Playlist deleted successfully!");
-      }
-    } catch (error) {
-      const errorMessage = isAxiosError<ApiErrorPayload>(error)
-        ? error.response?.data?.error || "Failed to delete playlist"
-        : "Failed to delete playlist";
-      toast.error(errorMessage);
     }
+
+    deletePlaylistMutation.mutate(playlistId, {
+      onSuccess: () => {
+        setNewPlaylist({ name: "", description: "" });
+      },
+    });
   };
 
   const getProgressPercentage = (playlist: Playlist) => {
@@ -210,6 +174,7 @@ const PlaylistsPage = () => {
                           <button
                             onClick={() => deletePlaylist(playlist.id)}
                             className="gap-2 text-error"
+                            disabled={deletePlaylistMutation.isPending}
                           >
                             <IconTrash className="w-4 h-4" />
                             Delete
@@ -353,16 +318,16 @@ const PlaylistsPage = () => {
                   setShowCreateModal(false);
                   setNewPlaylist({ name: "", description: "" });
                 }}
-                disabled={creating}
+                disabled={createPlaylistMutation.isPending}
               >
                 Cancel
               </button>
               <button
                 className="btn btn-primary"
                 onClick={createPlaylist}
-                disabled={creating || !newPlaylist.name.trim()}
+                disabled={createPlaylistMutation.isPending || !newPlaylist.name.trim()}
               >
-                {creating ? (
+                {createPlaylistMutation.isPending ? (
                   <span className="loading loading-spinner loading-sm"></span>
                 ) : (
                   "Create Playlist"

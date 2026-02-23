@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect } from "react";
+import React, { Suspense, lazy, useEffect, useRef } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
@@ -42,13 +42,19 @@ function AppContent() {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
   const { initTheme } = useThemeStore();
   const location = useLocation();
+  const hasCheckedAuthRef = useRef(false);
 
   // Initialize theme on mount
   useEffect(() => {
     initTheme();
   }, [initTheme]);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    // Avoid duplicate /auth/me calls in React StrictMode development re-mounts.
+    if (hasCheckedAuthRef.current) {
+      return;
+    }
+    hasCheckedAuthRef.current = true;
     checkAuth();
   }, [checkAuth]);
 

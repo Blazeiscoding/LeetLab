@@ -41,7 +41,7 @@ export const useCreatePlaylist = () => {
 
   return useMutation({
     mutationFn: async (playlistData: { name: string; description?: string }) => {
-      const response = await axiosInstance.post('/playlist', playlistData);
+      const response = await axiosInstance.post('/playlist/create-playlist', playlistData);
       return response.data;
     },
     onSuccess: () => {
