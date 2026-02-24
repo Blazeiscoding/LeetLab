@@ -1,7 +1,7 @@
 import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import Loader from "../components/Loader";
-import { IconBulb, IconChevronRight, IconCircleCheck, IconCircleX, IconClock, IconCode, IconEye, IconEyeOff, IconFileText, IconTestPipe, IconGripVertical, IconKeyboard, IconMaximize, IconMinimize, IconPlayerPlay, IconRotate, IconSend, IconTerminal } from '@tabler/icons-react';
+import { IconBulb, IconCircleCheck, IconCircleX, IconCode, IconEye, IconEyeOff, IconFileText, IconTestPipe, IconGripVertical, IconKeyboard, IconPlayerPlay, IconRotate, IconSend, IconTerminal } from '@tabler/icons-react';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useHotkeys } from "react-hotkeys-hook";
 import { axiosInstance } from "../utils/axios";
@@ -26,7 +26,6 @@ type ProblemDetailData = Omit<Problem, "hints"> & {
 interface LanguageConfig {
   id: number;
   name: string;
-  extension: string;
 }
 
 interface TestResultError {
@@ -62,6 +61,42 @@ interface ExecuteResponseData {
   testCases?: ExecutionTestCase[];
 }
 
+interface ApiExecutionErrorResponse {
+  error?: string;
+  message?: string;
+}
+
+const ACTION_COOLDOWN_SECONDS = 15;
+
+const LANGUAGE_MAP: Record<Language, LanguageConfig> = {
+  JAVASCRIPT: { id: 63, name: "JavaScript" },
+  PYTHON: { id: 71, name: "Python" },
+  JAVA: { id: 62, name: "Java" },
+};
+
+const LANGUAGE_OPTIONS = Object.entries(LANGUAGE_MAP) as Array<[Language, LanguageConfig]>;
+
+const getPassedCount = (testCases: ExecutionTestCase[]): number =>
+  testCases.reduce((count, testCase) => count + (testCase.passed ? 1 : 0), 0);
+
+const getExecutionError = (
+  error: unknown,
+  fallbackDetails: string
+): TestResultError => {
+  if (isAxiosError<ApiExecutionErrorResponse>(error)) {
+    return {
+      message: error.response?.data?.error || error.message,
+      details: error.response?.data?.message || fallbackDetails,
+    };
+  }
+
+  if (error instanceof Error) {
+    return { message: error.message, details: fallbackDetails };
+  }
+
+  return { message: "Unknown error occurred", details: fallbackDetails };
+};
+
 const EditorLoader = () => (
   <div className="flex items-center justify-center h-full bg-base-300/50 backdrop-blur-sm">
       <Loader size="md" />
@@ -77,7 +112,6 @@ const ProblemDetailPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [testResults, setTestResults] = useState<TestResultsState | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("description");
-  const [hints, setHints] = useState<string[]>([]);
   const [revealedHints, setRevealedHints] = useState<Set<number>>(new Set());
   const [showResetModal, setShowResetModal] = useState(false);
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
@@ -85,13 +119,6 @@ const ProblemDetailPage = () => {
   // Cooldown states
   const [runCooldown, setRunCooldown] = useState(0);
   const [submitCooldown, setSubmitCooldown] = useState(0);
-
-  // ✅ Memoize language configuration
-  const languageMap = useMemo<Record<Language, LanguageConfig>>(() => ({
-    JAVASCRIPT: { id: 63, name: "JavaScript", extension: "js" },
-    PYTHON: { id: 71, name: "Python", extension: "py" },
-    JAVA: { id: 62, name: "Java", extension: "java" },
-  }), []);
 
   // Get default code snippet for current language
   const defaultCodeSnippet = useMemo(() => {
@@ -119,18 +146,44 @@ const ProblemDetailPage = () => {
     }
   }, [hasPersistedCode, problem, selectedLanguage]);
 
-  useEffect(() => {
-    fetchProblem();
+  const fetchProblem = useCallback(async () => {
+    if (!id) {
+      setProblem(null);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axiosInstance.get(`/problems/get-problem/${id}`);
+      setProblem(response.data.data as ProblemDetailData);
+      setTestResults(null);
+      setActiveTab("description");
+      setRevealedHints(new Set());
+    } catch (error) {
+      toast.error("Failed to fetch problem");
+      console.error("Error fetching problem:", error);
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
 
+  useEffect(() => {
+    fetchProblem();
+  }, [fetchProblem]);
+
   // ✅ Memoize processed hints
-  const processedHints = useMemo(() => {
+  const hints = useMemo(() => {
     if (!problem?.hints) return [];
     
     try {
       if (typeof problem.hints === 'string') {
         try {
-          return JSON.parse(problem.hints);
+          const parsed = JSON.parse(problem.hints);
+          if (Array.isArray(parsed)) {
+            return parsed.filter((hint): hint is string => typeof hint === "string");
+          }
+          return typeof parsed === "string" ? [parsed] : [];
         } catch {
           return problem.hints
             .split('\n')
@@ -146,9 +199,20 @@ const ProblemDetailPage = () => {
     return [];
   }, [problem?.hints]);
 
-  useEffect(() => {
-    setHints(processedHints);
-  }, [processedHints]);
+  const exampleEntries = useMemo(
+    () => (problem?.examples ? (Object.entries(problem.examples) as Array<[Language, Example]>) : []),
+    [problem?.examples]
+  );
+
+  const constraintLines = useMemo(
+    () => (problem?.constraints ? problem.constraints.split('\n') : []),
+    [problem?.constraints]
+  );
+
+  const passedTestCount = useMemo(
+    () => (testResults ? getPassedCount(testResults.testCases) : 0),
+    [testResults]
+  );
 
   // ✅ Cooldown timer optimization - Single effect
   useEffect(() => {
@@ -164,18 +228,6 @@ const ProblemDetailPage = () => {
     
     return () => timers.forEach(clearTimeout);
   }, [runCooldown, submitCooldown]);
-
-  const fetchProblem = async () => {
-    try {
-      const response = await axiosInstance.get(`/problems/get-problem/${id}`);
-      setProblem(response.data.data as ProblemDetailData);
-    } catch (error) {
-      toast.error("Failed to fetch problem");
-      console.error("Error fetching problem:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // ✅ useCallback for event handlers
   const revealHint = useCallback((index: number) => {
@@ -213,7 +265,7 @@ const ProblemDetailPage = () => {
 
       const payload = {
         source_code: code,
-        language_id: languageMap[selectedLanguage].id,
+        language_id: LANGUAGE_MAP[selectedLanguage].id,
         stdin: inputs,
         expected_outputs: outputs,
         problem_id: id,
@@ -231,7 +283,7 @@ const ProblemDetailPage = () => {
       setTestResults(formattedResults);
       setActiveTab("output");
 
-      const passedCount = formattedResults.testCases.filter((tc) => tc.passed).length;
+      const passedCount = getPassedCount(formattedResults.testCases);
       const totalCount = formattedResults.testCases.length;
 
       if (formattedResults.status === "Accepted") {
@@ -240,33 +292,22 @@ const ProblemDetailPage = () => {
         toast.error(`${passedCount}/${totalCount} test cases passed`);
       }
 
-      setRunCooldown(15);
+      setRunCooldown(ACTION_COOLDOWN_SECONDS);
     } catch (error) {
       console.error("Error running code:", error);
-      const message = isAxiosError(error)
-        ? (error.response?.data as { error?: string } | undefined)?.error || error.message
-        : error instanceof Error
-        ? error.message
-        : "Unknown error occurred";
-      const details = isAxiosError(error)
-        ? (error.response?.data as { message?: string } | undefined)?.message
-        : undefined;
       const errorResults = {
         status: "Error",
         testCases: [],
-        error: {
-          message,
-          details: details || "Failed to execute code",
-        },
+        error: getExecutionError(error, "Failed to execute code"),
       } satisfies TestResultsState;
       setTestResults(errorResults);
       setActiveTab("output");
       toast.error("Error running code");
-      setRunCooldown(15);
+      setRunCooldown(ACTION_COOLDOWN_SECONDS);
     } finally {
       setIsRunning(false);
     }
-  }, [code, runCooldown, problem, languageMap, selectedLanguage, id]);
+  }, [code, runCooldown, problem, selectedLanguage, id]);
 
   const submitCode = useCallback(async () => {
     if (!code.trim()) {
@@ -291,7 +332,7 @@ const ProblemDetailPage = () => {
 
       const payload = {
         source_code: code,
-        language_id: languageMap[selectedLanguage].id,
+        language_id: LANGUAGE_MAP[selectedLanguage].id,
         stdin: inputs,
         expected_outputs: outputs,
         problem_id: id,
@@ -314,38 +355,27 @@ const ProblemDetailPage = () => {
         // Trigger confetti celebration!
         fireCanons();
       } else {
-        const passedCount = formattedResults.testCases.filter((tc) => tc.passed).length;
+        const passedCount = getPassedCount(formattedResults.testCases);
         const totalCount = formattedResults.testCases.length;
         toast.error(`${passedCount}/${totalCount} test cases passed`);
       }
 
-      setSubmitCooldown(15);
+      setSubmitCooldown(ACTION_COOLDOWN_SECONDS);
     } catch (error) {
       console.error("Error submitting code:", error);
-      const message = isAxiosError(error)
-        ? (error.response?.data as { error?: string } | undefined)?.error || error.message
-        : error instanceof Error
-        ? error.message
-        : "Unknown error occurred";
-      const details = isAxiosError(error)
-        ? (error.response?.data as { message?: string } | undefined)?.message
-        : undefined;
       const errorResults = {
         status: "Error",
         testCases: [],
-        error: {
-          message,
-          details: details || "Failed to submit code",
-        },
+        error: getExecutionError(error, "Failed to submit code"),
       } satisfies TestResultsState;
       setTestResults(errorResults);
       setActiveTab("output");
       toast.error("Error submitting code");
-      setSubmitCooldown(15);
+      setSubmitCooldown(ACTION_COOLDOWN_SECONDS);
     } finally {
       setIsSubmitting(false);
     }
-  }, [code, submitCooldown, problem, languageMap, selectedLanguage, id]);
+  }, [code, submitCooldown, problem, selectedLanguage, id, fireCanons]);
 
   // Run custom test cases
   const runCustomTest = useCallback(async (customTests: CustomTest[]) => {
@@ -361,7 +391,7 @@ const ProblemDetailPage = () => {
 
       const payload = {
         source_code: code,
-        language_id: languageMap[selectedLanguage].id,
+        language_id: LANGUAGE_MAP[selectedLanguage].id,
         stdin: inputs,
         expected_outputs: outputs,
         problem_id: id,
@@ -380,7 +410,7 @@ const ProblemDetailPage = () => {
       setTestResults(formattedResults);
       setActiveTab("output");
 
-      const passedCount = formattedResults.testCases.filter((tc) => tc.passed).length;
+      const passedCount = getPassedCount(formattedResults.testCases);
       const totalCount = formattedResults.testCases.length;
 
       toast.success(`Custom tests complete: ${passedCount}/${totalCount} passed`, {
@@ -389,21 +419,10 @@ const ProblemDetailPage = () => {
 
     } catch (error) {
       console.error("Error running custom tests:", error);
-      const message = isAxiosError(error)
-        ? (error.response?.data as { error?: string } | undefined)?.error || error.message
-        : error instanceof Error
-        ? error.message
-        : "Unknown error occurred";
-      const details = isAxiosError(error)
-        ? (error.response?.data as { message?: string } | undefined)?.message
-        : undefined;
       const errorResults = {
         status: "Error",
         testCases: [],
-        error: {
-          message,
-          details: details || "Failed to execute code",
-        },
+        error: getExecutionError(error, "Failed to execute code"),
         isCustom: true,
       } satisfies TestResultsState;
       setTestResults(errorResults);
@@ -412,7 +431,7 @@ const ProblemDetailPage = () => {
     } finally {
       setIsRunning(false);
     }
-  }, [code, languageMap, selectedLanguage, id]);
+  }, [code, selectedLanguage, id]);
 
   // Reset code with confirmation
   const handleResetCode = useCallback(() => {
@@ -524,14 +543,14 @@ const ProblemDetailPage = () => {
               >
                 <div className="flex items-center gap-2">
                   <IconCode className="w-4 h-4 text-primary" />
-                  {languageMap[selectedLanguage]?.name || selectedLanguage}
+                  {LANGUAGE_MAP[selectedLanguage]?.name || selectedLanguage}
                 </div>
                 <svg className="w-3 h-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
               <ul tabIndex={0} className="dropdown-content z-[50] menu p-2 shadow-xl bg-base-100 rounded-box w-52 border border-base-content/10 mt-1">
-                {(Object.entries(languageMap) as Array<[Language, LanguageConfig]>).map(([key, lang]) => (
+                {LANGUAGE_OPTIONS.map(([key, lang]) => (
                   <li key={key}>
                     <button
                       className={`flex justify-between ${selectedLanguage === key ? "active font-bold" : ""}`}
@@ -678,7 +697,7 @@ const ProblemDetailPage = () => {
                 {problem.examples && (
                   <div className="space-y-6">
                     <h3 className="text-lg font-bold text-base-content">Examples</h3>
-                    {(Object.entries(problem.examples) as Array<[Language, Example]>).map(([lang, example]) => (
+                    {exampleEntries.map(([lang, example]) => (
                       <div key={lang} className="bg-base-200/50 rounded-xl p-4 border border-base-content/5">
                         <div className="space-y-3">
                           <div className="font-mono text-sm">
@@ -705,7 +724,7 @@ const ProblemDetailPage = () => {
                   <div>
                     <h3 className="text-lg font-bold mb-3 text-base-content">Constraints</h3>
                     <ul className="bg-base-200/50 rounded-xl p-4 border border-base-content/5 space-y-2 font-mono text-sm">
-                      {problem.constraints.split('\n').map((constraint: string, idx: number) => (
+                      {constraintLines.map((constraint: string, idx: number) => (
                           <li key={idx} className="flex gap-2">
                               <span className="text-base-content/40 select-none">•</span>
                               {constraint}
@@ -812,10 +831,10 @@ const ProblemDetailPage = () => {
                              ) : (
                                  <IconCircleX className="w-6 h-6" />
                              )}
-                             <div>
+                                 <div>
                                  <div className="font-bold text-lg">{testResults.status}</div>
                                  <div className="text-xs opacity-80 font-medium">
-                                     {testResults.testCases.filter(tc => tc.passed).length}/{testResults.testCases.length} Test Cases Passed
+                                     {passedTestCount}/{testResults.testCases.length} Test Cases Passed
                                  </div>
                              </div>
                          </div>
