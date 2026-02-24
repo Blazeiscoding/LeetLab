@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useDeferredValue, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Command } from "cmdk";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -6,15 +6,23 @@ import { IconChevronRight, IconFileCode, IconHash, IconHome, IconLogout, IconSea
 import { useAuthStore } from "../store/useAuthStore";
 import { useProblems } from "../hooks/useProblems";
 
+const PAGES = [
+  { name: "Home", icon: IconHome, path: "/", shortcut: "G H" },
+  { name: "Problems", icon: IconFileCode, path: "/problems", shortcut: "G P" },
+  { name: "Leaderboard", icon: IconTrophy, path: "/leaderboard", shortcut: "G L" },
+  { name: "Profile", icon: IconUser, path: "/profile", shortcut: "G U" },
+] as const;
+
 /**
  * Command palette for quick navigation and search (Cmd+K)
  */
 const CommandPalette = () => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const deferredSearch = useDeferredValue(search);
   const navigate = useNavigate();
   const { authUser, logout } = useAuthStore();
-  const { data: problems = [] } = useProblems();
+  const { data: problems = [] } = useProblems({ enabled: open && !!authUser });
 
   // Open with Cmd+K or Ctrl+K
   useHotkeys("meta+k, ctrl+k", (e: KeyboardEvent) => {
@@ -38,31 +46,26 @@ const CommandPalette = () => {
 
   // Filter and sort problems by search
   const filteredProblems = useMemo(() => {
-    if (!search) return problems.slice(0, 5);
+    const normalizedSearch = deferredSearch.trim().toLowerCase();
+    if (!normalizedSearch) return problems.slice(0, 5);
+
     return problems
       .filter((p) =>
-        p.title.toLowerCase().includes(search.toLowerCase()) ||
-        p.tags?.some((t) => t.toLowerCase().includes(search.toLowerCase()))
+        p.title.toLowerCase().includes(normalizedSearch) ||
+        p.tags?.some((t) => t.toLowerCase().includes(normalizedSearch))
       )
       .slice(0, 8);
-  }, [problems, search]);
+  }, [deferredSearch, problems]);
 
-  const handleSelect = (path: string) => {
+  const handleSelect = useCallback((path: string) => {
     navigate(path);
     setOpen(false);
-  };
+  }, [navigate]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await logout();
     setOpen(false);
-  };
-
-  const pages = [
-    { name: "Home", icon: IconHome, path: "/", shortcut: "G H" },
-    { name: "Problems", icon: IconFileCode, path: "/problems", shortcut: "G P" },
-    { name: "Leaderboard", icon: IconTrophy, path: "/leaderboard", shortcut: "G L" },
-    { name: "Profile", icon: IconUser, path: "/profile", shortcut: "G U" },
-  ];
+  }, [logout]);
 
   if (!open) return null;
 
@@ -102,7 +105,7 @@ const CommandPalette = () => {
 
             {/* Pages */}
             <Command.Group heading="Pages" className="px-2 py-1 text-xs font-bold text-base-content/40 uppercase tracking-wider">
-              {pages.map((page) => (
+              {PAGES.map((page) => (
                 <Command.Item
                   key={page.path}
                   value={page.name}
@@ -127,7 +130,7 @@ const CommandPalette = () => {
                   <Command.Item
                     key={problem.id}
                     value={`${problem.title} ${problem.tags?.join(" ")}`}
-                    onSelect={() => handleSelect(`/problem/${problem.id}`)}
+                    onSelect={() => handleSelect(`/problems/${problem.id}`)}
                     className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-base-content/80 hover:bg-base-200/50 hover:text-base-content transition-colors data-[selected=true]:bg-primary/10 data-[selected=true]:text-primary"
                   >
                     <div className="flex items-center gap-3 overflow-hidden">

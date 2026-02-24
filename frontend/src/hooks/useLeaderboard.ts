@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosInstance } from '../utils/axios';
 import { LeaderboardEntry } from '../types';
@@ -21,22 +22,36 @@ export const useLeaderboard = () => {
 
 export const useTopLeaderboard = (limit = 3) => {
   const { data, ...query } = useLeaderboard();
+  const topLeaderboard = useMemo(
+    () => data?.leaderboard?.slice(0, limit) || [],
+    [data?.leaderboard, limit]
+  );
+  const period = useMemo(
+    () => (data ? { month: data.month, year: data.year } : null),
+    [data]
+  );
+  const fullLeaderboard = useMemo(() => data?.leaderboard || [], [data?.leaderboard]);
 
   return {
     ...query,
-    data: data?.leaderboard?.slice(0, limit) || [],
-    period: data ? { month: data.month, year: data.year } : null,
-    fullLeaderboard: data?.leaderboard || [],
+    data: topLeaderboard,
+    period,
+    fullLeaderboard,
   };
 };
 
 export const useLeaderboardWithRefresh = () => {
   const { data, refetch, isRefetching, ...query } = useLeaderboard();
+  const leaderboard = useMemo(() => data?.leaderboard || [], [data?.leaderboard]);
+  const period = useMemo(
+    () => (data ? { month: data.month, year: data.year } : null),
+    [data]
+  );
 
   return {
     ...query,
-    leaderboard: data?.leaderboard || [],
-    period: data ? { month: data.month, year: data.year } : null,
+    leaderboard,
+    period,
     refresh: refetch,
     isRefreshing: isRefetching,
   };

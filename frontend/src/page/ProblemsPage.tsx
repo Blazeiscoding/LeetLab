@@ -96,6 +96,10 @@ const ProblemsPage = () => {
 
   // Defer search term updates to keep UI responsive during fast typing
   const deferredSearchTerm = useDeferredValue(searchTerm);
+  const normalizedSearchTerm = useMemo(
+    () => deferredSearchTerm.trim().toLowerCase(),
+    [deferredSearchTerm]
+  );
 
   // Data fetching with React Query hooks
   const { data: problems = [], isLoading: loading } = useProblems();
@@ -110,13 +114,13 @@ const ProblemsPage = () => {
   const filteredProblems = useMemo(() => {
     let filtered = problems;
 
-    if (deferredSearchTerm) {
+    if (normalizedSearchTerm) {
       filtered = filtered.filter(
         (problem) =>
-          (problem.title && problem.title.toLowerCase().includes(deferredSearchTerm.toLowerCase())) ||
+          (problem.title && problem.title.toLowerCase().includes(normalizedSearchTerm)) ||
           (problem.tags &&
             problem.tags.some((tag) =>
-              tag.toLowerCase().includes(deferredSearchTerm.toLowerCase())
+              tag.toLowerCase().includes(normalizedSearchTerm)
             ))
       );
     }
@@ -138,7 +142,7 @@ const ProblemsPage = () => {
     }
 
     return filtered;
-  }, [problems, deferredSearchTerm, difficultyFilter, statusFilter, solvedProblems]);
+  }, [problems, normalizedSearchTerm, difficultyFilter, statusFilter, solvedProblems]);
 
   return (
     <div className="min-h-screen bg-base-200/50 pb-12">

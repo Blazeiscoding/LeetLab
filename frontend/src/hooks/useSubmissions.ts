@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from '../utils/axios';
 import { Submission, ExecuteCodeRequest } from '../types';
@@ -16,10 +17,14 @@ export const useSubmissions = () => {
 
 export const useRecentSubmissions = (limit = 5) => {
   const { data: submissions = [], ...query } = useSubmissions();
+  const recentSubmissions = useMemo(
+    () => submissions.slice(0, limit),
+    [submissions, limit]
+  );
 
   return {
     ...query,
-    data: submissions.slice(0, limit),
+    data: recentSubmissions,
   };
 };
 

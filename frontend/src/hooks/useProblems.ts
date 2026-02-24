@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosInstance } from '../utils/axios';
 import { Problem, ProblemSolved } from '../types';
@@ -7,13 +8,18 @@ const QUERY_CONFIG = {
   gcTime: 10 * 60 * 1000,
 };
 
-export const useProblems = () => {
+interface UseProblemsOptions {
+  enabled?: boolean;
+}
+
+export const useProblems = (options: UseProblemsOptions = {}) => {
   return useQuery({
     queryKey: ['problems'],
     queryFn: async () => {
       const response = await axiosInstance.get('/problems/get-all-problems');
       return (response.data.data || []) as Problem[];
     },
+    enabled: options.enabled ?? true,
     ...QUERY_CONFIG,
   });
 };
@@ -51,12 +57,16 @@ interface ProblemsByDifficulty {
 export const useProblemsByDifficulty = () => {
   const { data: problems = [], ...query } = useProblems();
 
-  const problemsByDifficulty = problems.reduce<ProblemsByDifficulty>(
-    (acc, problem) => {
-      acc[problem.difficulty] = (acc[problem.difficulty] || 0) + 1;
-      return acc;
-    },
-    { EASY: 0, MEDIUM: 0, HARD: 0 }
+  const problemsByDifficulty = useMemo(
+    () =>
+      problems.reduce<ProblemsByDifficulty>(
+        (acc, problem) => {
+          acc[problem.difficulty] = (acc[problem.difficulty] || 0) + 1;
+          return acc;
+        },
+        { EASY: 0, MEDIUM: 0, HARD: 0 }
+      ),
+    [problems]
   );
 
   return {
